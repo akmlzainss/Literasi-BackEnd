@@ -662,53 +662,47 @@
         
         <nav class="sidebar-nav">
             <div class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="{{route('admin.dashboard')}}" class="nav-link">
                     <i class="fas fa-tachometer-alt nav-icon"></i>
                     <span class="nav-text">Dashboard</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="{{route('artikel.artikel')}}" class="nav-link">
                     <i class="fas fa-newspaper nav-icon"></i>
                     <span class="nav-text">Artikel</span>
                     <span class="nav-badge">245</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="{{route('kategori.kategori')}}" class="nav-link">
                     <i class="fas fa-tags nav-icon"></i>
                     <span class="nav-text">Kategori</span>
                     <span class="nav-badge">18</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="{{route('penghargaan.penghargaan')}}" class="nav-link">
                     <i class="fas fa-trophy nav-icon"></i>
                     <span class="nav-text">Penghargaan</span>
                     <span class="nav-badge">12</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="#" class="nav-link active">
+                <a href="{{route('siswa.siswa')}}" class="nav-link active">
                     <i class="fas fa-user-graduate nav-icon"></i>
                     <span class="nav-text">Siswa</span>
                     <span class="nav-badge">1.2K</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fas fa-users nav-icon"></i>
-                    <span class="nav-text">Pengguna</span>
-                </a>
-            </div>
-            <div class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="{{route('laporan.laporan')}}" class="nav-link">
                     <i class="fas fa-chart-line nav-icon"></i>
                     <span class="nav-text">Laporan</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="{{route('pengaturan.pengaturan')}}" class="nav-link">
                     <i class="fas fa-cog nav-icon"></i>
                     <span class="nav-text">Pengaturan</span>
                 </a>

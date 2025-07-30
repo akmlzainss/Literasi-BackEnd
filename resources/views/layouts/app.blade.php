@@ -1,17 +1,9 @@
 <!DOCTYPE html>
-<html>
-
-<head>
-    <title>Admin Dashboard</title>
-</head>
-
-<body>
-    <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin - SMKN 11 Bandung</title>
+    <title>@yield('title', 'Dashboard Admin - SMKN 11 Bandung')</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -180,7 +172,7 @@
             padding: 1rem 2rem;
             box-shadow: var(--shadow);
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             position: sticky;
             top: 0;
@@ -229,274 +221,16 @@
             padding: 2rem;
         }
 
-        .page-title {
-            background: linear-gradient(135deg, var(--primary-blue), var(--light-blue));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: 700;
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            text-shadow: 0 2px 4px rgba(37, 99, 235, 0.1);
-        }
-
-        .subtitle {
+        .footer {
+            background: var(--bg-white);
+            padding: 1rem 2rem;
+            text-align: center;
             color: var(--text-light);
-            font-weight: 400;
-            font-size: 1.1rem;
-            margin-bottom: 3rem;
-        }
-
-        .stats-card {
-            background: var(--bg-white);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(37, 99, 235, 0.1);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            height: 100%;
-        }
-
-        .stats-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary-blue), var(--light-blue));
-        }
-
-        .stats-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .stats-card.primary {
-            border-left: 4px solid var(--primary-blue);
-        }
-
-        .stats-card.success {
-            border-left: 4px solid #10b981;
-        }
-
-        .stats-card.warning {
-            border-left: 4px solid #f59e0b;
-        }
-
-        .stats-card.info {
-            border-left: 4px solid #06b6d4;
-        }
-
-        .stats-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            position: relative;
-        }
-
-        .stats-icon::after {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            border-radius: 50%;
-            padding: 2px;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask-composite: exclude;
-        }
-
-        .stats-icon.primary {
-            background: linear-gradient(135deg, var(--primary-blue), var(--light-blue));
-            color: white;
-        }
-
-        .stats-icon.success {
-            background: linear-gradient(135deg, #10b981, #34d399);
-            color: white;
-        }
-
-        .stats-icon.warning {
-            background: linear-gradient(135deg, #f59e0b, #fbbf24);
-            color: white;
-        }
-
-        .stats-icon.info {
-            background: linear-gradient(135deg, #06b6d4, #22d3ee);
-            color: white;
-        }
-
-        .stats-title {
-            font-weight: 600;
-            font-size: 1rem;
-            color: var(--text-dark);
-            margin-bottom: 0.5rem;
-        }
-
-        .stats-number {
-            font-weight: 700;
-            font-size: 2.5rem;
-            color: var(--primary-blue);
-            margin-bottom: 1rem;
-            line-height: 1;
-        }
-
-        .btn-custom {
-            border-radius: 10px;
-            padding: 0.5rem 1rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
-            font-size: 0.85rem;
-        }
-
-        .btn-primary-custom {
-            background: linear-gradient(135deg, var(--primary-blue), var(--light-blue));
-            color: white;
-            border: none;
-        }
-
-        .btn-primary-custom:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 15px rgba(37, 99, 235, 0.3);
-            color: white;
-        }
-
-        .btn-outline-custom {
-            background: transparent;
-            color: var(--primary-blue);
-            border: 2px solid var(--primary-blue);
-        }
-
-        .btn-outline-custom:hover {
-            background: var(--primary-blue);
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        .main-card {
-            background: var(--bg-white);
-            border-radius: 20px;
-            box-shadow: var(--shadow);
-            border: none;
-            overflow: hidden;
-            margin-bottom: 2rem;
-        }
-
-        .card-header-custom {
-            background: linear-gradient(135deg, var(--primary-blue), var(--light-blue));
-            color: white;
-            padding: 1.5rem 2rem;
-            border: none;
-            font-weight: 600;
-            font-size: 1.2rem;
-        }
-
-        .card-body-custom {
-            padding: 2rem;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 400px;
-            background: var(--bg-white);
-            border-radius: 15px;
-        }
-
-        .table-custom {
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .table-custom thead th {
-            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-            border: none;
-            font-weight: 600;
-            color: var(--text-dark);
-            padding: 1rem;
-        }
-
-        .table-custom tbody td {
-            padding: 1rem;
-            border: none;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .table-custom tbody tr:hover {
-            background: #f8fafc;
-        }
-
-        .activity-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary-blue), var(--light-blue));
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             font-size: 0.9rem;
-        }
-
-        .fade-in {
-            animation: fadeIn 0.8s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .stats-row {
-            margin-bottom: 3rem;
-        }
-
-        /* Charts Grid */
-        .charts-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .chart-card {
-            background: var(--bg-white);
-            border-radius: 20px;
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
-
-        .chart-header {
-            background: linear-gradient(135deg, var(--primary-blue), var(--light-blue));
-            color: white;
-            padding: 1.5rem;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        .chart-body {
-            padding: 1.5rem;
-        }
-
-        .small-chart-container {
-            position: relative;
-            height: 300px;
+            border-top: 1px solid rgba(37, 99, 235, 0.1);
+            position: sticky;
+            bottom: 0;
+            z-index: 100;
         }
 
         /* Responsive */
@@ -525,14 +259,6 @@
             
             .content-area {
                 padding: 1rem;
-            }
-            
-            .page-title {
-                font-size: 2rem;
-            }
-            
-            .stats-card {
-                margin-bottom: 1.5rem;
             }
         }
 
@@ -565,58 +291,97 @@
         
         <nav class="sidebar-nav">
             <div class="nav-item">
-                <a href="{{route('admin.dashboard')}}" class="nav-link active">
+                <a href="{{ route('admin.dashboard') }}" class="nav-link {{ Request::routeIs('admin.dashboard') ? 'active' : '' }}">
                     <i class="fas fa-tachometer-alt nav-icon"></i>
                     <span class="nav-text">Dashboard</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{route('artikel.artikel')}}" class="nav-link">
+                <a href="{{ route('artikel.artikel') }}" class="nav-link {{ Request::routeIs('artikel.artikel') ? 'active' : '' }}">
                     <i class="fas fa-newspaper nav-icon"></i>
                     <span class="nav-text">Artikel</span>
                     <span class="nav-badge">245</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="{{route('kategori.kategori')}}" class="nav-link">
                     <i class="fas fa-tags nav-icon"></i>
                     <span class="nav-text">Kategori</span>
                     <span class="nav-badge">18</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="{{route('penghargaan.penghargaan')}}" class="nav-link">
                     <i class="fas fa-trophy nav-icon"></i>
                     <span class="nav-text">Penghargaan</span>
                     <span class="nav-badge">12</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="{{route('siswa.siswa')}}" class="nav-link">
                     <i class="fas fa-user-graduate nav-icon"></i>
                     <span class="nav-text">Siswa</span>
                     <span class="nav-badge">1.2K</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fas fa-users nav-icon"></i>
-                    <span class="nav-text">Pengguna</span>
-                </a>
-            </div>
-            <div class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="{{route('laporan.laporan')}}" class="nav-link">
                     <i class="fas fa-chart-line nav-icon"></i>
                     <span class="nav-text">Laporan</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="{{route('pengaturan.pengaturan')}}" class="nav-link">
                     <i class="fas fa-cog nav-icon"></i>
                     <span class="nav-text">Pengaturan</span>
                 </a>
             </div>
+            <div class="nav-item">
+                <form id="logout-form" action="{{ route('logout.admin') }}" method="POST" style="display: none;">
+                    @csrf
+                </form>
+                <a href="#" class="nav-link" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <i class="fas fa-sign-out-alt nav-icon"></i>
+                    <span class="nav-text">Logout</span>
+                </a>
+            </div>
         </nav>
     </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <h6 class="mb-0 fw-bold text-primary">Selamat datang kembali, Admin!</h6>
+            </div>
+            <div class="topbar-right">
+                <div class="user-profile">
+                    <div class="user-avatar">
+                        A
+                    </div>
+                    <span class="fw-semibold">Admin</span>
+                    <i class="fas fa-chevron-down ms-1"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            @yield('content')
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            &copy; {{ date('Y') }} SMKN 11 Bandung - Sistem Literasi Akhlak. All rights reserved.
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+        }
+    </script>
+    @yield('scripts')
 </body>
 </html>
