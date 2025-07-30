@@ -21,6 +21,11 @@
         .container {
             display: flex;
             min-height: 100vh;
+            transition: filter 0.3s ease;
+        }
+
+        .container.blurred {
+            filter: blur(3px);
         }
 
         /* Sidebar */
@@ -469,6 +474,145 @@
             color: #f59e0b;
         }
 
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            transform: scale(0.7);
+            opacity: 0;
+            transition: all 0.3s ease-out;
+            text-align: center;
+            position: relative;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            color: #6b7280;
+            transform: rotate(90deg);
+        }
+
+        .modal-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 36px;
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+
+        .modal-message {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .modal-btn-cancel {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .modal-btn-cancel:hover {
+            background: #e5e7eb;
+            transform: translateY(-1px);
+        }
+
+        .modal-btn-confirm {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .modal-btn-confirm:hover {
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+            transform: translateY(-1px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
         /* Responsive */
         @media (max-width: 1200px) {
             .awards-grid {
@@ -499,11 +643,20 @@
             .header-controls {
                 justify-content: center;
             }
+
+            .modal {
+                margin: 20px;
+                padding: 30px;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="mainContainer">
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
@@ -617,13 +770,13 @@
                             </div>
                         </div>
                         <div class="award-actions">
-                            <button class="action-btn btn-primary">
+                            <button class="action-btn btn-primary" data-action="detail">
                                 <i class="fas fa-eye"></i> Lihat Detail
                             </button>
-                            <button class="action-btn btn-secondary">
+                            <button class="action-btn btn-secondary" data-action="edit">
                                 <i class="fas fa-edit"></i> Edit
                             </button>
-                            <button class="action-btn btn-danger">
+                            <button class="action-btn btn-danger" data-action="delete" data-title="Artikel Terbaik Januari 2025">
                                 <i class="fas fa-trash"></i> Hapus
                             </button>
                         </div>
@@ -650,13 +803,13 @@
                             </div>
                         </div>
                         <div class="award-actions">
-                            <button class="action-btn btn-primary">
+                            <button class="action-btn btn-primary" data-action="detail">
                                 <i class="fas fa-eye"></i> Lihat Detail
                             </button>
-                            <button class="action-btn btn-secondary">
+                            <button class="action-btn btn-secondary" data-action="edit">
                                 <i class="fas fa-edit"></i> Edit
                             </button>
-                            <button class="action-btn btn-danger">
+                            <button class="action-btn btn-danger" data-action="delete" data-title="Artikel Terbaik Februari 2025">
                                 <i class="fas fa-trash"></i> Hapus
                             </button>
                         </div>
@@ -683,13 +836,13 @@
                             </div>
                         </div>
                         <div class="award-actions">
-                            <button class="action-btn btn-primary">
+                            <button class="action-btn btn-primary" data-action="detail">
                                 <i class="fas fa-eye"></i> Lihat Detail
                             </button>
-                            <button class="action-btn btn-secondary">
+                            <button class="action-btn btn-secondary" data-action="edit">
                                 <i class="fas fa-edit"></i> Edit
                             </button>
-                            <button class="action-btn btn-danger">
+                            <button class="action-btn btn-danger" data-action="delete" data-title="Artikel Terbaik Maret 2025">
                                 <i class="fas fa-trash"></i> Hapus
                             </button>
                         </div>
@@ -716,13 +869,13 @@
                             </div>
                         </div>
                         <div class="award-actions">
-                            <button class="action-btn btn-primary">
+                            <button class="action-btn btn-primary" data-action="detail">
                                 <i class="fas fa-eye"></i> Lihat Detail
                             </button>
-                            <button class="action-btn btn-secondary">
+                            <button class="action-btn btn-secondary" data-action="edit">
                                 <i class="fas fa-edit"></i> Edit
                             </button>
-                            <button class="action-btn btn-danger">
+                            <button class="action-btn btn-danger" data-action="delete" data-title="Artikel Terbaik April 2025">
                                 <i class="fas fa-trash"></i> Hapus
                             </button>
                         </div>
@@ -739,23 +892,6 @@
                     </div>
                     <div class="winners-list">
                         <div class="winner-item">
-                            <div class="winner-avatar" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">A</div>
-                            <div class="winner-info">
-                                <div class="winner-name">Ahmad Reza Pratama</div>
-                                <div class="winner-description">"Penerapan Kejujuran dalam Kehidupan Sehari-hari"</div>
-                            </div>
-                            <div class="winner-rating">
-                                <span class="rating-stars">★★★★★</span>
-                                <span>4.9</span>
-                            </div>
-                        </div>
-
-                        <div class="winner-item">
-                            <div class="winner-avatar" style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);">S</div>
-                            <div class="winner-info">
-                                <div class="winner-name">Siti Nurhaliza</div>
-                                <div class="winner-description">"Menghargai Perbedaan dan Toleransi"</div>
-                            </div>
                             <div class="winner-rating">
                                 <span class="rating-stars">★★★★☆</span>
                                 <span>4.8</span>
@@ -791,36 +927,110 @@
         </div>
     </div>
 
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div class="modal-icon">
+                <i class="fas fa-trash-alt"></i>
+            </div>
+            <h3 class="modal-title">Apakah anda yakin ingin menghapus ini?</h3>
+            <p class="modal-message">
+                <span class="item-name" id="itemToDelete">Item ini</span> akan dihapus secara permanen dan tidak dapat dikembalikan.
+            </p>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Batal</button>
+                <button class="modal-btn modal-btn-confirm" onclick="confirmDelete()">Hapus</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Add some interactive functionality
-        document.querySelectorAll('.action-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const action = this.textContent.trim();
-                if (action.includes('Lihat Detail')) {
-                    alert('Membuka detail penghargaan...');
-                } else if (action.includes('Edit')) {
-                    alert('Membuka form edit penghargaan...');
-                } else if (action.includes('Hapus')) {
-                    if (confirm('Apakah Anda yakin ingin menghapus penghargaan ini?')) {
-                        alert('Penghargaan berhasil dihapus!');
+        let currentItemToDelete = null;
+
+        // Function to show delete modal
+        function showDeleteModal(itemTitle) {
+            currentItemToDelete = itemTitle;
+            document.getElementById('itemToDelete').textContent = `"${itemTitle}"`;
+            document.getElementById('deleteModal').classList.add('active');
+            document.getElementById('mainContainer').classList.add('blurred');
+            document.body.style.overflow = 'hidden'; // Prevent body scroll
+        }
+
+        // Function to close modal
+        function closeModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+            document.getElementById('mainContainer').classList.remove('blurred');
+            document.body.style.overflow = 'auto'; // Restore body scroll
+            currentItemToDelete = null;
+        }
+
+        // Function to confirm delete
+        function confirmDelete() {
+            if (currentItemToDelete) {
+                // Here you would typically send a request to your server to delete the item
+                console.log('Menghapus item:', currentItemToDelete);
+                
+                // Show success message (you can replace this with your preferred notification method)
+                alert(`${currentItemToDelete} berhasil dihapus!`);
+                
+                // Close modal
+                closeModal();
+                
+                // You could also remove the card from the DOM here if needed
+                // Or refresh the page/data
+            }
+        }
+
+        // Event listeners for action buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to all action buttons
+            document.querySelectorAll('.action-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const action = this.getAttribute('data-action');
+                    const title = this.getAttribute('data-title');
+                    
+                    if (action === 'delete') {
+                        showDeleteModal(title);
+                    } else if (action === 'detail') {
+                        alert('Membuka detail penghargaan...');
+                    } else if (action === 'edit') {
+                        alert('Membuka form edit penghargaan...');
                     }
+                });
+            });
+
+            // Add event listener for add button
+            document.querySelector('.add-btn').addEventListener('click', function() {
+                alert('Membuka form tambah penghargaan baru...');
+            });
+
+            // Close modal when clicking outside of it
+            document.getElementById('deleteModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
                 }
             });
-        });
 
-        document.querySelector('.add-btn').addEventListener('click', function() {
-            alert('Membuka form tambah penghargaan baru...');
-        });
-
-        // Add hover effects to cards
-        document.querySelectorAll('.award-card, .winner-item').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-5px)';
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && document.getElementById('deleteModal').classList.contains('active')) {
+                    closeModal();
+                }
             });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
+
+            // Add hover effects to cards
+            document.querySelectorAll('.award-card, .winner-item').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    if (!document.getElementById('deleteModal').classList.contains('active')) {
+                        this.style.transform = this.classList.contains('award-card') ? 'translateY(-5px)' : 'translateX(5px)';
+                    }
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = this.classList.contains('award-card') ? 'translateY(0)' : 'translateX(0)';
+                });
             });
         });
     </script>
