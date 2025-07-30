@@ -31,3 +31,4 @@ Route::get('/artikel/create', [ArtikelController::class, 'create'])->name('artik
 Route::post('/artikel', [ArtikelController::class, 'store'])->name('artikel.store');
 
 
+
