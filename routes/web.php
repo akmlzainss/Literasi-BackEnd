@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\ArtikelController;
 
 // Redirect dari root ke login
 Route::get('/', function () {
@@ -22,3 +23,8 @@ Route::middleware(['admin'])->group(function () {
         return view('admin.penghargaan');
     })->name('admin.penghargaan');
 });
+Route::get('/admin/artikel', [ArtikelController::class, 'index'])->name('artikel.artikel');
+Route::get('/artikel/create', [ArtikelController::class, 'create'])->name('artikel.create');
+Route::post('/artikel', [ArtikelController::class, 'store'])->name('artikel.store');
+
+

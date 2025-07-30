@@ -29,7 +29,7 @@ class AdminAuthController extends Controller
 
     public function showRegisterForm()
     {
-       
+    
         return view('auth.register-admin');
     }
 
