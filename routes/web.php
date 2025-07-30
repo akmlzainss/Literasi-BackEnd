@@ -18,4 +18,7 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/admin/dashboard', function () {
         return view('admin.dashboard');
     })->name('admin.dashboard');
+    Route::get('/admin/penghargaan', function () {
+        return view('admin.penghargaan');
+    })->name('admin.penghargaan');
 });
