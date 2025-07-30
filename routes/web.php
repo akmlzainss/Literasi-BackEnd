@@ -30,5 +30,9 @@ Route::get('/admin/artikel', [ArtikelController::class, 'index'])->name('artikel
 Route::get('/artikel/create', [ArtikelController::class, 'create'])->name('artikel.create');
 Route::post('/artikel', [ArtikelController::class, 'store'])->name('artikel.store');
 
+Route::get('/siswa', function () {
+    return view('siswa.siswa');
+})->name('siswa.siswa');
+
 
 
