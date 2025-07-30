@@ -20,5 +20,8 @@ Route::middleware(['admin'])->group(function () {
     })->name('admin.dashboard');
     Route::get('/admin/penghargaan', function () {
         return view('admin.penghargaan');
-    })->name('admin.penghargaan');
+    })->name('admin.lihat_detail_januari');
+    Route::get('/admin/lihat_detail_januari', function () {
+        return view('admin.lihat_detail_januari');
+    })->name('admin.lihat_detail_januari');
 });
