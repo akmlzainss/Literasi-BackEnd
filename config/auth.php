@@ -28,9 +28,9 @@ return [
             'model' => App\Models\Admin::class,
         ],
         'siswas' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\Siswa::class,
-        ],
+            'driver'=> 'eloquent',
+            'model'=> App\Models\Siswa::class,
+        ]
     ],
 
     'passwords' => [
