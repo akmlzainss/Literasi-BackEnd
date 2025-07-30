@@ -2,14 +2,25 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
-class Siswa extends Model
+class Siswa extends Authenticatable
 {
+    use HasApiTokens;
+
     protected $table = 'siswa';
     protected $primaryKey = 'id';
     public $timestamps = false;
-    protected $fillable = ['nis', 'nama', 'email', 'kata_sandi', 'status_aktif', 'dibuat_pada'];
+    protected $fillable = ['nis', 'nama', 'email', 'password', 'status_aktif', 'dibuat_pada'];
+    protected $hidden = ['password'];
+
+    protected $guard = 'siswa';
+
+    public function getAuthPassword()
+    {
+        return $this->password;
+    }
 
     public function artikel()
     {
@@ -21,7 +32,7 @@ class Siswa extends Model
         return $this->hasMany(UsulanKategori::class, 'id_siswa');
     }
 
-    public function RatingArtikel()
+    public function nilaiArtikel()
     {
         return $this->hasMany(RatingArtikel::class, 'id_siswa');
     }
@@ -45,4 +56,4 @@ class Siswa extends Model
     {
         return $this->hasMany(Notifikasi::class, 'id_siswa');
     }
-}
+};

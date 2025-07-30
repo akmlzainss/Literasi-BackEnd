@@ -2,14 +2,22 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Admin extends Model
+class Admin extends Authenticatable
 {
     protected $table = 'admin';
     protected $primaryKey = 'id';
     public $timestamps = false;
-    protected $fillable = ['nama_pengguna', 'email', 'kata_sandi', 'status_aktif', 'dibuat_pada'];
+    protected $fillable = ['nama_pengguna', 'email', 'password', 'status_aktif', 'dibuat_pada'];
+    protected $hidden = ['password'];
+
+    protected $guard = 'admin'; // Tentukan guard kustom
+
+    public function getAuthPassword()
+    {
+        return $this->password; // Override nama kolom password
+    }
 
     public function usulanKategori()
     {

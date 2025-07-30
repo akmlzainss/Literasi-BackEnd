@@ -12,9 +12,9 @@ class CreateAdminTable extends Migration
             $table->id();
             $table->string('nama_pengguna')->unique();
             $table->string('email')->unique();
-            $table->string('kata_sandi');
+            $table->string('password'); // Ganti 'kata_sandi' menjadi 'password'
             $table->boolean('status_aktif')->default(true);
-            $table->timestamp('dibuat_pada')->useCurrent();
+            $table->timestamp('created_at')->useCurrent(); // Ganti 'dibuat_pada' menjadi 'created_at'
         });
     }
 
@@ -22,4 +22,4 @@ class CreateAdminTable extends Migration
     {
         Schema::dropIfExists('admin');
     }
-};
+}

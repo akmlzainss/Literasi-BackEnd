@@ -13,10 +13,10 @@ class CreateSiswaTable extends Migration
             $table->string('nis')->unique();
             $table->string('nama');
             $table->string('email')->unique();
-            $table->string('kata_sandi');
-            $table->string('kelas'); // Kolom kelas ditambahkan
+            $table->string('password'); // Ganti 'kata_sandi' menjadi 'password'
+            $table->string('kelas', 50); // Tambah panjang maksimum
             $table->boolean('status_aktif')->default(true);
-            $table->timestamp('dibuat_pada')->useCurrent();
+            $table->timestamp('created_at')->useCurrent(); // Ganti 'dibuat_pada' menjadi 'created_at'
         });
     }
 
@@ -24,4 +24,4 @@ class CreateSiswaTable extends Migration
     {
         Schema::dropIfExists('siswa');
     }
-};
+}
