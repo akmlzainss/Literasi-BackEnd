@@ -15,7 +15,7 @@
                 <p class="auth-subtitle">Masuk ke Sistem Literasi Akhlak</p>
             </div>
             <div class="card-body-custom">
-                <form method="POST" action="{{ route('login.admin') }}">
+                <form method="POST" action="{{ route('login') }}">
                     @csrf
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
@@ -44,7 +44,7 @@
                     <button type="submit" class="btn btn-primary-custom w-100">Login</button>
                 </form>
                 <div class="text-center mt-3">
-                    <a href="{{ route('register.admin') }}" class="btn btn-outline-custom">Register Admin Baru</a>
+                    <a href="{{ route('register') }}" class="btn btn-outline-custom">Register Admin Baru</a>
                 </div>
                 @if ($errors->any() && !$errors->has('email') && !$errors->has('password'))
                     <div class="alert alert-danger mt-3" role="alert">

@@ -15,7 +15,7 @@
                 <p class="auth-subtitle">Buat akun baru untuk Sistem Literasi Akhlak</p>
             </div>
             <div class="card-body-custom">
-                <form method="POST" action="{{ route('register.admin') }}">
+                <form method="POST" action="{{ route('register') }}">
                     @csrf
                     <div class="mb-3">
                         <label for="nama_pengguna" class="form-label">Nama Pengguna</label>
@@ -56,7 +56,7 @@
                     <button type="submit" class="btn btn-primary-custom w-100">Register</button>
                 </form>
                 <div class="text-center mt-3">
-                    <a href="{{ route('login.admin') }}" class="btn btn-outline-custom">Kembali ke Login</a>
+                    <a href="{{ route('login') }}" class="btn btn-outline-custom">Kembali ke Login</a>
                 </div>
                 @if ($errors->any() && !$errors->has('nama_pengguna') && !$errors->has('email') && !$errors->has('password'))
                     <div class="alert alert-danger mt-3" role="alert">

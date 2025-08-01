@@ -291,56 +291,56 @@
         
         <nav class="sidebar-nav">
             <div class="nav-item">
-                <a href="{{ route('admin.dashboard') }}" class="nav-link {{ Request::routeIs('admin.dashboard') ? 'active' : '' }}">
+                <a href="{{ route('dashboard') }}" class="nav-link {{ Request::routeIs('admin.dashboard') ? 'active' : '' }}">
                     <i class="fas fa-tachometer-alt nav-icon"></i>
                     <span class="nav-text">Dashboard</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{ route('artikel.artikel') }}" class="nav-link {{ Request::routeIs('artikel.artikel') ? 'active' : '' }}">
+                <a href="{{ route('artikel') }}" class="nav-link {{ Request::routeIs('artikel.artikel') ? 'active' : '' }}">
                     <i class="fas fa-newspaper nav-icon"></i>
                     <span class="nav-text">Artikel</span>
                     <span class="nav-badge">245</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{route('kategori.kategori')}}" class="nav-link">
+                <a href="{{ route('kategori') }}" class="nav-link {{ Request::routeIs('kategori.kategori') ? 'active' : '' }}">
                     <i class="fas fa-tags nav-icon"></i>
                     <span class="nav-text">Kategori</span>
                     <span class="nav-badge">18</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{route('penghargaan.penghargaan')}}" class="nav-link">
+                <a href="{{ route('penghargaan') }}" class="nav-link {{ Request::routeIs('penghargaan.penghargaan') ? 'active' : '' }}">
                     <i class="fas fa-trophy nav-icon"></i>
                     <span class="nav-text">Penghargaan</span>
                     <span class="nav-badge">12</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{route('siswa.siswa')}}" class="nav-link">
+                <a href="{{ route('siswa') }}" class="nav-link {{ Request::routeIs('siswa.siswa') ? 'active' : '' }}">
                     <i class="fas fa-user-graduate nav-icon"></i>
                     <span class="nav-text">Siswa</span>
                     <span class="nav-badge">1.2K</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{route('laporan.laporan')}}" class="nav-link">
+                <a href="{{ route('laporan') }}" class="nav-link {{ Request::routeIs('laporan.laporan') ? 'active' : '' }}">
                     <i class="fas fa-chart-line nav-icon"></i>
                     <span class="nav-text">Laporan</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{route('pengaturan.pengaturan')}}" class="nav-link">
+                <a href="{{ route('pengaturan') }}" class="nav-link {{ Request::routeIs('pengaturan.pengaturan') ? 'active' : '' }}">
                     <i class="fas fa-cog nav-icon"></i>
                     <span class="nav-text">Pengaturan</span>
                 </a>
             </div>
             <div class="nav-item">
-                <form id="logout-form" action="{{ route('logout.admin') }}" method="POST" style="display: none;">
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                     @csrf
                 </form>
-                <a href="#" class="nav-link" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <a href="#" class="nav-link" onclick="event.preventDefault(); if(confirm('Apakah Anda yakin ingin logout?')) { document.getElementById('logout-form').submit(); }">
                     <i class="fas fa-sign-out-alt nav-icon"></i>
                     <span class="nav-text">Logout</span>
                 </a>
