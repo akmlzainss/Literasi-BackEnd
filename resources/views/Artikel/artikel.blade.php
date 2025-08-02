@@ -4,6 +4,7 @@
 @section('page-title', 'Kelola Artikel Literasi Akhlak')
 
 @section('content')
+<link rel="stylesheet" href="css/artikel.css">
     <!-- Page Header -->
     <div class="page-header">
         <h1 class="page-title">Kelola Artikel</h1>
