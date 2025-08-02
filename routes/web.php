@@ -54,6 +54,7 @@ Route::middleware(['admin'])->group(function () {
     Route::put('/kategori/{id}', [KategoriController::class, 'update'])->name('kategori.update');
     Route::delete('/kategori/{id}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
     Route::get('/kategori/export', [KategoriController::class, 'export'])->name('kategori.export');
+    Route::get('/kategori/{id}/detail', [KategoriController::class, 'detail'])->name('kategori.detail');
 
     // ==========================
     // PENGHARGAAN
