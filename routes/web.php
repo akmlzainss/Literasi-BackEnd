@@ -9,30 +9,69 @@ use App\Http\Controllers\PenghargaanController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\PengaturanController;
 
+// Redirect root ke halaman login
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// Rute untuk tamu (guest) yang belum login
+// ==========================
+// RUTE UNTUK GUEST (belum login)
+// ==========================
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AdminAuthController::class, 'login']);
+
     Route::get('/register', [AdminAuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AdminAuthController::class, 'register']);
 });
 
-// Rute untuk admin yang sudah login
+// ==========================
+// RUTE UNTUK ADMIN (sudah login)
+// ==========================
 Route::middleware(['admin'])->group(function () {
+    // Logout
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
+
+    // Dashboard
     Route::get('/dashboard', function () {
         return view('admin.dashboard');
     })->name('dashboard');
+
+    // ==========================
+    // ARTIKEL
+    // ==========================
     Route::get('/artikel', [ArtikelController::class, 'index'])->name('artikel');
     Route::get('/artikel/create', [ArtikelController::class, 'create'])->name('artikel.create');
     Route::post('/artikel', [ArtikelController::class, 'store'])->name('artikel.store');
+
+    // ==========================
+    // KATEGORI
+    // ==========================
     Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori');
+    Route::get('/kategori/create', [KategoriController::class, 'create'])->name('kategori.create');
+    Route::post('/kategori', [KategoriController::class, 'store'])->name('kategori.store');
+    Route::get('/kategori/{id}/edit', [KategoriController::class, 'edit'])->name('kategori.edit');
+    Route::put('/kategori/{id}', [KategoriController::class, 'update'])->name('kategori.update');
+    Route::delete('/kategori/{id}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
+    Route::get('/kategori/export', [KategoriController::class, 'export'])->name('kategori.export');
+
+    // ==========================
+    // PENGHARGAAN
+    // ==========================
     Route::get('/penghargaan', [PenghargaanController::class, 'index'])->name('penghargaan');
+
+    // ==========================
+    // SISWA
+    // ==========================
     Route::get('/siswa', [KelolaSiswaController::class, 'index'])->name('siswa');
+
+    // ==========================
+    // LAPORAN
+    // ==========================
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan');
+
+    // ==========================
+    // PENGATURAN
+    // ==========================
     Route::get('/pengaturan', [PengaturanController::class, 'index'])->name('pengaturan');
 });
