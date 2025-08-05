@@ -11,10 +11,25 @@ class Siswa extends Authenticatable
 
     protected $table = 'siswa';
     protected $primaryKey = 'id';
+
+    // Nonaktifkan timestamps (karena tabel tidak punya created_at & updated_at)
     public $timestamps = false;
-    protected $fillable = ['nis', 'nama', 'email', 'password', 'status_aktif', 'dibuat_pada'];
+
+    // Kolom-kolom yang boleh diisi massal
+    protected $fillable = [
+        'nis',
+        'nama',
+        'email',
+        'kelas', // ✅ agar bisa tersimpan ke database
+        'password',
+        'status_aktif',
+        'dibuat_pada'
+    ];
+
+    // Sembunyikan password saat model diubah ke array/JSON
     protected $hidden = ['password'];
 
+    // Guard untuk autentikasi siswa
     protected $guard = 'siswa';
 
     public function getAuthPassword()
@@ -22,6 +37,7 @@ class Siswa extends Authenticatable
         return $this->password;
     }
 
+    // Relasi-relasi (sesuaikan jika kamu tidak pakai fitur ini)
     public function artikel()
     {
         return $this->hasMany(Artikel::class, 'id_siswa');
@@ -56,4 +72,4 @@ class Siswa extends Authenticatable
     {
         return $this->hasMany(Notifikasi::class, 'id_siswa');
     }
-};
+}

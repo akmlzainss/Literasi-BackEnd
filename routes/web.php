@@ -9,6 +9,7 @@ use App\Http\Controllers\PenghargaanController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\PengaturanController;
 
+
 // Redirect root ke halaman login
 Route::get('/', function () {
     return redirect()->route('login');
@@ -65,6 +66,11 @@ Route::middleware(['admin'])->group(function () {
     // SISWA
     // ==========================
     Route::get('/siswa', [KelolaSiswaController::class, 'index'])->name('siswa');
+    Route::post('/siswa/store', [KelolaSiswaController::class, 'store'])->name('siswa.store');
+    Route::get('/siswa/{nis}/detail', [KelolaSiswaController::class, 'show'])->name('siswa.detail');
+    Route::get('/siswa/{nis}/edit', [KelolaSiswaController::class, 'edit'])->name('siswa.edit'); // untuk AJAX
+    Route::put('/siswa/{nis}', [KelolaSiswaController::class, 'update'])->name('siswa.update'); // untuk form update
+    Route::delete('/siswa/{nis}', [KelolaSiswaController::class, 'destroy'])->name('siswa.destroy');
 
     // ==========================
     // LAPORAN
@@ -75,4 +81,5 @@ Route::middleware(['admin'])->group(function () {
     // PENGATURAN
     // ==========================
     Route::get('/pengaturan', [PengaturanController::class, 'index'])->name('pengaturan');
+
 });

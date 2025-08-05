@@ -13,9 +13,9 @@ class SiswaSeeder extends Seeder
             'nis' => 'S001',
             'nama' => 'Andi',
             'email' => 'andi@example.com',
-            'kata_sandi' => bcrypt('password123'),
-            'status_aktif' => true,
-            'dibuat_pada' => now(),
+            'password' => bcrypt('password123'),
+            'kelas' => 'XII RPL 2',
+            'created_at' => now(),
         ]);
         // Tambah data lain kalau perlu
     }
