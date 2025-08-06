@@ -17,6 +17,5 @@ class SiswaSeeder extends Seeder
             'kelas' => 'XII RPL 2',
             'created_at' => now(),
         ]);
-        // Tambah data lain kalau perlu
     }
 }
