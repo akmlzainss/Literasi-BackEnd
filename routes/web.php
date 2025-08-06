@@ -21,7 +21,6 @@ Route::get('/', function () {
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AdminAuthController::class, 'login']);
-
     Route::get('/register', [AdminAuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AdminAuthController::class, 'register']);
 });
@@ -41,9 +40,15 @@ Route::middleware(['admin'])->group(function () {
     // ==========================
     // ARTIKEL
     // ==========================
+    // ARTIKEL
     Route::get('/artikel', [ArtikelController::class, 'index'])->name('artikel');
     Route::get('/artikel/create', [ArtikelController::class, 'create'])->name('artikel.create');
     Route::post('/artikel', [ArtikelController::class, 'store'])->name('artikel.store');
+    Route::get('/artikel/{id}/edit', [ArtikelController::class, 'edit'])->name('artikel.edit');
+    Route::put('/artikel/{id}', [ArtikelController::class, 'update'])->name('artikel.update');
+    Route::delete('/artikel/{id}', [ArtikelController::class, 'destroy'])->name('artikel.destroy');
+    Route::get('/artikel/{id}', [ArtikelController::class, 'show'])->name('artikel.show');
+    Route::get('/artikel/export', [ArtikelController::class, 'export'])->name('artikel.export');
 
     // ==========================
     // KATEGORI
