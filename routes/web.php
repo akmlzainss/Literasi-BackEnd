@@ -86,5 +86,10 @@ Route::middleware(['admin'])->group(function () {
     // PENGATURAN
     // ==========================
     Route::get('/pengaturan', [PengaturanController::class, 'index'])->name('pengaturan');
+    Route::patch('/pengaturan', [PengaturanController::class, 'update'])->name('pengaturan.update');
+    Route::get('/pengaturan/keamanan', [PengaturanController::class, 'keamanan'])->name('pengaturan.keamanan');
+    Route::put('/pengaturan/umum', [PengaturanController::class, 'updateUmum'])->name('pengaturan.umum.update');
+
+
 
 });
