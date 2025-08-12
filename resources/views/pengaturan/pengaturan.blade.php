@@ -155,6 +155,123 @@
         </div>
     </div>
 </div>
+<!-- Modal Edit Profil + Ubah Password -->
+<div class="modal fade" id="modalEditProfile" tabindex="-1" aria-labelledby="modalEditProfileLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="editProfileForm" action="{{ route('pengaturan.update') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                @method('PATCH')
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEditProfileLabel">
+                        <i class="fas fa-user-edit me-2"></i>Edit Profil & Ubah Password
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Foto Profil -->
+                    <div class="text-center mb-4">
+                        <div class="avatar-upload">
+                            <img src="{{ auth()->guard('admin')->user()->profile_photo_url ?? 'https://ui-avatars.com/api/?name=' . urlencode(auth()->guard('admin')->user()->nama_pengguna ?? 'Admin') . '&background=2563eb&color=fff&size=120' }}"
+                                 alt="Profile" class="profile-preview">
+                            <label for="profile_photo" class="upload-overlay">
+                                <i class="fas fa-camera"></i>
+                                <span>Ubah Foto</span>
+                            </label>
+                            <input type="file" id="profile_photo" name="profile_photo" accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+
+                    <!-- Nama & Email -->
+                    <div class="mb-3">
+                        <label for="nama_pengguna" class="form-label">
+                            <i class="fas fa-user me-1"></i>Nama Pengguna
+                        </label>
+                        <input type="text" name="nama_pengguna" id="nama_pengguna" class="form-control" 
+                               value="{{ auth()->guard('admin')->user()->nama_pengguna ?? '' }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">
+                            <i class="fas fa-envelope me-1"></i>Email
+                        </label>
+                        <input type="email" name="email" id="email" class="form-control" 
+                               value="{{ auth()->guard('admin')->user()->email ?? '' }}" required>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Password Section -->
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label">
+                            <i class="fas fa-lock me-1"></i>Password Saat Ini <span class="text-muted">(opsional)</span>
+                        </label>
+                        <div class="password-input-container">
+                            <input type="password" name="current_password" id="current_password" class="form-control">
+                            <button type="button" class="password-toggle" onclick="togglePassword('current_password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">
+                            <i class="fas fa-key me-1"></i>Password Baru <span class="text-muted">(opsional)</span>
+                        </label>
+                        <div class="password-input-container">
+                            <input type="password" name="new_password" id="new_password" class="form-control">
+                            <button type="button" class="password-toggle" onclick="togglePassword('new_password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Password Strength Indicator -->
+                        <div class="password-strength mt-2" style="display: none;">
+                            <div class="strength-bar">
+                                <div class="strength-progress"></div>
+                            </div>
+                            <div class="strength-text"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="new_password_confirmation" class="form-label">
+                            <i class="fas fa-check-circle me-1"></i>Konfirmasi Password Baru
+                        </label>
+                        <div class="password-input-container">
+                            <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="form-control">
+                            <button type="button" class="password-toggle" onclick="togglePassword('new_password_confirmation')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Password Requirements -->
+                    <div class="password-requirements">
+                        <h6>Persyaratan Password:</h6>
+                        <ul class="mb-0">
+                            <li>Minimal 8 karakter</li>
+                            <li>Mengandung huruf besar dan kecil</li>
+                            <li>Mengandung angka</li>
+                            <li>Mengandung karakter khusus (!@#$%^&*)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-1"></i>Simpan Perubahan
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @if(session('success'))
     <div id="notif-success" style="position: fixed; top: 20px; right: 20px; background: #4caf50; color: white; padding: 10px 20px; border-radius: 5px; z-index: 9999;">
