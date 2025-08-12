@@ -5,7 +5,6 @@
 
 @section('content')
     <link rel="stylesheet" href="{{ asset('css/artikel.css') }}">
-    <!-- Notifikasi Sukses -->
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert" id="successAlert">
             {{ session('success') }}
@@ -19,7 +18,6 @@
         </div>
     @endif
 
-    <!-- Page Header -->
     <div class="page-header">
         <h1 class="page-title">Kelola Artikel</h1>
         <p class="page-subtitle">Kelola dan atur semua artikel literasi akhlak untuk sistem pembelajaran</p>
@@ -36,7 +34,6 @@
         </div>
     </div>
 
-    <!-- Modal Tambah Artikel -->
     <div class="modal fade" id="modalTambahArtikel" tabindex="-1" aria-labelledby="modalTambahArtikelLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -54,7 +51,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="isi" class="form-label">Isi Artikel</label>
-                            <textarea name="isi" id="isi" class="form-control" rows="6" required></textarea>
+                            <textarea name="isi" id="tambah_isi" class="form-control" rows="6" required></textarea>
                         </div>
                         <div class="mb-3">
                             <label for="gambar" class="form-label">Gambar (opsional)</label>
@@ -106,7 +103,6 @@
         </div>
     </div>
 
-    <!-- Main Card -->
     <div class="main-card">
         <div class="card-header-custom">
             <div>
@@ -119,7 +115,6 @@
         </div>
 
         <div class="card-body-custom">
-            <!-- Search and Filter Section -->
             <div class="search-filter-section">
                 <div class="row g-3">
                     <div class="col-md-4">
@@ -159,7 +154,6 @@
                 </div>
             </div>
 
-            <!-- Articles Grid -->
             <div class="articles-grid">
                 @forelse ($artikels as $artikel)
                     <div class="article-card">
@@ -239,14 +233,12 @@
                 @endforelse
             </div>
 
-            <!-- Pagination -->
             <div class="pagination-custom mt-5 pt-4">
                 {{ $artikels->links() }}
             </div>
         </div>
     </div>
 
-    <!-- Modal Edit Artikel -->
     <div class="modal fade" id="modalEditArtikel" tabindex="-1" aria-labelledby="modalEditArtikelLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -319,72 +311,178 @@
             </div>
         </div>
     </div>
+@endsection
 
-    @section('scripts')
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-        <script>
-            // Auto-hide alerts
-            document.addEventListener('DOMContentLoaded', function() {
-                var successAlert = document.getElementById('successAlert');
-                var errorAlert = document.getElementById('errorAlert');
-                if (successAlert) setTimeout(() => successAlert.style.display = 'none', 5000);
-                if (errorAlert) setTimeout(() => errorAlert.style.display = 'none', 5000);
-            });
+@section('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
+<script>
+    let editorTambah;
+    let editorEdit;
 
-            // Apply Filters
-            function applyFilters() {
-                var search = document.getElementById('searchInput').value;
-                var category = document.getElementById('filterCategory').value;
-                var status = document.getElementById('filterStatus').value;
-                var filter = category || status;
-                var url = "{{ route('artikel') }}";
-                var params = [];
-                if (search) params.push('search=' + encodeURIComponent(search));
-                if (filter) params.push('filter=' + encodeURIComponent(filter));
-                if (params.length > 0) url += '?' + params.join('&');
-                window.location.href = url;
+    // Konfigurasi umum CKEditor
+    const ckeditorConfig = {
+        toolbar: [
+            'undo', 'redo', '|', 'heading', '|',
+            'fontFamily', 'fontSize', 'fontColor', 'fontBackgroundColor', '|',
+            'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'removeFormat', '|',
+            'alignment', '|',
+            'numberedList', 'bulletedList', 'indent', 'outdent', '|',
+            'link', 'imageUpload', 'insertTable', 'blockQuote', 'codeBlock'
+        ],
+        language: 'id',
+        fontSize: {
+            options: [
+                'default', 9, 10, 11, 12, 14, 16, 18, 20, 
+                22, 24, 28, 32, 36, 48, 72
+            ],
+            supportAllValues: true
+        },
+        fontFamily: {
+            options: [
+                'default',
+                'Arial, Helvetica, sans-serif',
+                'Times New Roman, Times, serif',
+                'Courier New, Courier, monospace',
+                'Georgia, serif',
+                'Verdana, Geneva, sans-serif',
+                'Trebuchet MS, Helvetica, sans-serif',
+                'Comic Sans MS, cursive'
+            ],
+            supportAllValues: true
+        },
+        table: {
+            contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
+        }
+    };
+
+    // Inisialisasi CKEditor
+    document.addEventListener('DOMContentLoaded', () => {
+        // Editor untuk modal Tambah
+        if (document.querySelector('#tambah_isi')) {
+            ClassicEditor.create(document.querySelector('#tambah_isi'), ckeditorConfig)
+                .then(editor => editorTambah = editor)
+                .catch(console.error);
+        }
+
+        // Editor untuk modal Edit
+        if (document.querySelector('#edit_isi')) {
+            ClassicEditor.create(document.querySelector('#edit_isi'), ckeditorConfig)
+                .then(editor => editorEdit = editor)
+                .catch(console.error);
+        }
+    });
+
+
+        // Inisialisasi CKEditor untuk modal Edit
+        $('#modalEditArtikel').on('shown.bs.modal', function () {
+            if (!editorEdit) {
+                ClassicEditor
+                    .create(document.querySelector('#edit_isi'), {
+                        toolbar: [
+                            'undo', 'redo', '|', 'heading', '|',
+                            'fontFamily', 'fontSize', 'fontColor', 'fontBackgroundColor', '|',
+                            'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'removeFormat', '|',
+                            'alignment', '|',
+                            'numberedList', 'bulletedList', 'indent', 'outdent', '|',
+                            'link', 'imageUpload', 'insertTable', 'blockQuote', 'codeBlock'
+                        ],
+                        language: 'id',
+                        fontSize: {
+                            options: ['default', 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 28, 32, 36, 48, 72],
+                            supportAllValues: true
+                        },
+                        fontFamily: {
+                            options: [
+                                'default',
+                                'Arial, Helvetica, sans-serif',
+                                'Times New Roman, Times, serif',
+                                'Courier New, Courier, monospace',
+                                'Georgia, serif',
+                                'Verdana, Geneva, sans-serif',
+                                'Trebuchet MS, Helvetica, sans-serif',
+                                'Comic Sans MS, cursive'
+                            ],
+                            supportAllValues: true
+                        },
+                        table: {
+                            contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
+                        }
+                    })
+                    .then(editor => {
+                        editorEdit = editor;
+                    })
+                    .catch(error => {
+                        console.error(error);
+                    });
             }
+        });
 
-            // Load Edit Modal
-            $('.btn-edit-card').on('click', function() {
-                var id = $(this).data('id');
-                $.get(`/artikel/${id}/edit`, function(data) {
-                    if (data.error) {
-                        alert(data.error);
-                        return;
-                    }
-                    $('#editId').val(data.id);
-                    $('#edit_judul').val(data.judul);
-                    $('#edit_isi').val(data.isi);
-                    $('#edit_id_kategori').val(data.id_kategori);
-                    $('#edit_id_siswa').val(data.id_siswa);
-                    $('#edit_jenis').val(data.jenis);
-                    $('#edit_status').val(data.status);
-                    if (data.gambar) {
-                        $('#edit_gambar_preview').attr('src', '{{ asset('storage/') }}/' + data.gambar).show();
-                    } else {
-                        $('#edit_gambar_preview').hide();
-                    }
-                    $('#editForm').attr('action', `/artikel/${id}`);
-                    $('#modalEditArtikel').modal('show');
-                }).fail(function(xhr, status, error) {
-                    alert('Gagal memuat data edit: ' + error);
-                    console.log(xhr.responseText);
-                });
-            });
+        // Auto-hide alerts
+        document.addEventListener('DOMContentLoaded', function() {
+            var successAlert = document.getElementById('successAlert');
+            var errorAlert = document.getElementById('errorAlert');
+            if (successAlert) setTimeout(() => successAlert.style.display = 'none', 5000);
+            if (errorAlert) setTimeout(() => errorAlert.style.display = 'none', 5000);
+        });
 
-            // Confirm Delete
-            function confirmDelete(id) {
-                if (confirm('Yakin ingin menghapus artikel ini?')) {
-                    $('#deleteForm_' + id).submit();
+        // Apply Filters
+        function applyFilters() {
+            var search = document.getElementById('searchInput').value;
+            var category = document.getElementById('filterCategory').value;
+            var status = document.getElementById('filterStatus').value;
+            var filter = category || status;
+            var url = "{{ route('artikel') }}";
+            var params = [];
+            if (search) params.push('search=' + encodeURIComponent(search));
+            if (filter) params.push('filter=' + encodeURIComponent(filter));
+            if (params.length > 0) url += '?' + params.join('&');
+            window.location.href = url;
+        }
+
+        // Load Edit Modal
+        $('.btn-edit-card').on('click', function() {
+            var id = $(this).data('id');
+            $.get(`/artikel/${id}/edit`, function(data) {
+                if (data.error) {
+                    alert(data.error);
+                    return;
                 }
-            }
-
-            // Handle Enter key for search
-            $('#searchInput').on('keypress', function(e) {
-                if (e.key === 'Enter') applyFilters();
+                $('#editId').val(data.id);
+                $('#edit_judul').val(data.judul);
+                // Memasukkan data ke editorEdit yang sudah diinisialisasi
+                if (editorEdit) {
+                    editorEdit.setData(data.isi);
+                } else {
+                    $('#edit_isi').val(data.isi);
+                }
+                $('#edit_id_kategori').val(data.id_kategori);
+                $('#edit_id_siswa').val(data.id_siswa);
+                $('#edit_jenis').val(data.jenis);
+                $('#edit_status').val(data.status);
+                if (data.gambar) {
+                    $('#edit_gambar_preview').attr('src', '{{ asset('storage/') }}/' + data.gambar).show();
+                } else {
+                    $('#edit_gambar_preview').hide();
+                }
+                $('#editForm').attr('action', `/artikel/${id}`);
+                $('#modalEditArtikel').modal('show');
+            }).fail(function(xhr, status, error) {
+                alert('Gagal memuat data edit: ' + error);
+                console.log(xhr.responseText);
             });
-        </script>
-    @endsection
+        });
+
+        // Confirm Delete
+        function confirmDelete(id) {
+            if (confirm('Yakin ingin menghapus artikel ini?')) {
+                $('#deleteForm_' + id).submit();
+            }
+        }
+
+        // Handle Enter key for search
+        $('#searchInput').on('keypress', function(e) {
+            if (e.key === 'Enter') applyFilters();
+        });
+    </script>
 @endsection
