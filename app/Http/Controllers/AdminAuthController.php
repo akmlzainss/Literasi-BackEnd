@@ -17,26 +17,31 @@ class AdminAuthController extends Controller
         return view('auth.login-admin');
     }
 
-    public function login(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|min:6',
-        ], [
-            'email.required' => 'Email wajib diisi.',
-            'password.required' => 'Password wajib diisi.',
-            'password.min' => 'Password minimal 6 karakter.',
-        ]);
+   public function login(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required|min:6',
+    ], [
+        'email.required' => 'Email wajib diisi.',
+        'password.required' => 'Password wajib diisi.',
+        'password.min' => 'Password minimal 6 karakter.',
+    ]);
 
-        $credentials = $request->only('email', 'password');
+    $credentials = $request->only('email', 'password');
 
-        if (Auth::guard('admin')->attempt($credentials)) {
-            $request->session()->regenerate();
-            return redirect()->intended(route('dashboard'));
-        }
+    if (Auth::guard('admin')->attempt($credentials)) {
+        // Update last_login_at setelah berhasil login
+        $admin = Auth::guard('admin')->user();
+        $admin->last_login_at = now();
+        $admin->save();
 
-        return back()->withErrors(['email' => 'Email atau password salah.'])->withInput();
+        $request->session()->regenerate();
+        return redirect()->intended(route('dashboard'));
     }
+
+    return back()->withErrors(['email' => 'Email atau password salah.'])->withInput();
+}
 
     public function showRegisterForm()
     {
