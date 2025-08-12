@@ -65,7 +65,16 @@ Route::middleware(['admin'])->group(function () {
     // ==========================
     // PENGHARGAAN
     // ==========================
-    Route::get('/penghargaan', [PenghargaanController::class, 'index'])->name('penghargaan');
+    Route::prefix('penghargaan')->group(function () {
+        Route::get('/', [PenghargaanController::class, 'index'])->name('penghargaan');
+        Route::get('/create', [PenghargaanController::class, 'create'])->name('penghargaan.create');
+        Route::post('/', [PenghargaanController::class, 'store'])->name('penghargaan.store');
+        Route::get('/{id}', [PenghargaanController::class, 'show'])->name('penghargaan.show');
+        Route::get('/{id}/edit', [PenghargaanController::class, 'edit'])->name('penghargaan.edit');
+        Route::put('/{id}', [PenghargaanController::class, 'update'])->name('penghargaan.update');
+        Route::delete('/{id}', [PenghargaanController::class, 'destroy'])->name('penghargaan.destroy');
+        Route::post('/send-award-notification', [PenghargaanController::class, 'sendAwardNotification'])->name('send.award.notification');
+    });
 
     // ==========================
     // SISWA
@@ -86,5 +95,4 @@ Route::middleware(['admin'])->group(function () {
     // PENGATURAN
     // ==========================
     Route::get('/pengaturan', [PengaturanController::class, 'index'])->name('pengaturan');
-
 });
