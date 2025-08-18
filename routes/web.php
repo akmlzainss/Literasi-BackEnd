@@ -8,6 +8,8 @@ use App\Http\Controllers\KelolaSiswaController;
 use App\Http\Controllers\PenghargaanController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\PengaturanController;
+use App\Http\Controllers\AktivitasSiswaController;
+use App\Http\Controllers\LogAdminController;
 
 
 // Redirect root ke halaman login
@@ -100,6 +102,5 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/pengaturan/keamanan', [PengaturanController::class, 'keamanan'])->name('pengaturan.keamanan');
     Route::put('/pengaturan/umum', [PengaturanController::class, 'updateUmum'])->name('pengaturan.umum.update');
 
-
-
+    Route::get('/laporan', [LogAdminController::class, 'laporan'])->name('laporan');
 });

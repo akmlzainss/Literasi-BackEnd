@@ -326,12 +326,14 @@
                     <span class="nav-badge">1.2K</span>
                 </a>
             </div>
-            <div class="nav-item">
-                <a href="{{ route('laporan') }}" class="nav-link {{ Request::routeIs('laporan.laporan') ? 'active' : '' }}">
-                    <i class="fas fa-chart-line nav-icon"></i>
-                    <span class="nav-text">Laporan</span>
-                </a>
-            </div>
+           <div class="nav-item">
+    <a href="{{ route('laporan') }}" 
+       class="nav-link {{ Request::routeIs('laporan') ? 'active' : '' }}">
+        <i class="fas fa-chart-line nav-icon"></i>
+        <span class="nav-text">Laporan</span>
+    </a>
+</div>
+
             <div class="nav-item">
                 <a href="{{ route('pengaturan') }}" class="nav-link {{ Request::routeIs('pengaturan.pengaturan') ? 'active' : '' }}">
                     <i class="fas fa-cog nav-icon"></i>
