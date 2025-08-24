@@ -18,7 +18,7 @@ class Admin extends Authenticatable
         'status_aktif',
         'dibuat_pada',
         'last_login_at',
-        'last_password_changed_at' // Tambahkan kolom foto profil
+         'last_password_changed_at' // Tambahkan kolom foto profil
     ];
 
     protected $hidden = ['password'];

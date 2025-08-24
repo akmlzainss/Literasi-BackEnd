@@ -11,9 +11,23 @@ class CreateLogAdminTable extends Migration
         Schema::create('log_admin', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_admin');
-            $table->enum('jenis_aksi', ['setujui_artikel', 'tolak_artikel', 'setujui_kategori', 'tolak_kategori', 'berikan_penghargaan']);
+            $table->enum('jenis_aksi', [
+                'setujui_artikel',
+                'tolak_artikel',
+                'setujui_kategori',
+                'tolak_kategori',
+                'berikan_penghargaan',
+                'login',
+                'logout'
+            ]);
             $table->string('aksi');
-            $table->enum('referensi_tipe', ['artikel', 'kategori', 'siswa', 'penghargaan']);
+            $table->enum('referensi_tipe', [
+                'artikel',
+                'kategori',
+                'siswa',
+                'penghargaan',
+                'admin'
+            ]);
             $table->unsignedBigInteger('referensi_id');
             $table->text('detail')->nullable();
             $table->timestamp('dibuat_pada')->useCurrent();
