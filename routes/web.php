@@ -8,7 +8,7 @@ use App\Http\Controllers\KelolaSiswaController;
 use App\Http\Controllers\PenghargaanController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\PengaturanController;
-
+use App\Http\Controllers\CkeditorController;
 
 // Redirect root ke halaman login
 Route::get('/', function () {
@@ -40,15 +40,16 @@ Route::middleware(['admin'])->group(function () {
     // ==========================
     // ARTIKEL
     // ==========================
-    // ARTIKEL
     Route::get('/artikel', [ArtikelController::class, 'index'])->name('artikel');
     Route::get('/artikel/create', [ArtikelController::class, 'create'])->name('artikel.create');
     Route::post('/artikel', [ArtikelController::class, 'store'])->name('artikel.store');
     Route::get('/artikel/{id}/edit', [ArtikelController::class, 'edit'])->name('artikel.edit');
+    Route::get('/artikel/{id}/edit-ajax', [ArtikelController::class, 'editAjax'])->name('artikel.edit-ajax');
     Route::put('/artikel/{id}', [ArtikelController::class, 'update'])->name('artikel.update');
     Route::delete('/artikel/{id}', [ArtikelController::class, 'destroy'])->name('artikel.destroy');
     Route::get('/artikel/{id}', [ArtikelController::class, 'show'])->name('artikel.show');
     Route::get('/artikel/export', [ArtikelController::class, 'export'])->name('artikel.export');
+    Route::get('/admin/search-siswa', [ArtikelController::class, 'searchSiswa'])->name('admin.search.siswa');
 
     // ==========================
     // KATEGORI
@@ -82,8 +83,8 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/siswa', [KelolaSiswaController::class, 'index'])->name('siswa');
     Route::post('/siswa/store', [KelolaSiswaController::class, 'store'])->name('siswa.store');
     Route::get('/siswa/{nis}/detail', [KelolaSiswaController::class, 'show'])->name('siswa.detail');
-    Route::get('/siswa/{nis}/edit', [KelolaSiswaController::class, 'edit'])->name('siswa.edit'); // untuk AJAX
-    Route::put('/siswa/{nis}', [KelolaSiswaController::class, 'update'])->name('siswa.update'); // untuk form update
+    Route::get('/siswa/{nis}/edit', [KelolaSiswaController::class, 'edit'])->name('siswa.edit');
+    Route::put('/siswa/{nis}', [KelolaSiswaController::class, 'update'])->name('siswa.update');
     Route::delete('/siswa/{nis}', [KelolaSiswaController::class, 'destroy'])->name('siswa.destroy');
 
     // ==========================
@@ -95,11 +96,7 @@ Route::middleware(['admin'])->group(function () {
     // PENGATURAN
     // ==========================
     Route::get('/pengaturan', [PengaturanController::class, 'index'])->name('pengaturan');
-
     Route::patch('/pengaturan', [PengaturanController::class, 'update'])->name('pengaturan.update');
     Route::get('/pengaturan/keamanan', [PengaturanController::class, 'keamanan'])->name('pengaturan.keamanan');
     Route::put('/pengaturan/umum', [PengaturanController::class, 'updateUmum'])->name('pengaturan.umum.update');
-
-
-
 });
