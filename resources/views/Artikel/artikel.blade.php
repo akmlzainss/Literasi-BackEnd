@@ -4,7 +4,9 @@
 @section('page-title', 'Kelola Artikel Literasi Akhlak')
 
 @section('content')
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="{{ asset('css/artikel.css') }}">
+
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert" id="successAlert">
             {{ session('success') }}
@@ -23,83 +25,14 @@
         <p class="page-subtitle">Kelola dan atur semua artikel literasi akhlak untuk sistem pembelajaran</p>
 
         <div class="action-buttons">
-            <button type="button" class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#modalTambahArtikel">
+            <a href="{{ route('artikel.create') }}" class="btn-primary-custom">
                 <i class="fas fa-plus"></i>
                 Tambah Artikel Baru
-            </button>
+            </a>
             <a href="{{ route('artikel.export') }}" class="btn-outline-custom">
                 <i class="fas fa-download"></i>
                 Export Data
             </a>
-        </div>
-    </div>
-
-    <div class="modal fade" id="modalTambahArtikel" tabindex="-1" aria-labelledby="modalTambahArtikelLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <form action="{{ route('artikel.store') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalTambahArtikelLabel">Tambah Artikel Baru</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="judul" class="form-label">Judul Artikel</label>
-                            <input type="text" name="judul" id="judul" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="isi" class="form-label">Isi Artikel</label>
-                            <textarea name="isi" id="tambah_isi" class="form-control" rows="6" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="gambar" class="form-label">Gambar (opsional)</label>
-                            <input type="file" name="gambar" id="gambar" class="form-control">
-                        </div>
-                        <div class="mb-3">
-                            <label for="id_kategori" class="form-label">Kategori</label>
-                            <select name="id_kategori" id="id_kategori" class="form-select">
-                                <option value="">Pilih Kategori</option>
-                                @foreach (\App\Models\Kategori::all() as $kategori)
-                                    <option value="{{ $kategori->id }}">{{ $kategori->nama }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="id_siswa" class="form-label">Siswa</label>
-                            <select name="id_siswa" id="id_siswa" class="form-select" required>
-                                <option value="">Pilih Siswa</option>
-                                @foreach (\App\Models\Siswa::all() as $siswa)
-                                    <option value="{{ $siswa->id }}">{{ $siswa->nama }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="jenis" class="form-label">Jenis</label>
-                            <select name="jenis" id="jenis" class="form-select" required>
-                                <option value="bebas">Bebas</option>
-                                <option value="resensi_buku">Resensi Buku</option>
-                                <option value="resensi_film">Resensi Film</option>
-                                <option value="video">Video</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="status" class="form-label">Status</label>
-                            <select name="status" id="status" class="form-select" required>
-                                <option value="menunggu">Menunggu</option>
-                                <option value="draf">Draf</option>
-                                <option value="disetujui">Disetujui</option>
-                                <option value="ditolak">Ditolak</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success">Simpan Artikel</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    </div>
-                </form>
-            </div>
         </div>
     </div>
 
@@ -116,42 +49,58 @@
 
         <div class="card-body-custom">
             <div class="search-filter-section">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0">
-                                <i class="fas fa-search text-muted"></i>
-                            </span>
-                            <input type="text" id="searchInput" class="form-control search-input border-start-0"
-                                placeholder="Cari artikel..." value="{{ request('search') }}">
+                <form method="GET" action="{{ route('artikel') }}">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0">
+                                    <i class="fas fa-search text-muted"></i>
+                                </span>
+                                <input type="text" name="search" id="searchInput" class="form-control border-start-0"
+                                    placeholder="Cari artikel..." value="{{ request('search') }}">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0">
+                                    <i class="fas fa-list-alt text-muted"></i>
+                                </span>
+                                <select name="kategori" id="filterCategory" class="form-select border-start-0">
+                                    <option value="">Pilih Kategori</option>
+                                    @foreach (\App\Models\Kategori::all() as $kategori)
+                                        <option value="{{ $kategori->nama }}"
+                                            {{ request('kategori') == $kategori->nama ? 'selected' : '' }}>
+                                            {{ $kategori->nama }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0">
+                                    <i class="fas fa-check-circle text-muted"></i>
+                                </span>
+                                <select name="status" id="filterStatus" class="form-select border-start-0">
+                                    <option value="">Semua Status</option>
+                                    <option value="disetujui" {{ request('status') == 'disetujui' ? 'selected' : '' }}>
+                                        Disetujui</option>
+                                    <option value="draf" {{ request('status') == 'draf' ? 'selected' : '' }}>Draf
+                                    </option>
+                                    <option value="menunggu" {{ request('status') == 'menunggu' ? 'selected' : '' }}>
+                                        Menunggu</option>
+                                    <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary-custom w-100">
+                                <i class="fas fa-filter me-1"></i>Filter
+                            </button>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <select id="filterCategory" class="form-select">
-                            <option value="">Semua Kategori</option>
-                            @foreach (\App\Models\Kategori::all() as $kategori)
-                                <option value="{{ $kategori->nama }}"
-                                    {{ request('filter') == $kategori->nama ? 'selected' : '' }}>{{ $kategori->nama }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select id="filterStatus" class="form-select">
-                            <option value="">Semua Status</option>
-                            <option value="published" {{ request('filter') == 'published' ? 'selected' : '' }}>Published
-                            </option>
-                            <option value="draft" {{ request('filter') == 'draft' ? 'selected' : '' }}>Draft</option>
-                            <option value="archived" {{ request('filter') == 'archived' ? 'selected' : '' }}>Archived
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <button class="btn btn-outline-secondary w-100" onclick="applyFilters()">
-                            <i class="fas fa-filter me-1"></i>Filter
-                        </button>
-                    </div>
-                </div>
+                </form>
             </div>
 
             <div class="articles-grid">
@@ -159,17 +108,16 @@
                     <div class="article-card">
                         <div class="article-image">
                             <img src="{{ $artikel->gambar ? asset('storage/' . $artikel->gambar) : 'https://via.placeholder.com/400x200' }}"
-                                alt="{{ $artikel->judul }}" title="Path: {{ $artikel->gambar ?? 'Tidak ada' }}"
-                                onerror="this.src='https://via.placeholder.com/400x200'; console.log('Gagal memuat gambar: ' + this.src + ', Path DB: ' + '{{ $artikel->gambar ?? 'null' }}');">
+                                alt="{{ $artikel->judul }}"
+                                onerror="this.src='https://via.placeholder.com/400x200';">
                             <div class="article-overlay">
                                 <div class="article-actions">
                                     <a href="{{ route('artikel.show', $artikel->id) }}"
                                         class="btn-action-card btn-view-card">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="#" class="btn-action-card btn-edit-card"
-                                        data-bs-toggle="modal" data-bs-target="#modalEditArtikel"
-                                        data-id="{{ $artikel->id }}">
+                                    <a href="{{ route('artikel.edit', $artikel->id) }}"
+                                        class="btn-action-card btn-edit-card">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <form action="{{ route('artikel.destroy', $artikel->id) }}" method="POST"
@@ -177,8 +125,7 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="button" class="btn-action-card btn-delete-card"
-                                            data-id="{{ $artikel->id }}"
-                                            onclick="confirmDelete({{ $artikel->id }})">
+                                            data-id="{{ $artikel->id }}" onclick="confirmDelete({{ $artikel->id }})">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
@@ -186,25 +133,28 @@
                             </div>
                             <div class="article-status">
                                 <span
-                                    class="status-badge status-{{ $artikel->status == 'disetujui' && $artikel->diterbitkan_pada ? 'published' : ($artikel->status == 'draf' ? 'draft' : 'archived') }}">
+                                    class="status-badge status-{{ $artikel->status }}">
                                     {{ ucfirst($artikel->status) }}
                                 </span>
                             </div>
                         </div>
                         <div class="article-content">
                             <div class="article-category">
-                                <span
-                                    class="category-tag">{{ $artikel->kategori->nama ?? 'Tanpa Kategori' }}</span>
+                                <span class="category-tag">{{ $artikel->kategori->nama ?? 'Tanpa Kategori' }}</span>
                             </div>
                             <h5 class="article-title-card">{{ $artikel->judul }}</h5>
-                            <p class="article-excerpt-card">{{ Str::limit($artikel->isi, 100) }}</p>
+
+                            {{-- PERBAIKAN: Menggunakan strip_tags untuk excerpt yang aman dan rapi --}}
+                            <p class="article-excerpt-card">{{ Str::limit(strip_tags($artikel->isi), 100) }}</p>
 
                             <div class="article-author-card">
-                                <div class="author-avatar">{{ substr($artikel->siswa->nama ?? 'Unknown', 0, 2) }}
+                                {{-- PERBAIKAN: Kode lebih ringkas untuk menampilkan penulis --}}
+                                <div class="author-avatar">
+                                    {{ $artikel->siswa ? strtoupper(substr($artikel->siswa->nama, 0, 2)) : 'AD' }}
                                 </div>
                                 <div class="author-info">
-                                    <div class="author-name">{{ $artikel->siswa->nama ?? 'Unknown' }}</div>
-                                    <div class="author-role">{{ $artikel->siswa->role ?? 'Siswa' }}</div>
+                                    <div class="author-name">{{ $artikel->siswa->nama ?? 'Admin' }}</div>
+                                    <div class="author-role">{{ $artikel->siswa->kelas ?? 'Administrator' }}</div>
                                 </div>
                             </div>
 
@@ -215,11 +165,10 @@
                                     <span><i class="fas fa-comment"></i>
                                         {{ $artikel->komentarArtikel->count() }}</span>
                                     <div class="article-date">
-                                        <small>Dibuat:
-                                            {{ $artikel->dibuat_pada instanceof \Carbon\Carbon ? $artikel->dibuat_pada->format('d M Y') : (is_string($artikel->dibuat_pada) ? \Carbon\Carbon::parse($artikel->dibuat_pada)->format('d M Y') : '') }}</small>
+                                        {{-- PERBAIKAN: Format tanggal yang lebih sederhana dan aman --}}
+                                        <small>Dibuat: {{ $artikel->dibuat_pada?->format('d M Y') }}</small>
                                         @if ($artikel->deleted_at)
-                                            <small>Dihapus:
-                                                {{ $artikel->deleted_at instanceof \Carbon\Carbon ? $artikel->deleted_at->format('d M Y') : (is_string($artikel->deleted_at) ? \Carbon\Carbon::parse($artikel->deleted_at)->format('d M Y') : '') }}</small>
+                                            <small>Dihapus: {{ $artikel->deleted_at?->format('d M Y') }}</small>
                                         @endif
                                     </div>
                                 </div>
@@ -227,262 +176,46 @@
                         </div>
                     </div>
                 @empty
-                    <div class="col-12 text-center">
+                    <div class="col-12 text-center py-5">
                         <p>Tidak ada artikel yang ditemukan.</p>
                     </div>
                 @endforelse
             </div>
 
             <div class="pagination-custom mt-5 pt-4">
-                {{ $artikels->links() }}
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="modalEditArtikel" tabindex="-1" aria-labelledby="modalEditArtikelLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <form action="" method="POST" enctype="multipart/form-data" id="editForm">
-                    @method('PUT')
-                    @csrf
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalEditArtikelLabel">Edit Artikel</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="hidden" name="id" id="editId">
-                        <div class="mb-3">
-                            <label for="edit_judul" class="form-label">Judul Artikel</label>
-                            <input type="text" name="judul" id="edit_judul" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="edit_isi" class="form-label">Isi Artikel</label>
-                            <textarea name="isi" id="edit_isi" class="form-control" rows="6" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="edit_gambar" class="form-label">Gambar (opsional)</label>
-                            <input type="file" name="gambar" id="edit_gambar" class="form-control">
-                            <img id="edit_gambar_preview" src="" alt="Gambar Preview"
-                                style="max-width: 200px; display: none;" class="mt-2">
-                        </div>
-                        <div class="mb-3">
-                            <label for="edit_id_kategori" class="form-label">Kategori</label>
-                            <select name="id_kategori" id="edit_id_kategori" class="form-select">
-                                <option value="">Pilih Kategori</option>
-                                @foreach (\App\Models\Kategori::all() as $kategori)
-                                    <option value="{{ $kategori->id }}">{{ $kategori->nama }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="edit_id_siswa" class="form-label">Siswa</label>
-                            <select name="id_siswa" id="edit_id_siswa" class="form-select" required>
-                                <option value="">Pilih Siswa</option>
-                                @foreach (\App\Models\Siswa::all() as $siswa)
-                                    <option value="{{ $siswa->id }}">{{ $siswa->nama }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="edit_jenis" class="form-label">Jenis</label>
-                            <select name="jenis" id="edit_jenis" class="form-select" required>
-                                <option value="bebas">Bebas</option>
-                                <option value="resensi_buku">Resensi Buku</option>
-                                <option value="resensi_film">Resensi Film</option>
-                                <option value="video">Video</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="edit_status" class="form-label">Status</label>
-                            <select name="status" id="edit_status" class="form-select" required>
-                                <option value="menunggu">Menunggu</option>
-                                <option value="draf">Draf</option>
-                                <option value="disetujui">Disetujui</option>
-                                <option value="ditolak">Ditolak</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success">Simpan Perubahan</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    </div>
-                </form>
+                {{ $artikels->appends(request()->query())->links() }}
             </div>
         </div>
     </div>
 @endsection
 
 @section('scripts')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
-<script>
-    let editorTambah;
-    let editorEdit;
-
-    // Konfigurasi umum CKEditor
-    const ckeditorConfig = {
-        toolbar: [
-            'undo', 'redo', '|', 'heading', '|',
-            'fontFamily', 'fontSize', 'fontColor', 'fontBackgroundColor', '|',
-            'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'removeFormat', '|',
-            'alignment', '|',
-            'numberedList', 'bulletedList', 'indent', 'outdent', '|',
-            'link', 'imageUpload', 'insertTable', 'blockQuote', 'codeBlock'
-        ],
-        language: 'id',
-        fontSize: {
-            options: [
-                'default', 9, 10, 11, 12, 14, 16, 18, 20, 
-                22, 24, 28, 32, 36, 48, 72
-            ],
-            supportAllValues: true
-        },
-        fontFamily: {
-            options: [
-                'default',
-                'Arial, Helvetica, sans-serif',
-                'Times New Roman, Times, serif',
-                'Courier New, Courier, monospace',
-                'Georgia, serif',
-                'Verdana, Geneva, sans-serif',
-                'Trebuchet MS, Helvetica, sans-serif',
-                'Comic Sans MS, cursive'
-            ],
-            supportAllValues: true
-        },
-        table: {
-            contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
-        }
-    };
-
-    // Inisialisasi CKEditor
-    document.addEventListener('DOMContentLoaded', () => {
-        // Editor untuk modal Tambah
-        if (document.querySelector('#tambah_isi')) {
-            ClassicEditor.create(document.querySelector('#tambah_isi'), ckeditorConfig)
-                .then(editor => editorTambah = editor)
-                .catch(console.error);
-        }
-
-        // Editor untuk modal Edit
-        if (document.querySelector('#edit_isi')) {
-            ClassicEditor.create(document.querySelector('#edit_isi'), ckeditorConfig)
-                .then(editor => editorEdit = editor)
-                .catch(console.error);
-        }
-    });
-
-
-        // Inisialisasi CKEditor untuk modal Edit
-        $('#modalEditArtikel').on('shown.bs.modal', function () {
-            if (!editorEdit) {
-                ClassicEditor
-                    .create(document.querySelector('#edit_isi'), {
-                        toolbar: [
-                            'undo', 'redo', '|', 'heading', '|',
-                            'fontFamily', 'fontSize', 'fontColor', 'fontBackgroundColor', '|',
-                            'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'removeFormat', '|',
-                            'alignment', '|',
-                            'numberedList', 'bulletedList', 'indent', 'outdent', '|',
-                            'link', 'imageUpload', 'insertTable', 'blockQuote', 'codeBlock'
-                        ],
-                        language: 'id',
-                        fontSize: {
-                            options: ['default', 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 28, 32, 36, 48, 72],
-                            supportAllValues: true
-                        },
-                        fontFamily: {
-                            options: [
-                                'default',
-                                'Arial, Helvetica, sans-serif',
-                                'Times New Roman, Times, serif',
-                                'Courier New, Courier, monospace',
-                                'Georgia, serif',
-                                'Verdana, Geneva, sans-serif',
-                                'Trebuchet MS, Helvetica, sans-serif',
-                                'Comic Sans MS, cursive'
-                            ],
-                            supportAllValues: true
-                        },
-                        table: {
-                            contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
-                        }
-                    })
-                    .then(editor => {
-                        editorEdit = editor;
-                    })
-                    .catch(error => {
-                        console.error(error);
-                    });
-            }
-        });
-
-        // Auto-hide alerts
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Script untuk menghilangkan notifikasi setelah 5 detik
             var successAlert = document.getElementById('successAlert');
             var errorAlert = document.getElementById('errorAlert');
-            if (successAlert) setTimeout(() => successAlert.style.display = 'none', 5000);
-            if (errorAlert) setTimeout(() => errorAlert.style.display = 'none', 5000);
-        });
+            if (successAlert) {
+                setTimeout(() => successAlert.style.display = 'none', 5000);
+            }
+            if (errorAlert) {
+                setTimeout(() => errorAlert.style.display = 'none', 5000);
+            }
 
-        // Apply Filters
-        function applyFilters() {
-            var search = document.getElementById('searchInput').value;
-            var category = document.getElementById('filterCategory').value;
-            var status = document.getElementById('filterStatus').value;
-            var filter = category || status;
-            var url = "{{ route('artikel') }}";
-            var params = [];
-            if (search) params.push('search=' + encodeURIComponent(search));
-            if (filter) params.push('filter=' + encodeURIComponent(filter));
-            if (params.length > 0) url += '?' + params.join('&');
-            window.location.href = url;
-        }
-
-        // Load Edit Modal
-        $('.btn-edit-card').on('click', function() {
-            var id = $(this).data('id');
-            $.get(`/artikel/${id}/edit`, function(data) {
-                if (data.error) {
-                    alert(data.error);
-                    return;
-                }
-                $('#editId').val(data.id);
-                $('#edit_judul').val(data.judul);
-                // Memasukkan data ke editorEdit yang sudah diinisialisasi
-                if (editorEdit) {
-                    editorEdit.setData(data.isi);
-                } else {
-                    $('#edit_isi').val(data.isi);
-                }
-                $('#edit_id_kategori').val(data.id_kategori);
-                $('#edit_id_siswa').val(data.id_siswa);
-                $('#edit_jenis').val(data.jenis);
-                $('#edit_status').val(data.status);
-                if (data.gambar) {
-                    $('#edit_gambar_preview').attr('src', '{{ asset('storage/') }}/' + data.gambar).show();
-                } else {
-                    $('#edit_gambar_preview').hide();
-                }
-                $('#editForm').attr('action', `/artikel/${id}`);
-                $('#modalEditArtikel').modal('show');
-            }).fail(function(xhr, status, error) {
-                alert('Gagal memuat data edit: ' + error);
-                console.log(xhr.responseText);
+            // Inisialisasi Select2
+            $('#filterCategory').select2({
+                placeholder: 'Pilih Kategori',
+                allowClear: true
             });
         });
 
-        // Confirm Delete
+        // Fungsi konfirmasi hapus
         function confirmDelete(id) {
-            if (confirm('Yakin ingin menghapus artikel ini?')) {
-                $('#deleteForm_' + id).submit();
+            if (confirm('Yakin ingin menghapus artikel ini? Tindakan ini tidak dapat dibatalkan.')) {
+                document.getElementById('deleteForm_' + id).submit();
             }
         }
-
-        // Handle Enter key for search
-        $('#searchInput').on('keypress', function(e) {
-            if (e.key === 'Enter') applyFilters();
-        });
     </script>
 @endsection

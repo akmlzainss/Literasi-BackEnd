@@ -488,3 +488,58 @@
         padding: 1rem;
     }
 }
+
+
+/* Gaya untuk Select2 di dalam input-group */
+.input-group .select2-container--bootstrap-5 {
+    width: auto !important;
+    flex-grow: 1;
+}
+
+.input-group .select2-container--bootstrap-5 .select2-selection--single {
+    height: 100%;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border: 2px solid #e2e8f0;
+    border-right: 2px solid #e2e8f0;
+    border-bottom: 2px solid #e2e8f0;
+    border-left: none;
+}
+
+.input-group .select2-container--bootstrap-5.select2-container--focus .select2-selection--single {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    outline: none;
+}
+
+.select2-container .select2-selection--single .select2-selection__rendered {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    line-height: 2.2;
+    color: #6c757d;
+    font-size: 1rem;
+}
+
+.select2-container .select2-selection--single .select2-selection__arrow {
+    right: 10px;
+}
+
+.input-group-text {
+    height: calc(2.25rem + 4px);
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border: 2px solid #e2e8f0;
+    border-right: none;
+    background: white;
+}
+
+.btn.w-100 {
+    height: calc(2.25rem + 4px);
+}
+
+#charCount {
+    text-align: right;
+}
+#charCount.red {
+    color: red;
+}

@@ -10,10 +10,11 @@ class CreateArtikelTable extends Migration
     {
         Schema::create('artikel', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_siswa');
+            $table->unsignedBigInteger('id_siswa')->nullable(); // Make nullable
             $table->unsignedBigInteger('id_kategori')->nullable();
             $table->string('judul');
             $table->text('isi');
+
             $table->enum('jenis', ['bebas', 'resensi_buku', 'resensi_film', 'video']);
             $table->enum('status', ['draf', 'menunggu', 'disetujui', 'ditolak'])->default('menunggu');
             $table->text('alasan_penolakan')->nullable();
@@ -26,7 +27,7 @@ class CreateArtikelTable extends Migration
             $table->timestamp('dibuat_pada')->useCurrent();
             $table->softDeletes();
 
-            $table->foreign('id_siswa')->references('id')->on('siswa')->onDelete('cascade');
+            $table->foreign('id_siswa')->references('id')->on('siswa')->onDelete('set null');
             $table->foreign('id_kategori')->references('id')->on('kategori')->onDelete('set null');
         });
     }
@@ -35,4 +36,4 @@ class CreateArtikelTable extends Migration
     {
         Schema::dropIfExists('artikel');
     }
-};
+}

@@ -4,69 +4,142 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Artikel extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
+    /**
+     * Nama tabel yang terhubung dengan model.
+     * @var string
+     */
     protected $table = 'artikel';
-    protected $primaryKey = 'id';
-    public $timestamps = false; // Nonaktifkan timestamps default
-    protected $dates = ['deleted_at', 'dibuat_pada', 'diterbitkan_pada']; // Daftarkan kolom tanggal
+
+    /**
+     * Menonaktifkan timestamp otomatis 'created_at' dan 'updated_at' dari Laravel.
+     * @var bool
+     */
+    public $timestamps = false;
+
+    /**
+     * Atribut yang dapat diisi secara massal.
+     * @var array<int, string>
+     */
     protected $fillable = [
-        'id_siswa', 'id_kategori', 'judul', 'isi', 'gambar', 'jenis', 'status', 
-        'alasan_penolakan', 'diterbitkan_pada', 'jumlah_dilihat', 'jumlah_suka', 
-        'nilai_rata_rata', 'riwayat_persetujuan', 'usulan_kategori', 'dibuat_pada'
+        'id_siswa',
+        'id_kategori',
+        'judul',
+        'isi',
+        'gambar',
+        'penulis_type',
+        'jenis',
+        'status',
+        'alasan_penolakan',
+        'diterbitkan_pada',
+        'jumlah_dilihat',
+        'jumlah_suka',
+        'nilai_rata_rata',
+        'riwayat_persetujuan',
+        'usulan_kategori',
+        'dibuat_pada'
     ];
 
-    // Mutator untuk memastikan konversi ke Carbon
-    public function setDibuatPadaAttribute($value)
+    /**
+     * Mengubah tipe data atribut secara otomatis saat diakses.
+     * Ini adalah cara modern untuk menangani kolom tanggal dan akan memperbaiki error.
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'dibuat_pada'      => 'datetime',
+        'diterbitkan_pada' => 'datetime',
+        'deleted_at'       => 'datetime',
+    ];
+
+    //======================================================================
+    // ACCESSORS
+    //======================================================================
+
+    /**
+     * Accessor untuk mendapatkan nama penulis secara dinamis.
+     * Di view, panggil dengan: {{ $artikel->penulis_nama }}
+     * @return string
+     */
+    public function getPenulisNamaAttribute()
     {
-        $this->attributes['dibuat_pada'] = $value ? Carbon::parse($value) : now();
+        if ($this->penulis_type === 'siswa' && $this->siswa) {
+            return $this->siswa->nama;
+        }
+        return 'Admin';
     }
 
-    public function setDiterbitkanPadaAttribute($value)
-    {
-        $this->attributes['diterbitkan_pada'] = $value ? Carbon::parse($value) : null;
-    }
+    //======================================================================
+    // RELATIONS
+    //======================================================================
 
-    // Relasi dan scope tetap sama
+    /**
+     * Mendefinisikan relasi "belongsTo" ke model Siswa.
+     */
     public function siswa()
     {
         return $this->belongsTo(Siswa::class, 'id_siswa');
     }
 
+    /**
+     * Mendefinisikan relasi "belongsTo" ke model Kategori.
+     */
     public function kategori()
     {
         return $this->belongsTo(Kategori::class, 'id_kategori');
     }
 
+    /**
+     * Mendefinisikan relasi "hasMany" ke model RatingArtikel.
+     */
     public function RatingArtikel()
     {
         return $this->hasMany(RatingArtikel::class, 'id_artikel');
     }
 
+    /**
+     * Mendefinisikan relasi "hasMany" ke model InteraksiArtikel.
+     */
     public function interaksiArtikel()
     {
         return $this->hasMany(InteraksiArtikel::class, 'id_artikel');
     }
 
+    /**
+     * Mendefinisikan relasi "hasMany" ke model KomentarArtikel.
+     */
     public function komentarArtikel()
     {
         return $this->hasMany(KomentarArtikel::class, 'id_artikel');
     }
 
+    /**
+     * Mendefinisikan relasi "hasMany" ke model MediaArtikel.
+     */
     public function mediaArtikel()
     {
         return $this->hasMany(MediaArtikel::class, 'id_artikel');
     }
 
+    /**
+     * Mendefinisikan relasi "hasMany" ke model Penghargaan.
+     */
     public function penghargaan()
     {
         return $this->hasMany(Penghargaan::class, 'id_artikel');
     }
 
+    //======================================================================
+    // SCOPES
+    //======================================================================
+
+    /**
+     * Local scope untuk pencarian berdasarkan judul atau isi.
+     */
     public function scopeSearch($query, $search)
     {
         if ($search) {
@@ -76,6 +149,9 @@ class Artikel extends Model
         return $query;
     }
 
+    /**
+     * Local scope untuk menerapkan filter.
+     */
     public function scopeApplyFilter($query, $filter)
     {
         if (!$filter) return $query;

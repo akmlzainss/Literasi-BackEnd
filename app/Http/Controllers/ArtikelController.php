@@ -2,23 +2,42 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Artikel;
+use App\Models\Kategori;
+use App\Models\Siswa;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
+use Mews\Purifier\Facades\Purifier;
+use Illuminate\Pagination\Paginator;
 
 class ArtikelController extends Controller
 {
-    // Tampilkan daftar artikel dengan search dan filter
     public function index(Request $request)
     {
-        try {
-            $query = Artikel::with('kategori', 'siswa')
-                ->search($request->input('search'))
-                ->applyFilter($request->input('filter'));
+        Paginator::useBootstrapFive();
 
-            $artikels = $query->paginate(9); // Ubah ke 9 items per page (3x3)
+        try {
+            // Menggunakan `when()` untuk query yang lebih bersih
+            $artikels = Artikel::with('kategori', 'siswa')
+                ->when($request->filled('search'), function ($query) use ($request) {
+                    $search = $request->input('search');
+                    $query->where(function ($q) use ($search) {
+                        $q->where('judul', 'like', "%{$search}%")
+                            ->orWhere('isi', 'like', "%{$search}%")
+                            ->orWhereHas('siswa', fn($q_siswa) => $q_siswa->where('nama', 'like', "%{$search}%"));
+                    });
+                })
+                ->when($request->filled('kategori'), function ($query) use ($request) {
+                    $query->whereHas('kategori', fn($q) => $q->where('nama', $request->input('kategori')));
+                })
+                ->when($request->filled('status'), function ($query) use ($request) {
+                    $query->where('status', $request->input('status'));
+                })
+                ->latest('dibuat_pada') // Urutkan berdasarkan yang terbaru
+                ->paginate(9)
+                ->appends($request->query());
 
             return view('artikel.artikel', compact('artikels'));
         } catch (\Exception $e) {
@@ -27,133 +46,105 @@ class ArtikelController extends Controller
         }
     }
 
-    // Tampilkan form tambah artikel
     public function create()
     {
-        try {
-            return view('artikel.create');
-        } catch (\Exception $e) {
-            Log::error('Error loading create form: ' . $e->getMessage());
-            return redirect()->route('artikel')->with('error', 'Gagal memuat form tambah artikel.');
-        }
+        return view('artikel.create');
     }
 
-    // Simpan artikel baru
     public function store(Request $request)
     {
         try {
-            $validated = $request->validate([
-                'judul' => 'required|string|max:255',
-                'isi' => 'required|string',
-                'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-                'id_kategori' => 'nullable|exists:kategori,id',
-                'id_siswa' => 'required|exists:siswa,id',
-                'jenis' => 'required|in:bebas,resensi_buku,resensi_film,video',
-                'status' => 'required|in:draf,menunggu,disetujui,ditolak',
-            ]);
+            // Memanggil helper method untuk validasi dan persiapan data
+            $data = $this->prepareArtikelData($request);
 
-            $data = array_merge($validated, [
-                'dibuat_pada' => now(),
-                'diterbitkan_pada' => $validated['status'] === 'disetujui' ? now() : null,
-                'alasan_penolakan' => $validated['status'] === 'ditolak' ? $request->input('alasan_penolakan', null) : null,
-            ]);
-
-            if ($request->hasFile('gambar')) {
-                $gambarPath = $request->file('gambar')->store('artikel', 'public');
-                if ($gambarPath) {
-                    $data['gambar'] = $gambarPath;
-                    Log::info('Gambar disimpan untuk artikel baru: ' . $gambarPath);
-                } else {
-                    Log::error('Gagal menyimpan gambar untuk artikel baru. File: ' . $request->file('gambar')->getClientOriginalName());
-                }
-            }
-
-            $artikel = Artikel::create($data);
-            Log::info('Artikel dibuat dengan ID: ' . $artikel->id . ', Gambar: ' . ($data['gambar'] ?? 'Tidak ada'));
+            Artikel::create($data);
+            Log::info('Artikel created with data: ', $data);
 
             return redirect()->route('artikel')->with('success', 'Artikel berhasil ditambahkan.');
         } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('Validation error: ' . $e->getMessage());
+            Log::error('Validation error on store: ' . json_encode($e->errors()));
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             Log::error('Error creating article: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal menambahkan artikel. Periksa log untuk detail.');
+            return redirect()->back()->with('error', 'Gagal menambahkan artikel: ' . $e->getMessage());
         }
     }
 
-    // Tampilkan data untuk edit artikel (AJAX)
     public function edit($id)
     {
         try {
             $artikel = Artikel::with('kategori', 'siswa')->findOrFail($id);
-
-            if (request()->ajax()) {
-                return response()->json([
-                    'id' => $artikel->id,
-                    'judul' => $artikel->judul,
-                    'isi' => $artikel->isi,
-                    'gambar' => $artikel->gambar,
-                    'id_kategori' => $artikel->id_kategori,
-                    'id_siswa' => $artikel->id_siswa,
-                    'jenis' => $artikel->jenis,
-                    'status' => $artikel->status,
-                ]);
-            }
-
             return view('artikel.edit', compact('artikel'));
         } catch (\Exception $e) {
-            Log::error('Error loading edit data: ' . $e->getMessage());
-            return request()->ajax() ? response()->json(['error' => 'Gagal memuat data artikel.'], 500) : redirect()->route('artikel')->with('error', 'Gagal memuat data artikel.');
+            Log::error('Error loading edit page for article ' . $id . ': ' . $e->getMessage());
+            return redirect()->route('artikel')->with('error', 'Gagal memuat halaman edit artikel.');
         }
     }
 
-    // Perbarui artikel
     public function update(Request $request, $id)
     {
         try {
             $artikel = Artikel::findOrFail($id);
-
-            $validated = $request->validate([
-                'judul' => 'required|string|max:255',
-                'isi' => 'required|string',
-                'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-                'id_kategori' => 'nullable|exists:kategori,id',
-                'id_siswa' => 'required|exists:siswa,id',
-                'jenis' => 'required|in:bebas,resensi_buku,resensi_film,video',
-                'status' => 'required|in:draf,menunggu,disetujui,ditolak',
-            ]);
-
-            $data = array_merge($validated, [
-                'diterbitkan_pada' => $validated['status'] === 'disetujui' ? now() : null,
-                'alasan_penolakan' => $validated['status'] === 'ditolak' ? $request->input('alasan_penolakan', null) : null,
-            ]);
-
-            if ($request->hasFile('gambar')) {
-                if ($artikel->gambar) {
-                    Storage::disk('public')->delete($artikel->gambar);
-                }
-                $gambarPath = $request->file('gambar')->store('artikel', 'public');
-                if ($gambarPath) {
-                    $data['gambar'] = $gambarPath;
-                    Log::info('Gambar diperbarui untuk artikel ID ' . $id . ': ' . $gambarPath);
-                } else {
-                    Log::error('Gagal menyimpan gambar untuk artikel ID ' . $id . '. File: ' . $request->file('gambar')->getClientOriginalName());
-                }
-            }
+            // Memanggil helper method, passing artikel yang ada untuk update
+            $data = $this->prepareArtikelData($request, $artikel);
 
             $artikel->update($data);
-            Log::info('Artikel diperbarui dengan ID: ' . $id . ', Gambar: ' . ($data['gambar'] ?? $artikel->gambar));
+            Log::info('Artikel updated with ID ' . $id . ', Data: ', $data);
 
             return redirect()->route('artikel')->with('success', 'Artikel berhasil diperbarui.');
         } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation error on update: ' . json_encode($e->errors()));
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            Log::error('Error updating article: ' . $e->getMessage());
+            Log::error('Error updating article ' . $id . ': ' . $e->getMessage());
             return redirect()->back()->with('error', 'Gagal memperbarui artikel.');
         }
     }
 
-    // Hapus artikel (soft delete)
+
+    /**
+     * Helper method untuk validasi dan persiapan data artikel.
+     * Mengurangi duplikasi kode antara store() dan update().
+     */
+    private function prepareArtikelData(Request $request, Artikel $artikel = null): array
+    {
+        $validated = $request->validate([
+            'judul' => 'required|string|max:255',
+            'isi' => 'required|string|max:3500', // Naikkan sedikit batasnya untuk mengakomodasi tag HTML
+            'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'id_kategori' => 'nullable|exists:kategori,id',
+            'penulis_type' => 'required|in:admin,siswa',
+            'id_siswa' => 'required_if:penulis_type,siswa|nullable|exists:siswa,id',
+            'jenis' => 'required|in:bebas,resensi_buku,resensi_film,video',
+            'status' => 'required|in:draf,menunggu,disetujui,ditolak',
+            'alasan_penolakan' => 'required_if:status,ditolak|nullable|string|max:1000',
+        ]);
+
+        // 2. Gunakan Purifier untuk membersihkan konten 'isi'
+        $validated['isi'] = Purifier::clean($validated['isi']);
+
+        // Menangani logika penulis (siswa atau admin)
+        $validated['id_siswa'] = $validated['penulis_type'] === 'siswa' ? $validated['id_siswa'] : null;
+
+        // Menangani upload gambar
+        if ($request->hasFile('gambar')) {
+            // Hapus gambar lama jika ada saat update
+            if ($artikel && $artikel->gambar) {
+                Storage::disk('public')->delete($artikel->gambar);
+            }
+            $validated['gambar'] = $request->file('gambar')->store('artikel', 'public');
+        }
+
+        // Menentukan tanggal terbit atau dibuat
+        if (!$artikel) { // Jika ini adalah proses 'store' baru
+            $validated['dibuat_pada'] = now();
+        }
+        $validated['diterbitkan_pada'] = $validated['status'] === 'disetujui' && (!$artikel || !$artikel->diterbitkan_pada) ? now() : ($artikel->diterbitkan_pada ?? null);
+
+        return $validated;
+    }
+
+
     public function destroy($id)
     {
         try {
@@ -161,16 +152,14 @@ class ArtikelController extends Controller
             if ($artikel->gambar) {
                 Storage::disk('public')->delete($artikel->gambar);
             }
-            $artikel->delete(); // Soft delete default
-
+            $artikel->delete();
             return redirect()->route('artikel')->with('success', 'Artikel berhasil dihapus.');
         } catch (\Exception $e) {
-            Log::error('Error deleting article: ' . $e->getMessage());
+            Log::error('Error deleting article ' . $id . ': ' . $e->getMessage());
             return redirect()->route('artikel')->with('error', 'Gagal menghapus artikel.');
         }
     }
 
-    // Tampilkan detail artikel (halaman terpisah)
     public function show($id)
     {
         try {
@@ -182,7 +171,6 @@ class ArtikelController extends Controller
         }
     }
 
-    // Export data artikel ke CSV
     public function export()
     {
         try {
@@ -201,9 +189,9 @@ class ArtikelController extends Controller
                     fputcsv($file, [
                         $artikel->id,
                         $artikel->judul,
-                        strip_tags($artikel->isi), // Menghapus HTML tags dari isi
+                        strip_tags($artikel->isi),
                         $artikel->kategori->nama ?? 'Tanpa Kategori',
-                        $artikel->siswa->nama ?? 'Unknown',
+                        $artikel->siswa->nama ?? ($artikel->penulis_type === 'admin' ? 'Admin' : 'Unknown'),
                         $artikel->jenis,
                         $artikel->status,
                         $artikel->dibuat_pada ? $artikel->dibuat_pada->format('d M Y') : '',
@@ -221,6 +209,52 @@ class ArtikelController extends Controller
         } catch (\Exception $e) {
             Log::error('Error exporting articles: ' . $e->getMessage());
             return redirect()->route('artikel')->with('error', 'Gagal mengekspor data artikel.');
+        }
+    }
+
+    public function editAjax($id)
+    {
+        try {
+            $artikel = Artikel::with('kategori', 'siswa')->findOrFail($id);
+            return response()->json([
+                'id' => $artikel->id,
+                'judul' => $artikel->judul,
+                'isi' => $artikel->isi,
+                'gambar' => $artikel->gambar,
+                'id_kategori' => $artikel->id_kategori,
+                'id_siswa' => $artikel->id_siswa,
+                'penulis_type' => $artikel->penulis_type,
+                'jenis' => $artikel->jenis,
+                'status' => $artikel->status,
+                'alasan_penolakan' => $artikel->alasan_penolakan,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error loading edit data via AJAX: ' . $e->getMessage());
+            return response()->json(['error' => 'Gagal memuat data artikel.'], 500);
+        }
+    }
+
+    public function searchSiswa(Request $request)
+    {
+        try {
+            $search = $request->input('term');
+            $siswa = Siswa::where('nama', 'like', '%' . $search . '%')
+                ->orWhere('nis', 'like', '%' . $search . '%')
+                ->get();
+
+            $results = [];
+            foreach ($siswa as $item) {
+                $results[] = [
+                    'id' => $item->id,
+                    'text' => $item->nama . ' (' . $item->nis . ')',
+                    'kelas' => $item->kelas,
+                ];
+            }
+
+            return response()->json($results);
+        } catch (\Exception $e) {
+            Log::error('Error searching siswa: ' . $e->getMessage());
+            return response()->json(['error' => 'Gagal mencari siswa.'], 500);
         }
     }
 }
