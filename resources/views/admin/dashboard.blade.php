@@ -187,8 +187,9 @@
                                     </div>
                                     <div class="col-2">
                                         <div class="date-info">
-                                            <div class="date-main">{{ $log->dibuat_pada->format('d M Y') }}</div>
-                                            <div class="date-time">{{ $log->dibuat_pada->format('H:i') }} WIB</div>
+                                            <div class="date-main">{{ optional($log->created_at)->format('d M Y') }}</div>
+                                            <div class="date-time">{{ optional($log->created_at)->format('H:i') }} WIB
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -274,20 +275,25 @@
             new Chart(ctxStatistik, {
                 type: 'bar',
                 data: {
-                    labels: chartData.categoryNames && chartData.categoryNames.length > 0 ? chartData.categoryNames : ['Artikel', 'Kategori', 'Penghargaan', 'Siswa'],
+                    labels: chartData.categoryNames && chartData.categoryNames.length > 0 ? chartData.categoryNames : [
+                        'Artikel', 'Kategori', 'Penghargaan', 'Siswa'
+                    ],
                     datasets: [{
                         label: 'Jumlah Data',
-                        data: chartData.categories && chartData.categories.length > 0 ? chartData.categories : [{{ $artikelCount }}, {{ $kategoriCount }}, {{ $penghargaanCount }}, {{ $siswaCount }}],
+                        data: chartData.categories && chartData.categories.length > 0 ? chartData.categories : [
+                            {{ $artikelCount }}, {{ $kategoriCount }}, {{ $penghargaanCount }},
+                            {{ $siswaCount }}
+                        ],
                         backgroundColor: [
                             'rgba(37, 99, 235, 0.8)',
-                            'rgba(16, 185, 129, 0.8)', 
+                            'rgba(16, 185, 129, 0.8)',
                             'rgba(245, 158, 11, 0.8)',
                             'rgba(6, 182, 212, 0.8)'
                         ],
                         borderColor: [
                             'rgba(37, 99, 235, 1)',
                             'rgba(16, 185, 129, 1)',
-                            'rgba(245, 158, 11, 1)', 
+                            'rgba(245, 158, 11, 1)',
                             'rgba(6, 182, 212, 1)'
                         ],
                         borderWidth: 2,
@@ -333,9 +339,14 @@
             new Chart(ctxPie, {
                 type: 'doughnut',
                 data: {
-                    labels: chartData.statsData && chartData.statsData.labels ? chartData.statsData.labels : ['Artikel', 'Kategori', 'Penghargaan', 'Siswa'],
+                    labels: chartData.statsData && chartData.statsData.labels ? chartData.statsData.labels : ['Artikel',
+                        'Kategori', 'Penghargaan', 'Siswa'
+                    ],
                     datasets: [{
-                        data: chartData.statsData && chartData.statsData.data ? chartData.statsData.data : [{{ $artikelCount }}, {{ $kategoriCount }}, {{ $penghargaanCount }}, {{ $siswaCount }}],
+                        data: chartData.statsData && chartData.statsData.data ? chartData.statsData.data : [
+                            {{ $artikelCount }}, {{ $kategoriCount }}, {{ $penghargaanCount }},
+                            {{ $siswaCount }}
+                        ],
                         backgroundColor: [
                             'rgba(37, 99, 235, 0.8)',
                             'rgba(16, 185, 129, 0.8)',
@@ -377,10 +388,14 @@
             new Chart(ctxLine, {
                 type: 'line',
                 data: {
-                    labels: chartData.activityData && chartData.activityData.labels ? chartData.activityData.labels : ['6 hari lalu', '5 hari lalu', '4 hari lalu', '3 hari lalu', '2 hari lalu', 'Kemarin', 'Hari ini'],
+                    labels: chartData.activityData && chartData.activityData.labels ? chartData.activityData.labels : [
+                        '6 hari lalu', '5 hari lalu', '4 hari lalu', '3 hari lalu', '2 hari lalu', 'Kemarin',
+                        'Hari ini'
+                    ],
                     datasets: [{
                         label: 'Aktivitas Harian',
-                        data: chartData.activityData && chartData.activityData.data ? chartData.activityData.data : [2, 5, 3, 8, 4, 6, 7],
+                        data: chartData.activityData && chartData.activityData.data ? chartData.activityData
+                            .data : [2, 5, 3, 8, 4, 6, 7],
                         fill: true,
                         backgroundColor: 'rgba(37, 99, 235, 0.1)',
                         borderColor: 'rgba(37, 99, 235, 1)',

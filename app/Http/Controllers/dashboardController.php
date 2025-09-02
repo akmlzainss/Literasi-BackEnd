@@ -22,9 +22,9 @@ class DashboardController extends Controller
         $totalPenghargaan = Penghargaan::count();
         $totalSiswa = Siswa::count();
 
-        // paginate 5 log per halaman
+        // paginate 5 log per halaman (pakai created_at)
         $logs = LogAdmin::with('admin')
-            ->orderByDesc('dibuat_pada')
+            ->orderByDesc('created_at')
             ->paginate(5);
 
         // Data untuk Bar Chart - Artikel berdasarkan kategori (jika ada relasi)
@@ -99,8 +99,8 @@ class DashboardController extends Controller
                 $dates[] = $date->format('d M');
             }
             
-            // Hitung aktivitas per hari dari log_admin
-            $activityCount = LogAdmin::whereDate('dibuat_pada', $date->format('Y-m-d'))->count();
+            // Hitung aktivitas per hari dari log_admin (pakai created_at)
+            $activityCount = LogAdmin::whereDate('created_at', $date->format('Y-m-d'))->count();
             
             // Jika tidak ada data, beri nilai random kecil untuk demo
             if ($activityCount == 0 && $i <= 2) {
