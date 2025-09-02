@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -246,19 +247,19 @@
             .sidebar {
                 transform: translateX(-100%);
             }
-            
+
             .sidebar.show {
                 transform: translateX(0);
             }
-            
+
             .main-content {
                 margin-left: 0;
             }
-            
+
             .sidebar-toggle {
                 display: block;
             }
-            
+
             .content-area {
                 padding: 1rem;
             }
@@ -268,13 +269,14 @@
             .topbar {
                 padding: 1rem;
             }
-            
+
             .user-profile span {
                 display: none;
             }
         }
     </style>
 </head>
+
 <body>
     <!-- Sidebar Toggle for Mobile -->
     <button class="sidebar-toggle" onclick="toggleSidebar()">
@@ -290,52 +292,52 @@
             <h5 class="sidebar-title">SMKN 11 Bandung</h5>
             <p class="sidebar-subtitle">Sistem Literasi Akhlak</p>
         </div>
-        
+
         <nav class="sidebar-nav">
             <div class="nav-item">
-                <a href="{{ route('dashboard') }}" class="nav-link {{ Request::routeIs('admin.dashboard') ? 'active' : '' }}">
+                <a href="{{ route('dashboard') }}"
+                    class="nav-link {{ Request::routeIs('admin.dashboard') ? 'active' : '' }}">
                     <i class="fas fa-tachometer-alt nav-icon"></i>
                     <span class="nav-text">Dashboard</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{ route('artikel') }}" class="nav-link {{ Request::routeIs('artikel.artikel') ? 'active' : '' }}">
+                <a href="{{ route('artikel') }}"
+                    class="nav-link {{ Request::routeIs('artikel.artikel') ? 'active' : '' }}">
                     <i class="fas fa-newspaper nav-icon"></i>
                     <span class="nav-text">Artikel</span>
-                    <span class="nav-badge">245</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{ route('kategori') }}" class="nav-link {{ Request::routeIs('kategori.kategori') ? 'active' : '' }}">
+                <a href="{{ route('kategori') }}"
+                    class="nav-link {{ Request::routeIs('kategori.kategori') ? 'active' : '' }}">
                     <i class="fas fa-tags nav-icon"></i>
                     <span class="nav-text">Kategori</span>
-                    <span class="nav-badge">18</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{ route('penghargaan') }}" class="nav-link {{ Request::routeIs('penghargaan.penghargaan') ? 'active' : '' }}">
+                <a href="{{ route('penghargaan') }}"
+                    class="nav-link {{ Request::routeIs('penghargaan.penghargaan') ? 'active' : '' }}">
                     <i class="fas fa-trophy nav-icon"></i>
                     <span class="nav-text">Penghargaan</span>
-                    <span class="nav-badge">12</span>
                 </a>
             </div>
             <div class="nav-item">
                 <a href="{{ route('siswa') }}" class="nav-link {{ Request::routeIs('siswa.siswa') ? 'active' : '' }}">
                     <i class="fas fa-user-graduate nav-icon"></i>
                     <span class="nav-text">Siswa</span>
-                    <span class="nav-badge">1.2K</span>
                 </a>
             </div>
-           <div class="nav-item">
-    <a href="{{ route('laporan') }}" 
-       class="nav-link {{ Request::routeIs('laporan') ? 'active' : '' }}">
-        <i class="fas fa-chart-line nav-icon"></i>
-        <span class="nav-text">Laporan</span>
-    </a>
-</div>
+            <div class="nav-item">
+                <a href="{{ route('laporan.aktivitas') }}" class="nav-link {{ Request::routeIs('laporan') ? 'active' : '' }}">
+                    <i class="fas fa-chart-line nav-icon"></i>
+                    <span class="nav-text">Laporan</span>
+                </a>
+            </div>
 
             <div class="nav-item">
-                <a href="{{ route('pengaturan') }}" class="nav-link {{ Request::routeIs('pengaturan.pengaturan') ? 'active' : '' }}">
+                <a href="{{ route('pengaturan') }}"
+                    class="nav-link {{ Request::routeIs('pengaturan.pengaturan') ? 'active' : '' }}">
                     <i class="fas fa-cog nav-icon"></i>
                     <span class="nav-text">Pengaturan</span>
                 </a>
@@ -344,7 +346,8 @@
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                     @csrf
                 </form>
-                <a href="#" class="nav-link" onclick="event.preventDefault(); if(confirm('Apakah Anda yakin ingin logout?')) { document.getElementById('logout-form').submit(); }">
+                <a href="#" class="nav-link"
+                    onclick="event.preventDefault(); if(confirm('Apakah Anda yakin ingin logout?')) { document.getElementById('logout-form').submit(); }">
                     <i class="fas fa-sign-out-alt nav-icon"></i>
                     <span class="nav-text">Logout</span>
                 </a>
@@ -388,4 +391,5 @@
     </script>
     @yield('scripts')
 </body>
+
 </html>

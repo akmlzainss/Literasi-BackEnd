@@ -10,8 +10,7 @@ use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\PengaturanController;
 use App\Http\Controllers\AktivitasSiswaController;
 use App\Http\Controllers\LogAdminController;
-use App\Http\Controllers\CkeditorController;
-
+use App\Http\Controllers\DashboardController;
 
 // Redirect root ke halaman login
 Route::get('/', function () {
@@ -35,10 +34,11 @@ Route::middleware(['admin'])->group(function () {
     // Logout
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
 
-    // Dashboard
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('dashboard');
+    // Dashboard - menggunakan DashboardController yang sudah diperbaiki
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // AJAX Routes untuk chart data (opsional untuk interaktivitas)
+    Route::get('/dashboard/chart/{type}', [DashboardController::class, 'getChartDataAjax'])->name('dashboard.chart');
 
     // ==========================
     // ARTIKEL
@@ -89,11 +89,14 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/siswa/{nis}/edit', [KelolaSiswaController::class, 'edit'])->name('siswa.edit');
     Route::put('/siswa/{nis}', [KelolaSiswaController::class, 'update'])->name('siswa.update');
     Route::delete('/siswa/{nis}', [KelolaSiswaController::class, 'destroy'])->name('siswa.destroy');
+    Route::get('/siswa/export', [KelolaSiswaController::class, 'exportCsv'])->name('siswa.export');
+    Route::post('/siswa/import', [KelolaSiswaController::class, 'import'])->name('siswa.import');
 
     // ==========================
     // LAPORAN
     // ==========================
-    Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan');
+    // Route untuk laporan dari LogAdminController
+    Route::get('/laporan/aktivitas', [LogAdminController::class, 'laporan'])->name('laporan.aktivitas');
 
     // ==========================
     // PENGATURAN
@@ -102,7 +105,4 @@ Route::middleware(['admin'])->group(function () {
     Route::patch('/pengaturan', [PengaturanController::class, 'update'])->name('pengaturan.update');
     Route::get('/pengaturan/keamanan', [PengaturanController::class, 'keamanan'])->name('pengaturan.keamanan');
     Route::put('/pengaturan/umum', [PengaturanController::class, 'updateUmum'])->name('pengaturan.umum.update');
-
-    Route::get('/laporan', [LogAdminController::class, 'laporan'])->name('laporan');
-
 });

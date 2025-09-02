@@ -36,14 +36,14 @@ class PenghargaanController extends Controller
         if ($request->has('tahun') && $request->tahun != '') {
             $query->whereYear('bulan_tahun', $request->tahun);
         }
+        $penghargaan = $query->latest('dibuat_pada')->paginate(6);
 
-        $penghargaan = $query->latest()->paginate(6);
         $totalPenghargaan = Penghargaan::count();
 
         $selectedMonth = $request->input('month', now()->format('Y-m'));
         $selectedMonthNumber = date('m', strtotime($selectedMonth));
         $selectedYear = date('Y', strtotime($selectedMonth));
-        
+
         $years = Artikel::where('status', 'disetujui')
             ->whereNotNull('diterbitkan_pada')
             ->select(DB::raw('YEAR(diterbitkan_pada) as year'))

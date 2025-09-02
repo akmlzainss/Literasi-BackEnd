@@ -65,12 +65,11 @@ class AdminAuthController extends Controller
                 // Regenerate the session to prevent session fixation attacks
                 $request->session()->regenerate();
                 return redirect()->intended(route('dashboard'));
-
             } catch (Exception $e) {
                 // Log any errors that occur during the post-login process
                 Log::error('Error during login process: ' . $e->getMessage());
                 Log::error('Error details: ' . $e->getTraceAsString());
-                
+
                 // Still allow the user to proceed even if logging fails
                 $request->session()->regenerate();
                 return redirect()->intended(route('dashboard'));
@@ -136,7 +135,6 @@ class AdminAuthController extends Controller
 
             DB::commit();
             return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
-
         } catch (Exception $e) {
             DB::rollback();
             Log::error('Error during registration: ' . $e->getMessage());
@@ -193,8 +191,14 @@ class AdminAuthController extends Controller
         $request->validate([
             'current_password' => 'nullable|string',
             'new_password' => [
-                'nullable', 'string', 'min:8', 'confirmed',
-                'regex:/[a-z]/', 'regex:/[A-Z]/', 'regex:/[0-9]/', 'regex:/[@$!%*#?&]/'
+                'nullable',
+                'string',
+                'min:8',
+                'confirmed',
+                'regex:/[a-z]/',
+                'regex:/[A-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[@$!%*#?&]/'
             ],
         ], [
             'new_password.regex' => 'Password harus mengandung huruf besar, huruf kecil, angka, dan karakter khusus.',
@@ -206,9 +210,13 @@ class AdminAuthController extends Controller
                 return back()->withErrors(['current_password' => 'Password saat ini salah']);
             }
 
-            // Update the password
-            $admin->password = Hash::make($request->new_password); // Using Hash::make() is correct
-            $admin->save();
+            /** @var \App\Models\Admin $admin */
+            $admin = Auth::guard('admin')->user();
+
+            $admin->forceFill([
+                'password' => Hash::make($request->new_password),
+            ])->save();
+
 
             try {
                 // Create a log entry for the password update

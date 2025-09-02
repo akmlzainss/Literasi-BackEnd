@@ -6,10 +6,16 @@ use Illuminate\Http\Request;
 use App\Models\Kategori;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Models\LogAdmin;
+use Illuminate\Support\Facades\Auth;
 
 class KategoriController extends Controller
 {
-    // Tampilkan semua kategori (Read - Index) with search, filter, and pagination
+    public function __construct()
+    {
+        $this->middleware('auth:admin');
+    }
+
     public function index(Request $request)
     {
         try {
@@ -17,7 +23,7 @@ class KategoriController extends Controller
                 ->search($request->input('search'))
                 ->applyFilter($request->input('filter'));
 
-            $kategoris = $query->paginate(6); // 6 items per page
+            $kategoris = $query->paginate(6);
 
             return view('kategori.kategori', compact('kategoris'));
         } catch (\Exception $e) {
@@ -26,24 +32,24 @@ class KategoriController extends Controller
         }
     }
 
-    // Tampilkan form untuk kategori baru (Create - Show Form)
     public function create()
     {
         try {
-            return view('kategori.create'); // View untuk form create akan diisi nanti
+            return view('kategori.create');
         } catch (\Exception $e) {
             Log::error('Error loading create form: ' . $e->getMessage());
             return redirect()->route('kategori')->with('error', 'Gagal memuat form tambah kategori.');
         }
     }
 
-    // Simpan kategori baru (Create - Store)
     public function store(Request $request)
     {
         try {
             $request->validate([
                 'nama' => 'required|string|max:255|unique:kategori,nama',
                 'deskripsi' => 'required|string',
+            ], [
+                'nama.unique' => 'Nama kategori sudah digunakan. Silakan gunakan nama lain.',
             ]);
 
             $kategori = Kategori::create([
@@ -52,13 +58,50 @@ class KategoriController extends Controller
                 'dibuat_pada' => now(),
             ]);
 
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => 'create',
+                    'aksi' => 'Menambahkan kategori baru',
+                    'referensi_tipe' => 'kategori',
+                    'referensi_id' => $kategori->id,
+                    'detail' => json_encode(['nama' => $request->nama, 'deskripsi' => $request->deskripsi]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
+
             $total = Kategori::count();
-            $lastPage = ceil($total / 6); // Hitung halaman terakhir berdasarkan 6 item per halaman
+            $lastPage = ceil($total / 6);
             return redirect()->route('kategori', ['page' => $lastPage])->with('success', 'Kategori berhasil ditambahkan.');
         } catch (\Illuminate\Validation\ValidationException $e) {
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => 'gagal_create',
+                    'aksi' => 'Gagal menambahkan kategori baru',
+                    'referensi_tipe' => 'kategori',
+                    'referensi_id' => null,
+                    'detail' => json_encode(['nama' => $request->nama, 'error' => $e->getMessage()]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             Log::error('Error creating category: ' . $e->getMessage());
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => 'gagal_create',
+                    'aksi' => 'Gagal menambahkan kategori baru',
+                    'referensi_tipe' => 'kategori',
+                    'referensi_id' => null,
+                    'detail' => json_encode(['nama' => $request->nama, 'error' => $e->getMessage()]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
             return redirect()->back()->with('error', 'Gagal menambahkan kategori.');
         }
     }
@@ -67,24 +110,21 @@ class KategoriController extends Controller
     {
         try {
             $kategori = Kategori::findOrFail($id);
-            return response()->json([
-                'id' => $kategori->id,
-                'nama' => $kategori->nama,
-                'deskripsi' => $kategori->deskripsi,
-            ]);
+            return view('kategori.edit', compact('kategori')); // Ganti dengan view biasa, hapus JSON
         } catch (\Exception $e) {
             Log::error('Error loading edit form: ' . $e->getMessage());
-            return response()->json(['error' => 'Data tidak ditemukan'], 404);
+            return redirect()->route('kategori')->with('error', 'Gagal memuat data kategori.');
         }
     }
 
-    // Perbarui kategori (Update)
     public function update(Request $request, $id)
     {
         try {
             $request->validate([
                 'nama' => 'required|string|max:255|unique:kategori,nama,' . $id,
                 'deskripsi' => 'required|string',
+            ], [
+                'nama.unique' => 'Nama kategori sudah digunakan. Silakan gunakan nama lain.',
             ]);
 
             $kategori = Kategori::findOrFail($id);
@@ -93,25 +133,87 @@ class KategoriController extends Controller
                 'deskripsi' => $request->deskripsi,
             ]);
 
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => 'update',
+                    'aksi' => 'Mengedit kategori',
+                    'referensi_tipe' => 'kategori',
+                    'referensi_id' => $kategori->id,
+                    'detail' => json_encode(['nama' => $request->nama, 'deskripsi' => $request->deskripsi]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
+
             return redirect()->route('kategori')->with('success', 'Data berhasil diedit.');
         } catch (\Illuminate\Validation\ValidationException $e) {
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => 'gagal_update',
+                    'aksi' => 'Gagal mengedit kategori',
+                    'referensi_tipe' => 'kategori',
+                    'referensi_id' => $id,
+                    'detail' => json_encode(['nama' => $request->nama, 'error' => $e->getMessage()]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             Log::error('Error updating category: ' . $e->getMessage());
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => 'gagal_update',
+                    'aksi' => 'Gagal mengedit kategori',
+                    'referensi_tipe' => 'kategori',
+                    'referensi_id' => $id,
+                    'detail' => json_encode(['nama' => $request->nama, 'error' => $e->getMessage()]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
             return redirect()->route('kategori')->with('error', 'Gagal memperbarui kategori.');
         }
     }
 
-    // Hapus kategori (Delete)
     public function destroy($id)
     {
         try {
             $kategori = Kategori::findOrFail($id);
+
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => 'delete',
+                    'aksi' => 'Menghapus kategori',
+                    'referensi_tipe' => 'kategori',
+                    'referensi_id' => $kategori->id,
+                    'detail' => json_encode(['nama' => $kategori->nama, 'deskripsi' => $kategori->deskripsi]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
+
             $kategori->delete();
 
             return redirect()->route('kategori')->with('success', 'Data berhasil dihapus.');
         } catch (\Exception $e) {
             Log::error('Error deleting category: ' . $e->getMessage());
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => 'gagal_delete',
+                    'aksi' => 'Gagal menghapus kategori',
+                    'referensi_tipe' => 'kategori',
+                    'referensi_id' => $id,
+                    'detail' => json_encode(['error' => $e->getMessage()]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
             return redirect()->route('kategori')->with('error', 'Gagal menghapus kategori.');
         }
     }
@@ -127,11 +229,24 @@ class KategoriController extends Controller
         }
     }
 
-    // Export data to CSV
     public function export()
     {
         try {
             $kategoris = Kategori::all();
+
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => 'export',
+                    'aksi' => 'Mengekspor data kategori',
+                    'referensi_tipe' => 'kategori',
+                    'referensi_id' => null,
+                    'detail' => json_encode(['total' => $kategoris->count()]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
+
             $filename = 'kategori_' . date('Ymd_His') . '.csv';
             $headers = [
                 'Content-Type' => 'text/csv',
@@ -157,6 +272,18 @@ class KategoriController extends Controller
             return new StreamedResponse($callback, 200, $headers);
         } catch (\Exception $e) {
             Log::error('Error exporting categories: ' . $e->getMessage());
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => 'gagal_export',
+                    'aksi' => 'Gagal menekspor data kategori',
+                    'referensi_tipe' => 'kategori',
+                    'referensi_id' => null,
+                    'detail' => json_encode(['error' => $e->getMessage()]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
             return redirect()->route('kategori')->with('error', 'Gagal menekspor data.');
         }
     }
