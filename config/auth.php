@@ -3,7 +3,7 @@
 return [
 
     'defaults' => [
-        'guard' => 'web', // Ubah ke 'web' sebagai default, atau tetap 'admin' kalau admin utama
+        'guard' => 'web',
         'passwords' => 'admins',
     ],
 
@@ -16,8 +16,13 @@ return [
             'driver' => 'session',
             'provider' => 'admins',
         ],
-        'siswa' => [
-            'driver' => 'session', // Ganti dari 'sanctum' ke 'session' kecuali butuh API
+        'siswa' => [ // Guard ini untuk web/session based
+            'driver' => 'session',
+            'provider' => 'siswas',
+        ],
+        // TAMBAHKAN GUARD INI KHUSUS UNTUK API FLUTTER
+        'siswa-api' => [
+            'driver' => 'sanctum',
             'provider' => 'siswas',
         ],
     ],

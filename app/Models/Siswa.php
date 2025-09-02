@@ -4,38 +4,38 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Siswa extends Authenticatable
 {
-    use HasApiTokens;
+    use HasApiTokens, HasFactory;
 
     protected $table = 'siswa';
-    protected $primaryKey = 'id';
+    public $timestamps = true;
 
-    // Nonaktifkan timestamps (karena tabel tidak punya created_at & updated_at)
-    public $timestamps = false;
-
-    // Kolom-kolom yang boleh diisi massal
+    /**
+     * Kolom created_at dan updated_at tidak perlu ada di fillable.
+     * Laravel mengisinya secara otomatis.
+     */
     protected $fillable = [
         'nis',
         'nama',
         'email',
-        'kelas', // ✅ agar bisa tersimpan ke database
+        'kelas',
         'password',
         'status_aktif',
-        'dibuat_pada'
     ];
 
-    // Sembunyikan password saat model diubah ke array/JSON
-    protected $hidden = ['password'];
+    protected $hidden = [
+        'password',
+    ];
 
-    // Guard untuk autentikasi siswa
-    protected $guard = 'siswa';
+    //protected $guard = 'siswa';
 
-    public function getAuthPassword()
-    {
-        return $this->password;
-    }
+    //public function getAuthPassword()
+    //{
+      //  return $this->password;
+    //}
 
     // Relasi-relasi (sesuaikan jika kamu tidak pakai fitur ini)
     public function artikel()

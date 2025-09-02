@@ -19,6 +19,8 @@ return [
 
     'allowed_methods' => ['*'],
 
+    // PERBAIKAN UTAMA DI SINI
+    // Mengizinkan semua origin. Sangat berguna untuk development dengan Flutter.
     'allowed_origins' => ['*'],
 
     'allowed_origins_patterns' => [],
