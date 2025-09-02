@@ -18,8 +18,14 @@ class LogAdmin extends Model
         'detail',
     ];
 
+   protected $casts = [
+    'dibuat_pada' => 'datetime',
+];
+
+
     public function admin()
     {
         return $this->belongsTo(Admin::class, 'id_admin');
     }
 }
+

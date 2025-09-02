@@ -6,13 +6,14 @@
 @section('content')
     <link rel="stylesheet" href="{{ asset('css/siswa.css') }}">
 
-    <!-- Notifikasi Flash -->
+    {{-- Flash Notifications --}}
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
+
     @if (session('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             {{ session('error') }}
@@ -20,28 +21,27 @@
         </div>
     @endif
 
-    <!-- Header Halaman -->
+    {{-- Page Header --}}
     <div class="page-header">
         <h1 class="page-title">Kelola Siswa</h1>
         <p class="page-subtitle">Kelola dan pantau data siswa beserta prestasi dan aktivitas literasi akhlak mereka</p>
-
         <div class="action-buttons">
             <button type="button" class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#addStudentModal">
                 <i class="fas fa-user-plus"></i> Tambah Siswa Baru
             </button>
-            <a href="#" class="btn-outline-custom">
-                <i class="fas fa-download"></i> Import Data
-            </a>
-            <a href="#" class="btn-outline-custom">
+            <a href="{{ route('siswa.export') }}" class="btn-outline-custom">
                 <i class="fas fa-file-export"></i> Export Data
             </a>
-            <a href="#" class="btn-outline-custom">
-                <i class="fas fa-award"></i> Kelola Prestasi
-            </a>
+            <button type="button" class="btn-outline-custom" data-bs-toggle="modal" data-bs-target="#importModal">
+                <i class="fas fa-file-import"></i> Import Data Siswa
+            </button>
         </div>
     </div>
 
-    <!-- Modal Tambah Siswa -->
+    {{-- Include Import Modal --}}
+    @include('siswa.modal_import')
+
+    {{-- Add Student Modal --}}
     <div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -75,8 +75,6 @@
                                     @enderror
                                 </div>
                             </div>
-                        </div>
-                        <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="email" class="form-label">Email</label>
@@ -91,20 +89,14 @@
                             <div class="col-md-3">
                                 <div class="mb-3">
                                     <label for="kelas" class="form-label">Kelas</label>
-                                    <select class="form-control @error('kelas') is-invalid @enderror"
-                                        id="kelas" name="kelas" required>
-                                        <option value="">Pilih Kelas</option>
-                                        <option value="X" {{ old('kelas') == 'X' ? 'selected' : '' }}>X</option>
-                                        <option value="XI" {{ old('kelas') == 'XI' ? 'selected' : '' }}>XI</option>
-                                        <option value="XII" {{ old('kelas') == 'XII' ? 'selected' : '' }}>XII</option>
-                                    </select>
+                                    <input type="text" class="form-control @error('kelas') is-invalid @enderror"
+                                        id="kelas" name="kelas" value="{{ old('kelas') }}"
+                                        placeholder="Masukkan kelas" required>
                                     @error('kelas')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
-                        </div>
-                        <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="password" class="form-label">Password</label>
@@ -138,7 +130,7 @@
         </div>
     </div>
 
-    <!-- Modal Edit Siswa -->
+    {{-- Edit Student Modal --}}
     <div class="modal fade" id="editStudentModal" tabindex="-1" aria-labelledby="editStudentModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -166,12 +158,12 @@
                         </div>
                         <div class="mb-3">
                             <label for="edit_kelas" class="form-label">Kelas</label>
-                            <select class="form-control" id="edit_kelas" name="kelas" required>
-                                <option value="">Pilih Kelas</option>
-                                <option value="X">X</option>
-                                <option value="XI">XI</option>
-                                <option value="XII">XII</option>
-                            </select>
+                            <input type="text" class="form-control @error('kelas') is-invalid @enderror"
+                                id="edit_kelas" name="kelas" value="{{ old('kelas', $siswa->kelas ?? '') }}"
+                                placeholder="Masukkan kelas" required>
+                            @error('kelas')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="mb-3">
                             <label for="edit_password" class="form-label">Password (Kosongkan jika tidak diubah)</label>
@@ -192,7 +184,7 @@
         </div>
     </div>
 
-    <!-- Modal Hapus Siswa -->
+    {{-- Delete Student Modal --}}
     <div class="modal fade" id="deleteStudentModal" tabindex="-1" aria-labelledby="deleteStudentModalLabel"
         aria-hidden="true">
         <div class="modal-dialog">
@@ -217,7 +209,7 @@
         </div>
     </div>
 
-    <!-- Main Card: Students Table -->
+    {{-- Main Card: Students Table --}}
     <div class="main-card">
         <div class="card-header-custom">
             <div>
@@ -230,66 +222,63 @@
         </div>
 
         <div class="card-body-custom">
-            <!-- Search and Filter Section -->
-            <div class="search-filter-section mb-4">
-                <form action="{{ route('siswa') }}" method="GET">
-                    <div class="row g-3 align-items-end">
-                        <!-- Pencarian -->
-                        <div class="col-md-4">
-                            <label for="q" class="form-label">Pencarian</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white border-end-0">
-                                    <i class="fas fa-search text-muted"></i>
-                                </span>
-                                <input type="text" class="form-control border-start-0 search-input"
-                                    placeholder="Cari NIS / Nama / Email..." name="q" value="{{ request('q') }}">
-                            </div>
-                        </div>
+            {{-- Search and Filter Section --}}
+           <div class="search-filter-section mb-4">
+    <form action="{{ route('siswa') }}" method="GET">
+        <div class="row g-3 align-items-end">
 
-                        <!-- Filter Kelas -->
-                        <div class="col-md-3">
-                            <label for="kelas" class="form-label">Kelas</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white border-end-0">
-                                    <i class="fas fa-filter text-muted"></i>
-                                </span>
-                                <select class="form-control border-start-0 filter-input" name="kelas" id="kelas">
-                                    <option value="">-- Semua Kelas --</option>
-                                    @foreach ($kelasOptions as $kelas)
-                                        <option value="{{ $kelas }}" {{ request('kelas') == $kelas ? 'selected' : '' }}>
-                                            {{ $kelas }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Filter Awalan Nama -->
-                       
-
-                        <!-- Sorting -->
-                        <div class="col-md-3">
-                            <label for="sort" class="form-label">Urutkan Nama</label>
-                            <select class="form-control" name="sort" id="sort">
-                                <option value="">-- Default (Tanggal) --</option>
-                                <option value="nama_asc" {{ request('sort') == 'nama_asc' ? 'selected' : '' }}>A-Z</option>
-                                <option value="nama_desc" {{ request('sort') == 'nama_desc' ? 'selected' : '' }}>Z-A</option>
-                            </select>
-                        </div>
-
-                        <!-- Tombol -->
-                        <div class="col-md-2 d-flex gap-2">
-                            <button type="submit" class="btn btn-primary flex-fill">
-                                <i class="fas fa-search"></i> Cari
-                            </button>
-                            <a href="{{ route('siswa') }}" class="btn btn-outline-success flex-fill">
-                                <i class="fas fa-sync-alt"></i> Reset
-                            </a>
-                        </div>
-                    </div>
-                </form>
+            <!-- Pencarian -->
+            <div class="col-md-4">
+                <label for="q" class="form-label">Pencarian</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" class="form-control border-start-0 search-input"
+                           placeholder="Cari NIS / Nama / Email..." name="q" value="{{ request('q') }}">
+                </div>
             </div>
 
-            <!-- Students Table -->
+            <!-- Filter Kelas -->
+            <div class="col-md-3">
+                <label for="kelas_filter" class="form-label">Kelas</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fas fa-filter text-muted"></i>
+                    </span>
+                    <input type="text" class="form-control border-start-0 filter-input"
+                           name="kelas" id="kelas_filter"
+                           value="{{ request('kelas') ?? '' }}"
+                           placeholder="Masukkan kelas">
+                </div>
+            </div>
+
+            <!-- Urutkan Nama -->
+            <div class="col-md-3">
+                <label for="sort" class="form-label">Urutkan Nama</label>
+                <select class="form-control" name="sort" id="sort">
+                    <option value="">-- Default (Tanggal) --</option>
+                    <option value="nama_asc" {{ request('sort') == 'nama_asc' ? 'selected' : '' }}>A-Z</option>
+                    <option value="nama_desc" {{ request('sort') == 'nama_desc' ? 'selected' : '' }}>Z-A</option>
+                </select>
+            </div>
+
+            <!-- Tombol Cari & Reset -->
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-fill">
+                    <i class="fas fa-search"></i> Cari
+                </button>
+                <a href="{{ route('siswa') }}" class="btn btn-outline-success flex-fill">
+                    <i class="fas fa-sync-alt"></i> Reset
+                </a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+
+            {{-- Students Table --}}
             <div class="students-table">
                 <div class="table-responsive">
                     <table class="table custom-table">
@@ -299,6 +288,7 @@
                                 <th scope="col">NIS</th>
                                 <th scope="col">Nama Lengkap</th>
                                 <th scope="col">Email</th>
+                                <th scope="col">Password</th>
                                 <th scope="col">Kelas</th>
                                 <th scope="col">Aksi</th>
                             </tr>
@@ -313,6 +303,9 @@
                                     </td>
                                     <td>
                                         <div class="student-email">{{ $student->email }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="student-password">{{ $student->password }}</div>
                                     </td>
                                     <td>
                                         <span class="class-badge">{{ $student->kelas }}</span>
@@ -338,14 +331,14 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center">Belum ada data siswa.</td>
+                                    <td colspan="7" class="text-center">Belum ada data siswa.</td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
 
-                <!-- Pagination -->
+                {{-- Pagination --}}
                 @if ($siswa instanceof \Illuminate\Pagination\LengthAwarePaginator)
                     <div class="pagination-custom">
                         {{ $siswa->links() }}
@@ -355,25 +348,27 @@
         </div>
     </div>
 
-    <!-- Bootstrap dan jQuery -->
+    {{-- Scripts --}}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Validasi Form Tambah
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // === Form Validation for Add Student ===
             const addStudentForm = document.getElementById('addStudentForm');
             if (addStudentForm) {
-                addStudentForm.addEventListener('submit', function (event) {
-                    const requiredFields = ['nis', 'nama', 'email', 'kelas', 'password', 'password_confirmation'];
+                addStudentForm.addEventListener('submit', function(event) {
+                    const requiredFields = ['nis', 'nama', 'email', 'kelas', 'password',
+                        'password_confirmation'
+                    ];
                     let isValid = true;
 
-                    requiredFields.forEach(function (id) {
-                        const input = document.getElementById(id);
-                        if (!input || !input.value.trim()) {
+                    requiredFields.forEach(field => {
+                        const input = document.getElementById(field);
+                        if (input && !input.value.trim()) {
                             isValid = false;
                             input.classList.add('is-invalid');
-                        } else {
+                        } else if (input) {
                             input.classList.remove('is-invalid');
                         }
                     });
@@ -385,9 +380,9 @@
                 });
             }
 
-            // Fungsi untuk mengisi form edit siswa
-            window.editStudent = function (nis) {
-                fetch(`/siswa/${nis}/edit`)
+            // === Populate Edit Student Form via AJAX ===
+            window.editStudent = function(nis) {
+                fetch(`/siswa/${nis}/edit`) // pastikan route edit mengembalikan JSON
                     .then(response => response.json())
                     .then(data => {
                         if (data.error) {
@@ -395,17 +390,21 @@
                             return;
                         }
 
-                        // Isi form edit
+                        // Set value modal
                         document.getElementById('edit_nis').value = data.nis;
+                        document.getElementById('edit_original_nis').value = data.nis;
                         document.getElementById('edit_nama').value = data.nama;
                         document.getElementById('edit_email').value = data.email;
                         document.getElementById('edit_kelas').value = data.kelas;
                         document.getElementById('edit_password').value = '';
                         document.getElementById('edit_password_confirmation').value = '';
 
-                        // Ubah action form sesuai nis
-                        const form = document.getElementById('editStudentForm');
-                        form.action = `/siswa/${data.nis}`;
+                        // Set form action
+                        document.getElementById('editStudentForm').action = `/siswa/${data.nis}`;
+
+                        // Tampilkan modal
+                        const modal = new bootstrap.Modal(document.getElementById('editStudentModal'));
+                        modal.show();
                     })
                     .catch(error => {
                         console.error('Gagal mengambil data siswa:', error);
@@ -413,13 +412,14 @@
                     });
             };
 
-            // Fungsi untuk menyiapkan form hapus
-            window.prepareDelete = function (nis, nama) {
+            // === Prepare Delete Student Form ===
+            window.prepareDelete = function(nis, nama) {
                 document.getElementById('delete_nis').textContent = nis;
                 document.getElementById('delete_nama').textContent = nama;
-                const deleteForm = document.getElementById('deleteStudentForm');
-                deleteForm.action = `/siswa/${nis}`;
+                document.getElementById('deleteStudentForm').action = `/siswa/${nis}`;
             };
+
         });
     </script>
+
 @endsection

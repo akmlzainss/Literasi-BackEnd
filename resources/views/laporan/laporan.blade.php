@@ -87,64 +87,64 @@
         </div>
     </div>
 
-    <!-- Aktivitas Siswa Card -->
-    <div class="main-card">
-        <div class="card-header-custom">
-            <div>
-                <i class="fas fa-user-graduate me-2"></i>Aktivitas Siswa Real-time
-            </div>
-            <div class="header-actions">
-                <span class="live-indicator">
-                    <span class="live-dot"></span>
-                    Live Updates
-                </span>
-                <button class="refresh-btn" onclick="refreshSiswaTable()">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
-            </div>
+   <!-- Aktivitas Siswa Card -->
+<div class="main-card">
+    <div class="card-header-custom">
+        <div>
+            <i class="fas fa-user-graduate me-2"></i>Aktivitas Siswa Real-time
         </div>
-
-        <div class="reports-table">
-            <div class="table-responsive">
-                <table class="table custom-table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Nama</th>
-                            <th>Aktivitas</th>
-                            <th>Artikel</th>
-                            <th>Status</th>
-                            <th>Waktu</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($aktivitas as $item)
-                            <tr>
-                                <td>{{ $loop->iteration }}</td>
-                                <td>{{ $item->nama }}</td>
-                                <td>{{ $item->aktivitas }}</td>
-                                <td>{{ $item->artikel ?? '-' }}</td>
-                                <td>
-                                    @if ($item->status)
-                                        <span class="badge bg-info">{{ ucfirst($item->status) }}</span>
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
-                                </td>
-                                <td>{{ $item->created_at->diffForHumans() }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="text-center text-muted">
-                                    <i class="fas fa-info-circle"></i> Belum ada aktivitas siswa
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+        <div class="header-actions">
+            <span class="live-indicator">
+                <span class="live-dot"></span>
+                Live Updates
+            </span>
+            <button class="refresh-btn" onclick="refreshSiswaTable()">
+                <i class="fas fa-sync-alt"></i>
+            </button>
         </div>
     </div>
+
+    <div class="reports-table">
+        <div class="table-responsive">
+            <table class="table custom-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nama</th>
+                        <th>Aktivitas</th>
+                        <th>Artikel</th>
+                        <th>Status</th>
+                        <th>Waktu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($aktivitas as $item)
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $item->nama }}</td>
+                            <td>{{ $item->aktivitas }}</td>
+                            <td>{{ $item->artikel ?? '-' }}</td>
+                            <td>
+                                @if ($item->status)
+                                    <span class="badge bg-info">{{ ucfirst($item->status) }}</span>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td>{{ optional($item->dibuat_pada)->diffForHumans() ?? '-' }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">
+                                <i class="fas fa-info-circle"></i> Belum ada aktivitas siswa
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 
     <!-- Aktivitas Admin Card -->
@@ -215,7 +215,6 @@
                 </table>
             </div>
         </div>
-    </div>
     <script>
         // ========================================
         // AUTO REFRESH FUNCTIONALITY
@@ -354,5 +353,8 @@
             console.log('Viewing rejection log for article:', id);
         }
     </script>
-
+ <div class="mt-3">
+    {{ $aktivitasAdmin->links() }}
+</div>
+    </div>
 @endsection

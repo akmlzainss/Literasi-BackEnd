@@ -11,13 +11,16 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
 use Mews\Purifier\Facades\Purifier;
 use Illuminate\Pagination\Paginator;
-use Illuminate\Validation\ValidationException;
+use App\Models\LogAdmin;
+use Illuminate\Support\Facades\Auth;
 
 class ArtikelController extends Controller
 {
-    /**
-     * Menampilkan daftar semua artikel dengan filter dan paginasi.
-     */
+    public function __construct()
+    {
+        $this->middleware('auth:admin');
+    }
+
     public function index(Request $request)
     {
         Paginator::useBootstrapFive();
@@ -39,7 +42,7 @@ class ArtikelController extends Controller
                 ->when($request->filled('status'), function ($query) use ($request) {
                     $query->where('status', $request->input('status'));
                 })
-                ->latest()
+                ->latest('dibuat_pada')
                 ->paginate(9)
                 ->appends($request->query());
 
@@ -58,7 +61,12 @@ class ArtikelController extends Controller
      */
     public function create()
     {
-        return view('artikel.create');
+        try {
+            return view('artikel.create');
+        } catch (\Exception $e) {
+            Log::error('Error loading create form: ' . $e->getMessage());
+            return redirect()->route('artikel')->with('error', 'Gagal memuat form tambah artikel.');
+        }
     }
 
     /**
@@ -68,13 +76,54 @@ class ArtikelController extends Controller
     {
         try {
             $data = $this->prepareArtikelData($request);
-            Artikel::create($data);
+
+            $artikel = Artikel::create($data);
+            Log::info('Artikel created with data: ', $data);
+ 
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => 'create',
+                    'aksi' => 'Menambahkan artikel baru',
+                    'referensi_tipe' => 'artikel',
+                    'referensi_id' => $artikel->id,
+                    'detail' => json_encode(['judul' => $data['judul'], 'jenis' => $data['jenis'], 'status' => $data['status']]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
+
             return redirect()->route('artikel')->with('success', 'Artikel berhasil ditambahkan.');
-        } catch (ValidationException $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation error on store: ' . json_encode($e->errors()));
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => 'gagal_create',
+                    'aksi' => 'Gagal menambahkan artikel baru',
+                    'referensi_tipe' => 'artikel',
+                    'referensi_id' => null,
+                    'detail' => json_encode(['judul' => $request->judul ?? '', 'error' => $e->getMessage()]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             Log::error('Error creating article: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal menambahkan artikel: ' . $e->getMessage())->withInput();
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => 'gagal_create',
+                    'aksi' => 'Gagal menambahkan artikel baru',
+                    'referensi_tipe' => 'artikel',
+                    'referensi_id' => null,
+                    'detail' => json_encode(['judul' => $request->judul ?? '', 'error' => $e->getMessage()]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
+            return redirect()->back()->with('error', 'Gagal menambahkan artikel: ' . $e->getMessage());
         }
     }
 
@@ -100,23 +149,73 @@ class ArtikelController extends Controller
             $artikel = Artikel::findOrFail($id);
             $data = $this->prepareArtikelData($request, $artikel);
             $artikel->update($data);
+            Log::info('Artikel updated with ID ' . $id . ', Data: ', $data);
+
+            $jenisAksi = 'update';
+            $aksi = 'Mengedit artikel';
+            if ($data['status'] === 'disetujui' && $artikel->status !== 'disetujui') {
+                $jenisAksi = 'setujui_artikel';
+                $aksi = 'Menyetujui artikel';
+            } elseif ($data['status'] === 'ditolak' && $artikel->status !== 'ditolak') {
+                $jenisAksi = 'tolak_artikel';
+                $aksi = 'Menolak artikel';
+            }
+
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => $jenisAksi,
+                    'aksi' => $aksi,
+                    'referensi_tipe' => 'artikel',
+                    'referensi_id' => $artikel->id,
+                    'detail' => json_encode([
+                        'judul' => $data['judul'],
+                        'isi' => $data['isi'],
+                    ]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
+
             return redirect()->route('artikel')->with('success', 'Artikel berhasil diperbarui.');
-        } catch (ValidationException $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation error on update: ' . json_encode($e->errors()));
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => 'gagal_update',
+                    'aksi' => 'Gagal mengedit artikel',
+                    'referensi_tipe' => 'artikel',
+                    'referensi_id' => $id,
+                    'detail' => json_encode(['judul' => $request->judul ?? '', 'error' => $e->getMessage()]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             Log::error('Error updating article ' . $id . ': ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal memperbarui artikel.')->withInput();
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => 'gagal_update',
+                    'aksi' => 'Gagal mengedit artikel',
+                    'referensi_tipe' => 'artikel',
+                    'referensi_id' => $id,
+                    'detail' => json_encode(['judul' => $request->judul ?? '', 'error' => $e->getMessage()]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
+            return redirect()->back()->with('error', 'Gagal memperbarui artikel.');
         }
     }
 
-    /**
-     * Helper method untuk validasi dan persiapan data artikel.
-     */
     private function prepareArtikelData(Request $request, Artikel $artikel = null): array
     {
         $validated = $request->validate([
             'judul' => 'required|string|max:255',
-            'isi' => 'required|string|max:65000',
+            'isi' => 'required|string|max:3500',
             'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'id_kategori' => 'nullable|exists:kategori,id',
             'penulis_type' => 'required|in:admin,siswa',
@@ -127,10 +226,7 @@ class ArtikelController extends Controller
         ]);
 
         $validated['isi'] = Purifier::clean($validated['isi']);
-
-        if ($validated['penulis_type'] === 'admin') {
-            $validated['id_siswa'] = null;
-        }
+        $validated['id_siswa'] = $validated['penulis_type'] === 'siswa' ? $validated['id_siswa'] : null;
 
         if ($request->hasFile('gambar')) {
             if ($artikel && $artikel->gambar) {
@@ -138,26 +234,58 @@ class ArtikelController extends Controller
             }
             $validated['gambar'] = $request->file('gambar')->store('artikel', 'public');
         }
-        
+
+        if (!$artikel) {
+            $validated['dibuat_pada'] = now();
+        }
         $validated['diterbitkan_pada'] = $validated['status'] === 'disetujui' && (!$artikel || !$artikel->diterbitkan_pada) ? now() : ($artikel->diterbitkan_pada ?? null);
 
         return $validated;
     }
 
-    /**
-     * Menghapus artikel.
-     */
     public function destroy($id)
     {
         try {
             $artikel = Artikel::findOrFail($id);
+
             if ($artikel->gambar) {
                 Storage::disk('public')->delete($artikel->gambar);
             }
+
             $artikel->delete();
+
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => 'delete',
+                    'aksi' => 'Menghapus artikel',
+                    'referensi_tipe' => 'artikel',
+                    'referensi_id' => $id,
+                    'detail' => json_encode([
+                        'judul' => $artikel->judul,
+                        'jenis' => $artikel->jenis,
+                        'status' => $artikel->status,
+                    ]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
+
             return redirect()->route('artikel')->with('success', 'Artikel berhasil dihapus.');
         } catch (\Exception $e) {
             Log::error('Error deleting article ' . $id . ': ' . $e->getMessage());
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => 'gagal_delete',
+                    'aksi' => 'Gagal menghapus artikel',
+                    'referensi_tipe' => 'artikel',
+                    'referensi_id' => $id,
+                    'detail' => json_encode(['error' => $e->getMessage()]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
             return redirect()->route('artikel')->with('error', 'Gagal menghapus artikel.');
         }
     }
@@ -217,6 +345,20 @@ class ArtikelController extends Controller
         // ... (Fungsi export Anda tidak perlu diubah dan sudah benar) ...
         try {
             $artikels = Artikel::with('kategori', 'siswa')->get();
+
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => 'export',
+                    'aksi' => 'Mengekspor data artikel',
+                    'referensi_tipe' => 'artikel',
+                    'referensi_id' => null,
+                    'detail' => json_encode(['total' => $artikels->count()]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
+
             $filename = 'artikels_' . now()->format('Ymd_His') . '.csv';
             $headers = [
                 'Content-Type' => 'text/csv; charset=utf-8',
@@ -248,7 +390,19 @@ class ArtikelController extends Controller
             return Response::stream($callback, 200, $headers);
         } catch (\Exception $e) {
             Log::error('Error exporting articles: ' . $e->getMessage());
-            return redirect()->route('artikel')->with('error', 'Gagal mengekspor data artikel.');
+            $adminId = Auth::guard('admin')->id();
+            if ($adminId) {
+                LogAdmin::create([
+                    'id_admin' => $adminId,
+                    'jenis_aksi' => 'gagal_export',
+                    'aksi' => 'Gagal mengekspor data artikel',
+                    'referensi_tipe' => 'artikel',
+                    'referensi_id' => null,
+                    'detail' => json_encode(['error' => $e->getMessage()]),
+                    'dibuat_pada' => now(),
+                ]);
+            }
+            return redirect()->route('artikel')->with('error', 'Gagal menekspor data artikel.');
         }
     }
 }

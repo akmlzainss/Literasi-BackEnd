@@ -6,39 +6,41 @@ use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\Hash; // Import the Hash facade
+use Illuminate\Support\Facades\Hash;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\Siswa_Import;
+use App\Models\LogAdmin;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class KelolaSiswaController extends Controller
 {
-    /**
-     * Display a paginated list of students with search, filter, and sort functionality.
-     */
+    public function __construct()
+    {
+        $this->middleware('auth:admin');
+    }
+
+    // List siswa dengan filter, search, dan pagination
     public function index(Request $request)
     {
         $query = Siswa::query();
 
-        // Allowed class levels for filtering
-        $kelasOptions = ['X', 'XI', 'XII'];
-
-        // General search by NIS, Name, or Email
         if ($request->filled('q')) {
             $q = trim($request->input('q'));
             $query->where(function ($sub) use ($q) {
                 $sub->where('nis', 'like', "%{$q}%")
                     ->orWhere('nama', 'like', "%{$q}%")
-                    ->orWhere('email', 'like', "%{$q}%");
+                    ->orWhere('email', 'like', "%{$q}%")
+                    ->orWhere('kelas', 'like', "%{$q}%");
             });
         }
 
-        // Filter by class level (X, XI, XII)
         if ($request->filled('kelas')) {
-            $kelas = strtoupper(trim($request->input('kelas')));
-            if (in_array($kelas, $kelasOptions)) {
-                $query->whereRaw("UPPER(SUBSTRING_INDEX(kelas, ' ', 1)) = ?", [$kelas]);
-            }
+            $kelas = trim($request->input('kelas'));
+            $query->where('kelas', 'like', "%{$kelas}%"); // bebas
         }
 
-        // Sorting logic
         $sort = $request->input('sort', 'created_at_desc');
         match ($sort) {
             'nama_asc' => $query->orderBy('nama', 'asc'),
@@ -47,13 +49,13 @@ class KelolaSiswaController extends Controller
         };
 
         $siswa = $query->paginate(10);
+        $siswa->appends($request->all());
 
-        return view('siswa.siswa', compact('siswa', 'kelasOptions'));
+
+        return view('siswa.siswa', compact('siswa'));
     }
 
-    /**
-     * Store a new student in the database.
-     */
+    // Tambah siswa
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -62,20 +64,35 @@ class KelolaSiswaController extends Controller
             'email' => 'required|email|unique:siswa,email|max:255',
             'kelas' => 'required|string|max:50|regex:/^[A-Za-z0-9\s]+$/',
             'password' => 'required|string|min:6|confirmed',
+        ], [
+            'nis.unique' => 'NIS sudah digunakan. Silakan gunakan NIS lain.',
+            'email.unique' => 'Email sudah digunakan. Silakan gunakan email lain.',
         ]);
 
         try {
-            Siswa::create([
+            $siswa = Siswa::create([
                 'nis' => $validated['nis'],
                 'nama' => $validated['nama'],
                 'email' => $validated['email'],
                 'kelas' => strtoupper(trim($validated['kelas'])),
-                'password' => Hash::make($validated['password']), // Updated to Hash::make()
+                'password' => Hash::make($validated['password']),
+                'created_at' => now(),
+            ]);
+
+            $this->logAdmin('create', 'Menambahkan siswa baru', $siswa->id, [
+                'nis' => $validated['nis'],
+                'nama' => $validated['nama'],
+                'kelas' => $validated['kelas'],
             ]);
 
             return redirect()->route('siswa')->with('success', 'Siswa berhasil ditambahkan.');
         } catch (QueryException $e) {
-            // Check for unique constraint violation
+            Log::error('Error creating siswa: ' . $e->getMessage());
+            $this->logAdmin('gagal_create', 'Gagal menambahkan siswa baru', null, [
+                'nis' => $request->nis ?? '',
+                'error' => $e->getMessage(),
+            ]);
+
             if ($e->errorInfo[1] == 1062) {
                 return redirect()->back()->withInput()->with('error', 'NIS atau email sudah digunakan.');
             }
@@ -83,33 +100,38 @@ class KelolaSiswaController extends Controller
         }
     }
 
-    /**
-     * Display the specified student's details.
-     */
+    // Tampilkan detail siswa
     public function show($nis)
     {
-        $siswa = Siswa::where('nis', $nis)->firstOrFail();
-        return view('siswa.detail', compact('siswa'));
+        try {
+            $siswa = Siswa::where('nis', $nis)->firstOrFail();
+            return view('siswa.detail', compact('siswa'));
+        } catch (\Exception $e) {
+            Log::error('Error loading siswa detail: ' . $e->getMessage());
+            return redirect()->route('siswa')->with('error', 'Gagal memuat detail siswa.');
+        }
     }
 
-    /**
-     * Return student data as JSON for editing.
-     */
+    // Edit siswa via AJAX
     public function edit($nis)
     {
-        $student = Siswa::where('nis', $nis)->firstOrFail();
+        try {
+            $student = Siswa::where('nis', $nis)->firstOrFail();
 
-        return response()->json([
-            'nis' => $student->nis,
-            'nama' => $student->nama,
-            'email' => $student->email,
-            'kelas' => $student->kelas,
-        ]);
+            return response()->json([
+                'nis' => $student->nis,
+                'nama' => $student->nama,
+                'email' => $student->email,
+                'kelas' => $student->kelas
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error loading edit data for siswa ' . $nis . ': ' . $e->getMessage());
+            return response()->json(['error' => 'Gagal memuat data siswa.'], 404);
+        }
     }
 
-    /**
-     * Update the specified student in the database.
-     */
+
+    // Update siswa
     public function update(Request $request, $nis)
     {
         $student = Siswa::where('nis', $nis)->firstOrFail();
@@ -121,27 +143,37 @@ class KelolaSiswaController extends Controller
             'kelas' => 'required|string|max:50|regex:/^[A-Za-z0-9\s]+$/',
         ];
 
-        // Add password validation rule only if a new password is provided
         if ($request->filled('password')) {
             $rules['password'] = 'string|min:6|confirmed';
         }
 
-        $validated = $request->validate($rules);
+        $validated = $request->validate($rules, [
+            'nis.unique' => 'NIS sudah digunakan. Silakan gunakan NIS lain.',
+            'email.unique' => 'Email sudah digunakan. Silakan gunakan email lain.',
+        ]);
 
         try {
             $student->nis = $validated['nis'];
             $student->nama = $validated['nama'];
             $student->email = $validated['email'];
             $student->kelas = strtoupper(trim($validated['kelas']));
-            
+
             if ($request->filled('password')) {
-                $student->password = Hash::make($validated['password']); // Updated to Hash::make()
+                $student->password = Hash::make($validated['password']);
             }
-            
+
             $student->save();
+
+            $this->logAdmin('update', 'Mengedit data siswa', $student->id, $validated);
 
             return redirect()->route('siswa')->with('success', 'Siswa berhasil diperbarui.');
         } catch (QueryException $e) {
+            Log::error('Error updating siswa: ' . $e->getMessage());
+            $this->logAdmin('gagal_update', 'Gagal mengedit data siswa', $student->id ?? null, [
+                'nis' => $request->nis ?? '',
+                'error' => $e->getMessage(),
+            ]);
+
             if ($e->errorInfo[1] == 1062) {
                 return redirect()->back()->withInput()->with('error', 'NIS atau email sudah digunakan.');
             }
@@ -149,18 +181,100 @@ class KelolaSiswaController extends Controller
         }
     }
 
-    /**
-     * Remove the specified student from the database.
-     */
+    // Hapus siswa
     public function destroy($nis)
     {
-        $student = Siswa::where('nis', $nis)->firstOrFail();
-
         try {
+            $student = Siswa::where('nis', $nis)->firstOrFail();
+
+            $this->logAdmin('delete', 'Menghapus siswa', $student->id, [
+                'nis' => $student->nis,
+                'nama' => $student->nama,
+                'kelas' => $student->kelas,
+            ]);
+
             $student->delete();
             return redirect()->route('siswa')->with('success', 'Siswa berhasil dihapus.');
         } catch (QueryException $e) {
+            Log::error('Error deleting siswa ' . $nis . ': ' . $e->getMessage());
+            $this->logAdmin('gagal_delete', 'Gagal menghapus siswa', $student->id ?? null, [
+                'error' => $e->getMessage(),
+            ]);
+
             return redirect()->back()->with('error', 'Gagal menghapus siswa: ' . $e->getMessage());
+        }
+    }
+
+    // Export CSV
+    public function exportCsv()
+    {
+        try {
+            $siswas = Siswa::all();
+            $filename = 'siswa_' . date('Ymd_His') . '.csv';
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ];
+
+            $this->logAdmin('export', 'Mengekspor data siswa', null, ['total' => $siswas->count()]);
+
+            $callback = function () use ($siswas) {
+                $file = fopen('php://output', 'w');
+                fputcsv($file, ['NIS', 'Nama Lengkap', 'Email', 'Kelas']);
+
+                foreach ($siswas as $siswa) {
+                    fputcsv($file, [
+                        $siswa->nis,
+                        $siswa->nama,
+                        $siswa->email,
+                        $siswa->kelas,
+                    ]);
+                }
+                fclose($file);
+            };
+
+            return new StreamedResponse($callback, 200, $headers);
+        } catch (\Exception $e) {
+            Log::error('Error exporting siswa: ' . $e->getMessage());
+            $this->logAdmin('gagal_export', 'Gagal mengekspor data siswa', null, ['error' => $e->getMessage()]);
+            return redirect()->route('siswa')->with('error', 'Gagal mengekspor data siswa.');
+        }
+    }
+
+    // Import Excel/CSV
+    public function import(Request $request)
+    {
+        try {
+            $request->validate([
+                'file' => 'required|mimes:xlsx,xls,csv|max:10240',
+            ]);
+
+            Excel::import(new Siswa_Import, $request->file('file'));
+
+            $this->logAdmin('import', 'Mengimpor data siswa', null, ['file' => $request->file('file')->getClientOriginalName()]);
+
+            return redirect()->back()->with('success', 'Data Siswa berhasil diimport!');
+        } catch (\Exception $e) {
+            Log::error('Error importing siswa: ' . $e->getMessage());
+            $this->logAdmin('gagal_import', 'Gagal mengimpor data siswa', null, ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Gagal mengimpor data siswa: ' . $e->getMessage());
+        }
+    }
+
+    // Fungsi helper untuk log admin
+    private function logAdmin($jenis, $aksi, $referensiId = null, $detail = [])
+    {
+        $adminId = Auth::guard('admin')->id();
+        if ($adminId) {
+            LogAdmin::create([
+                'id_admin' => $adminId,
+                'jenis_aksi' => $jenis,
+                'aksi' => $aksi,
+                'referensi_tipe' => 'siswa',
+                'referensi_id' => $referensiId,
+                'detail' => json_encode($detail),
+                'dibuat_pada' => now(),
+            ]);
         }
     }
 }

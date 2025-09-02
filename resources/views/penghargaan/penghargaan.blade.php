@@ -65,10 +65,11 @@
                                     </option>
                                 @endif
                                 @foreach ($siswa as $item)
-                                    @if (!$highestRatedArtikel || $item->id != $highestRatedArtikel->siswa->id)
+                                    @if (!$highestRatedArtikel || !$highestRatedArtikel->siswa || $item->id != $highestRatedArtikel->siswa->id)
                                         <option value="{{ $item->id }}">{{ $item->nama }}</option>
                                     @endif
                                 @endforeach
+
                             </select>
                             @error('id_siswa')
                                 <div class="text-danger">{{ $message }}</div>
