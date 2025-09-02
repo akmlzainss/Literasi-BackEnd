@@ -144,11 +144,9 @@
                             </div>
                             <h5 class="article-title-card">{{ $artikel->judul }}</h5>
 
-                            {{-- PERBAIKAN: Menggunakan strip_tags untuk excerpt yang aman dan rapi --}}
                             <p class="article-excerpt-card">{{ Str::limit(strip_tags($artikel->isi), 100) }}</p>
 
                             <div class="article-author-card">
-                                {{-- PERBAIKAN: Kode lebih ringkas untuk menampilkan penulis --}}
                                 <div class="author-avatar">
                                     {{ $artikel->siswa ? strtoupper(substr($artikel->siswa->nama, 0, 2)) : 'AD' }}
                                 </div>
@@ -165,8 +163,8 @@
                                     <span><i class="fas fa-comment"></i>
                                         {{ $artikel->komentarArtikel->count() }}</span>
                                     <div class="article-date">
-                                        {{-- PERBAIKAN: Format tanggal yang lebih sederhana dan aman --}}
-                                        <small>Dibuat: {{ $artikel->dibuat_pada?->format('d M Y') }}</small>
+                                        {{-- PERBAIKAN DI SINI --}}
+                                        <small>Dibuat: {{ $artikel->created_at?->format('d M Y') }}</small>
                                         @if ($artikel->deleted_at)
                                             <small>Dihapus: {{ $artikel->deleted_at?->format('d M Y') }}</small>
                                         @endif
@@ -194,7 +192,6 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Script untuk menghilangkan notifikasi setelah 5 detik
             var successAlert = document.getElementById('successAlert');
             var errorAlert = document.getElementById('errorAlert');
             if (successAlert) {
@@ -204,14 +201,12 @@
                 setTimeout(() => errorAlert.style.display = 'none', 5000);
             }
 
-            // Inisialisasi Select2
             $('#filterCategory').select2({
                 placeholder: 'Pilih Kategori',
                 allowClear: true
             });
         });
 
-        // Fungsi konfirmasi hapus
         function confirmDelete(id) {
             if (confirm('Yakin ingin menghapus artikel ini? Tindakan ini tidak dapat dibatalkan.')) {
                 document.getElementById('deleteForm_' + id).submit();

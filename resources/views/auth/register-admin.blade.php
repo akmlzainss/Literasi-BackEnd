@@ -23,7 +23,7 @@
                             <span class="input-group-text bg-white border-end-0">
                                 <i class="fas fa-user text-muted"></i>
                             </span>
-                            <input type="text" name="nama_pengguna" id="nama_pengguna" class="form-control search-input border-start-0" placeholder="Masukkan nama pengguna" required>
+                            <input type="text" name="nama_pengguna" id="nama_pengguna" class="form-control search-input border-start-0" placeholder="Masukkan nama pengguna" required value="{{ old('nama_pengguna') }}">
                         </div>
                         @error('nama_pengguna')
                             <div class="text-danger mt-1" style="font-size: 0.85rem;">{{ $message }}</div>
@@ -35,7 +35,7 @@
                             <span class="input-group-text bg-white border-end-0">
                                 <i class="fas fa-envelope text-muted"></i>
                             </span>
-                            <input type="email" name="email" id="email" class="form-control search-input border-start-0" placeholder="Masukkan email" required>
+                            <input type="email" name="email" id="email" class="form-control search-input border-start-0" placeholder="Masukkan email" required value="{{ old('email') }}">
                         </div>
                         @error('email')
                             <div class="text-danger mt-1" style="font-size: 0.85rem;">{{ $message }}</div>
@@ -53,12 +53,24 @@
                             <div class="text-danger mt-1" style="font-size: 0.85rem;">{{ $message }}</div>
                         @enderror
                     </div>
+                    <div class="mb-3">
+                        <label for="password_confirmation" class="form-label">Konfirmasi Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="fas fa-lock text-muted"></i>
+                            </span>
+                            <input type="password" name="password_confirmation" id="password_confirmation" class="form-control search-input border-start-0" placeholder="Konfirmasi password" required>
+                        </div>
+                        @error('password_confirmation')
+                            <div class="text-danger mt-1" style="font-size: 0.85rem;">{{ $message }}</div>
+                        @enderror
+                    </div>
                     <button type="submit" class="btn btn-primary-custom w-100">Register</button>
                 </form>
                 <div class="text-center mt-3">
                     <a href="{{ route('login') }}" class="btn btn-outline-custom">Kembali ke Login</a>
                 </div>
-                @if ($errors->any() && !$errors->has('nama_pengguna') && !$errors->has('email') && !$errors->has('password'))
+                @if ($errors->any() && !$errors->has('nama_pengguna') && !$errors->has('email') && !$errors->has('password') && !$errors->has('password_confirmation'))
                     <div class="alert alert-danger mt-3" role="alert">
                         {{ $errors->first() }}
                     </div>

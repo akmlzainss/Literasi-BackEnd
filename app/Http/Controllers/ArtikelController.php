@@ -11,15 +11,18 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
 use Mews\Purifier\Facades\Purifier;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Validation\ValidationException;
 
 class ArtikelController extends Controller
 {
+    /**
+     * Menampilkan daftar semua artikel dengan filter dan paginasi.
+     */
     public function index(Request $request)
     {
         Paginator::useBootstrapFive();
 
         try {
-            // Menggunakan `when()` untuk query yang lebih bersih
             $artikels = Artikel::with('kategori', 'siswa')
                 ->when($request->filled('search'), function ($query) use ($request) {
                     $search = $request->input('search');
@@ -30,87 +33,90 @@ class ArtikelController extends Controller
                     });
                 })
                 ->when($request->filled('kategori'), function ($query) use ($request) {
-                    $query->whereHas('kategori', fn($q) => $q->where('nama', $request->input('kategori')));
+                    // Menggunakan id_kategori untuk filter yang lebih akurat
+                    $query->where('id_kategori', $request->input('kategori'));
                 })
                 ->when($request->filled('status'), function ($query) use ($request) {
                     $query->where('status', $request->input('status'));
                 })
-                ->latest('dibuat_pada') // Urutkan berdasarkan yang terbaru
+                ->latest()
                 ->paginate(9)
                 ->appends($request->query());
 
-            return view('artikel.artikel', compact('artikels'));
+            // Mengirim data kategori ke view untuk dropdown filter
+            $kategoris = Kategori::orderBy('nama')->get();
+
+            return view('artikel.artikel', compact('artikels', 'kategoris'));
         } catch (\Exception $e) {
             Log::error('Error fetching articles: ' . $e->getMessage());
             return redirect()->route('artikel')->with('error', 'Gagal memuat artikel.');
         }
     }
 
+    /**
+     * Menampilkan form untuk membuat artikel baru.
+     */
     public function create()
     {
         return view('artikel.create');
     }
 
+    /**
+     * Menyimpan artikel baru ke database.
+     */
     public function store(Request $request)
     {
         try {
-            // Memanggil helper method untuk validasi dan persiapan data
             $data = $this->prepareArtikelData($request);
-
             Artikel::create($data);
-            Log::info('Artikel created with data: ', $data);
-
             return redirect()->route('artikel')->with('success', 'Artikel berhasil ditambahkan.');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('Validation error on store: ' . json_encode($e->errors()));
+        } catch (ValidationException $e) {
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             Log::error('Error creating article: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal menambahkan artikel: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menambahkan artikel: ' . $e->getMessage())->withInput();
         }
     }
 
+    /**
+     * Menampilkan form untuk mengedit artikel.
+     */
     public function edit($id)
     {
         try {
             $artikel = Artikel::with('kategori', 'siswa')->findOrFail($id);
             return view('artikel.edit', compact('artikel'));
         } catch (\Exception $e) {
-            Log::error('Error loading edit page for article ' . $id . ': ' . $e->getMessage());
             return redirect()->route('artikel')->with('error', 'Gagal memuat halaman edit artikel.');
         }
     }
 
+    /**
+     * Memperbarui artikel di database.
+     */
     public function update(Request $request, $id)
     {
         try {
             $artikel = Artikel::findOrFail($id);
-            // Memanggil helper method, passing artikel yang ada untuk update
             $data = $this->prepareArtikelData($request, $artikel);
-
             $artikel->update($data);
-            Log::info('Artikel updated with ID ' . $id . ', Data: ', $data);
-
             return redirect()->route('artikel')->with('success', 'Artikel berhasil diperbarui.');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('Validation error on update: ' . json_encode($e->errors()));
+        } catch (ValidationException $e) {
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             Log::error('Error updating article ' . $id . ': ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal memperbarui artikel.');
+            return redirect()->back()->with('error', 'Gagal memperbarui artikel.')->withInput();
         }
     }
 
-
     /**
      * Helper method untuk validasi dan persiapan data artikel.
-     * Mengurangi duplikasi kode antara store() dan update().
      */
     private function prepareArtikelData(Request $request, Artikel $artikel = null): array
     {
         $validated = $request->validate([
             'judul' => 'required|string|max:255',
-            'isi' => 'required|string|max:3500', // Naikkan sedikit batasnya untuk mengakomodasi tag HTML
+            'isi' => 'required|string|max:65000',
             'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'id_kategori' => 'nullable|exists:kategori,id',
             'penulis_type' => 'required|in:admin,siswa',
@@ -120,31 +126,27 @@ class ArtikelController extends Controller
             'alasan_penolakan' => 'required_if:status,ditolak|nullable|string|max:1000',
         ]);
 
-        // 2. Gunakan Purifier untuk membersihkan konten 'isi'
         $validated['isi'] = Purifier::clean($validated['isi']);
 
-        // Menangani logika penulis (siswa atau admin)
-        $validated['id_siswa'] = $validated['penulis_type'] === 'siswa' ? $validated['id_siswa'] : null;
+        if ($validated['penulis_type'] === 'admin') {
+            $validated['id_siswa'] = null;
+        }
 
-        // Menangani upload gambar
         if ($request->hasFile('gambar')) {
-            // Hapus gambar lama jika ada saat update
             if ($artikel && $artikel->gambar) {
                 Storage::disk('public')->delete($artikel->gambar);
             }
             $validated['gambar'] = $request->file('gambar')->store('artikel', 'public');
         }
-
-        // Menentukan tanggal terbit atau dibuat
-        if (!$artikel) { // Jika ini adalah proses 'store' baru
-            $validated['dibuat_pada'] = now();
-        }
+        
         $validated['diterbitkan_pada'] = $validated['status'] === 'disetujui' && (!$artikel || !$artikel->diterbitkan_pada) ? now() : ($artikel->diterbitkan_pada ?? null);
 
         return $validated;
     }
 
-
+    /**
+     * Menghapus artikel.
+     */
     public function destroy($id)
     {
         try {
@@ -160,30 +162,70 @@ class ArtikelController extends Controller
         }
     }
 
+    /**
+     * Menampilkan detail artikel.
+     */
     public function show($id)
     {
         try {
             $artikel = Artikel::with(['kategori', 'siswa', 'komentarArtikel'])->findOrFail($id);
             return view('artikel.show', compact('artikel'));
         } catch (\Exception $e) {
-            Log::error('Error loading article details: ' . $e->getMessage());
+            Log::error('Error showing article ' . $id . ': ' . $e->getMessage());
             return redirect()->route('artikel')->with('error', 'Gagal memuat detail artikel.');
         }
     }
 
+    /**
+     * Mencari siswa untuk form Select2.
+     */
+    public function searchSiswa(Request $request)
+    {
+        try {
+            $search = $request->input('term');
+            $siswa = Siswa::where('nama', 'like', '%' . $search . '%')
+                ->orWhere('nis', 'like', '%' . $search . '%')
+                ->limit(10)
+                ->get();
+
+            $results = $siswa->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'text' => $item->nama . ' (' . $item->nis . ')',
+                    'kelas' => $item->kelas,
+                ];
+            });
+
+            // ==================================================================
+            // PERBAIKAN UTAMA DI SINI:
+            // Kembalikan ke format array sederhana yang diharapkan oleh
+            // JavaScript Select2 di file Blade Anda.
+            // ==================================================================
+            return response()->json($results);
+
+        } catch (\Exception $e) {
+            Log::error('Error searching siswa: ' . $e->getMessage());
+            return response()->json(['error' => 'Gagal mencari siswa.'], 500);
+        }
+    }
+
+    /**
+     * Mengekspor data artikel ke CSV.
+     */
     public function export()
     {
+        // ... (Fungsi export Anda tidak perlu diubah dan sudah benar) ...
         try {
             $artikels = Artikel::with('kategori', 'siswa')->get();
             $filename = 'artikels_' . now()->format('Ymd_His') . '.csv';
             $headers = [
-                'Content-Type' => 'text/csv',
+                'Content-Type' => 'text/csv; charset=utf-8',
                 'Content-Disposition' => 'attachment; filename="' . $filename . '"',
             ];
 
             $callback = function () use ($artikels) {
                 $file = fopen('php://output', 'w');
-                fputcsv($file, ['ID', 'Judul', 'Isi', 'Kategori', 'Penulis', 'Jenis', 'Status', 'Dibuat Pada', 'Diterbitkan Pada', 'Jumlah Dilihat', 'Jumlah Suka', 'Jumlah Komentar']);
+                fputcsv($file, ['ID', 'Judul', 'Isi', 'Kategori', 'Penulis', 'Jenis', 'Status', 'Dibuat Pada', 'Diterbitkan Pada', 'Jumlah Dilihat', 'Jumlah Suka']);
 
                 foreach ($artikels as $artikel) {
                     fputcsv($file, [
@@ -191,17 +233,15 @@ class ArtikelController extends Controller
                         $artikel->judul,
                         strip_tags($artikel->isi),
                         $artikel->kategori->nama ?? 'Tanpa Kategori',
-                        $artikel->siswa->nama ?? ($artikel->penulis_type === 'admin' ? 'Admin' : 'Unknown'),
+                        $artikel->penulis_nama,
                         $artikel->jenis,
                         $artikel->status,
-                        $artikel->dibuat_pada ? $artikel->dibuat_pada->format('d M Y') : '',
-                        $artikel->diterbitkan_pada ? $artikel->diterbitkan_pada->format('d M Y') : '',
+                        $artikel->created_at ? $artikel->created_at->format('d M Y H:i') : '',
+                        $artikel->diterbitkan_pada ? $artikel->diterbitkan_pada->format('d M Y H:i') : '',
                         $artikel->jumlah_dilihat,
                         $artikel->jumlah_suka,
-                        $artikel->komentarArtikel->count(),
                     ]);
                 }
-
                 fclose($file);
             };
 
@@ -209,52 +249,6 @@ class ArtikelController extends Controller
         } catch (\Exception $e) {
             Log::error('Error exporting articles: ' . $e->getMessage());
             return redirect()->route('artikel')->with('error', 'Gagal mengekspor data artikel.');
-        }
-    }
-
-    public function editAjax($id)
-    {
-        try {
-            $artikel = Artikel::with('kategori', 'siswa')->findOrFail($id);
-            return response()->json([
-                'id' => $artikel->id,
-                'judul' => $artikel->judul,
-                'isi' => $artikel->isi,
-                'gambar' => $artikel->gambar,
-                'id_kategori' => $artikel->id_kategori,
-                'id_siswa' => $artikel->id_siswa,
-                'penulis_type' => $artikel->penulis_type,
-                'jenis' => $artikel->jenis,
-                'status' => $artikel->status,
-                'alasan_penolakan' => $artikel->alasan_penolakan,
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error loading edit data via AJAX: ' . $e->getMessage());
-            return response()->json(['error' => 'Gagal memuat data artikel.'], 500);
-        }
-    }
-
-    public function searchSiswa(Request $request)
-    {
-        try {
-            $search = $request->input('term');
-            $siswa = Siswa::where('nama', 'like', '%' . $search . '%')
-                ->orWhere('nis', 'like', '%' . $search . '%')
-                ->get();
-
-            $results = [];
-            foreach ($siswa as $item) {
-                $results[] = [
-                    'id' => $item->id,
-                    'text' => $item->nama . ' (' . $item->nis . ')',
-                    'kelas' => $item->kelas,
-                ];
-            }
-
-            return response()->json($results);
-        } catch (\Exception $e) {
-            Log::error('Error searching siswa: ' . $e->getMessage());
-            return response()->json(['error' => 'Gagal mencari siswa.'], 500);
         }
     }
 }
