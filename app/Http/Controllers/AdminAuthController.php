@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Models\LogAdmin;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
@@ -47,11 +47,12 @@ class AdminAuthController extends Controller
 
         // Attempt to authenticate the admin
         if (Auth::guard('admin')->attempt($credentials)) {
-            try {
-                $admin = Auth::guard('admin')->user();
+            $admin = Auth::guard('admin')->user();
 
+            // Try to perform post-login actions like logging and updating timestamps
+            try {
                 // Update the last_login_at timestamp for the admin
-                Admin::where('id', $admin->id)->update(['last_login_at' => now()]);
+                $admin->update(['last_login_at' => now()]);
 
                 // Create a log entry for the successful login
                 LogAdmin::create([
@@ -61,19 +62,14 @@ class AdminAuthController extends Controller
                     'referensi_tipe' => 'admin',
                     'referensi_id' => $admin->id,
                 ]);
-
-                // Regenerate the session to prevent session fixation attacks
-                $request->session()->regenerate();
-                return redirect()->intended(route('dashboard'));
             } catch (Exception $e) {
-                // Log any errors that occur during the post-login process
-                Log::error('Error during login process: ' . $e->getMessage());
-                Log::error('Error details: ' . $e->getTraceAsString());
-
-                // Still allow the user to proceed even if logging fails
-                $request->session()->regenerate();
-                return redirect()->intended(route('dashboard'));
+                // Log any errors that occur, but still allow the user to proceed
+                Log::error('Error during post-login process for admin ' . $admin->id . ': ' . $e->getMessage());
             }
+
+            // Regenerate the session to prevent session fixation attacks and redirect
+            $request->session()->regenerate();
+            return redirect()->intended(route('dashboard'));
         }
 
         // If authentication fails, redirect back with an error message
@@ -120,7 +116,7 @@ class AdminAuthController extends Controller
             $admin = Admin::create([
                 'nama_pengguna' => $request->nama_pengguna,
                 'email' => $request->email,
-                'password' => Hash::make($request->password), // Using Hash::make() is correct
+                'password' => Hash::make($request->password),
                 'status_aktif' => true,
             ]);
 
@@ -138,7 +134,6 @@ class AdminAuthController extends Controller
         } catch (Exception $e) {
             DB::rollback();
             Log::error('Error during registration: ' . $e->getMessage());
-            Log::error('Error details: ' . $e->getTraceAsString());
             return back()->withErrors(['error' => 'Registrasi gagal. Silakan coba lagi.'])->withInput();
         }
     }
@@ -164,8 +159,7 @@ class AdminAuthController extends Controller
                     'referensi_id' => $admin->id,
                 ]);
             } catch (Exception $e) {
-                Log::error('Error during logout logging: ' . $e->getMessage());
-                Log::error('Error details: ' . $e->getTraceAsString());
+                Log::error('Error during logout logging for admin ' . $admin->id . ': ' . $e->getMessage());
             }
         }
 
@@ -189,52 +183,48 @@ class AdminAuthController extends Controller
 
         // Validate the password update request
         $request->validate([
-            'current_password' => 'nullable|string',
+            'current_password' => 'required|string',
             'new_password' => [
-                'nullable',
-                'string',
-                'min:8',
-                'confirmed',
-                'regex:/[a-z]/',
-                'regex:/[A-Z]/',
-                'regex:/[0-9]/',
-                'regex:/[@$!%*#?&]/'
+                'required', 'string', 'min:8', 'confirmed',
+                'regex:/[a-z]/', 'regex:/[A-Z]/', 'regex:/[0-9]/', 'regex:/[@$!%*#?&]/'
             ],
         ], [
-            'new_password.regex' => 'Password harus mengandung huruf besar, huruf kecil, angka, dan karakter khusus.',
+            'current_password.required' => 'Password saat ini wajib diisi.',
+            'new_password.required' => 'Password baru wajib diisi.',
+            'new_password.min' => 'Password baru minimal 8 karakter.',
+            'new_password.confirmed' => 'Konfirmasi password baru tidak cocok.',
+            'new_password.regex' => 'Password baru harus mengandung huruf besar, huruf kecil, angka, dan karakter khusus.',
         ]);
-
-        if ($request->filled('new_password')) {
-            // Check if the current password is correct
-            if (!$request->filled('current_password') || !Hash::check($request->current_password, $admin->password)) {
-                return back()->withErrors(['current_password' => 'Password saat ini salah']);
-            }
-
-            /** @var \App\Models\Admin $admin */
-            $admin = Auth::guard('admin')->user();
-
-            $admin->forceFill([
-                'password' => Hash::make($request->new_password),
-            ])->save();
-
-
-            try {
-                // Create a log entry for the password update
-                LogAdmin::create([
-                    'id_admin' => $admin->id,
-                    'jenis_aksi' => 'update_password',
-                    'aksi' => 'Admin mengubah password',
-                    'referensi_tipe' => 'admin',
-                    'referensi_id' => $admin->id,
-                ]);
-            } catch (Exception $e) {
-                Log::error('Error saat membuat log update password: ' . $e->getMessage());
-                Log::error('Detail error: ' . $e->getTraceAsString());
-            }
-
-            return redirect()->back()->with('success', 'Password berhasil diubah');
+        
+        // Check if the current password is correct
+        if (!Hash::check($request->current_password, $admin->password)) {
+            return back()->withErrors(['current_password' => 'Password saat ini salah.']);
         }
 
-        return redirect()->back()->with('info', 'Tidak ada perubahan password dilakukan.');
+        DB::beginTransaction();
+        try {
+            // Update the password and the timestamp
+            $admin->update([
+                'password' => Hash::make($request->new_password),
+                'last_password_changed_at' => now(), // <-- Perubahan ditambahkan di sini
+            ]);
+
+            // Create a log entry for the password update
+            LogAdmin::create([
+                'id_admin' => $admin->id,
+                'jenis_aksi' => 'update_password',
+                'aksi' => 'Admin mengubah password',
+                'referensi_tipe' => 'admin',
+                'referensi_id' => $admin->id,
+            ]);
+            
+            DB::commit();
+            return redirect()->back()->with('success', 'Password berhasil diubah.');
+
+        } catch (Exception $e) {
+            DB::rollback();
+            Log::error('Error saat membuat log update password: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['error' => 'Gagal mengubah password. Silakan coba lagi.']);
+        }
     }
 }
