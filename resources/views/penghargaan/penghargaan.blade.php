@@ -11,9 +11,9 @@
         <p class="page-subtitle">Atur dan kelola semua penghargaan untuk artikel literasi akhlak</p>
 
         <div class="action-buttons">
-            <button type="button" class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#modalTambahPenghargaan">
+            <a href="{{ route('penghargaan.create') }}" class="btn-primary-custom">
                 <i class="fas fa-plus"></i> Tambah Penghargaan Baru
-            </button>
+            </a>
             <a href="#" class="btn-outline-custom">
                 <i class="fas fa-upload"></i> Import Penghargaan
             </a>
@@ -23,161 +23,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modalTambahPenghargaan" tabindex="-1" aria-labelledby="modalTambahPenghargaanLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <form action="{{ route('penghargaan.store') }}" method="POST">
-                    @csrf
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalTambahPenghargaanLabel">Tambah Penghargaan Baru</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="id_artikel" class="form-label">Artikel (Opsional)</label>
-                            <select name="id_artikel" id="id_artikel" class="form-control">
-                                <option value="">Pilih Artikel</option>
-                                @if ($highestRatedArtikel)
-                                    <option value="{{ $highestRatedArtikel->id }}" selected>
-                                        {{ $highestRatedArtikel->judul }} (Rating Tertinggi:
-                                        {{ $highestRatedArtikel->nilai_rata_rata }})
-                                    </option>
-                                @endif
-                                @foreach ($artikel as $artikelItem)
-                                    @if ($highestRatedArtikel && $artikelItem->id != $highestRatedArtikel->id)
-                                        <option value="{{ $artikelItem->id }}">{{ $artikelItem->judul }} (Rating:
-                                            {{ $artikelItem->nilai_rata_rata }})</option>
-                                    @endif
-                                @endforeach
-                            </select>
-                            @error('id_artikel')
-                                <div class="text-danger">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="mb-3">
-                            <label for="id_siswa" class="form-label">Siswa</label>
-                            <select name="id_siswa" id="id_siswa" class="form-control" required>
-                                <option value="">Pilih Siswa</option>
-                                @if ($highestRatedArtikel && $highestRatedArtikel->siswa)
-                                    <option value="{{ $highestRatedArtikel->siswa->id }}" selected>
-                                        {{ $highestRatedArtikel->siswa->nama }} (Penulis Artikel Tertinggi)
-                                    </option>
-                                @endif
-                                @foreach ($siswa as $item)
-                                    @if (!$highestRatedArtikel || !$highestRatedArtikel->siswa || $item->id != $highestRatedArtikel->siswa->id)
-                                        <option value="{{ $item->id }}">{{ $item->nama }}</option>
-                                    @endif
-                                @endforeach
-
-                            </select>
-                            @error('id_siswa')
-                                <div class="text-danger">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="mb-3">
-                            <label for="jenis" class="form-label">Jenis Penghargaan</label>
-                            <select name="jenis" id="jenis" class="form-control" required>
-                                <option value="bulanan">Bulanan</option>
-                                <option value="spesial">Spesial</option>
-                            </select>
-                            @error('jenis')
-                                <div class="text-danger">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="mb-3">
-                            <label for="bulan_tahun" class="form-label">Bulan dan Tahun</label>
-                            <input type="date" name="bulan_tahun" id="bulan_tahun" class="form-control"
-                                value="{{ $selectedMonth }}-01" required>
-                            @error('bulan_tahun')
-                                <div class="text-danger">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="mb-3">
-                            <label for="deskripsi_penghargaan" class="form-label">Deskripsi Penghargaan</label>
-                            <textarea name="deskripsi_penghargaan" id="deskripsi_penghargaan" class="form-control" rows="4" required></textarea>
-                            @error('deskripsi_penghargaan')
-                                <div class="text-danger">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success">Simpan Penghargaan</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="modalEditPenghargaan" tabindex="-1" aria-labelledby="modalEditPenghargaanLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <form id="editPenghargaanForm" method="POST">
-                    @csrf
-                    @method('PUT')
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalEditPenghargaanLabel">Edit Penghargaan</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="hidden" name="id" id="edit_id">
-                        <div class="mb-3">
-                            <label for="edit_id_artikel" class="form-label">Artikel (Opsional)</label>
-                            <select name="id_artikel" id="edit_id_artikel" class="form-control">
-                                <option value="">Pilih Artikel</option>
-                            </select>
-                            @error('id_artikel')
-                                <div class="text-danger">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="mb-3">
-                            <label for="edit_id_siswa" class="form-label">Siswa</label>
-                            <select name="id_siswa" id="edit_id_siswa" class="form-control" required>
-                                <option value="">Pilih Siswa</option>
-                                @foreach ($siswa as $item)
-                                    <option value="{{ $item->id }}">{{ $item->nama }}</option>
-                                @endforeach
-                            </select>
-                            @error('id_siswa')
-                                <div class="text-danger">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="mb-3">
-                            <label for="edit_jenis" class="form-label">Jenis Penghargaan</label>
-                            <select name="jenis" id="edit_jenis" class="form-control" required>
-                                <option value="bulanan">Bulanan</option>
-                                <option value="spesial">Spesial</option>
-                            </select>
-                            @error('jenis')
-                                <div class="text-danger">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="mb-3">
-                            <label for="edit_bulan_tahun" class="form-label">Bulan dan Tahun</label>
-                            <input type="date" name="bulan_tahun" id="edit_bulan_tahun" class="form-control"
-                                required>
-                            @error('bulan_tahun')
-                                <div class="text-danger">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="mb-3">
-                            <label for="edit_deskripsi_penghargaan" class="form-label">Deskripsi Penghargaan</label>
-                            <textarea name="deskripsi_penghargaan" id="edit_deskripsi_penghargaan" class="form-control" rows="4" required></textarea>
-                            @error('deskripsi_penghargaan')
-                                <div class="text-danger">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success">Perbarui Penghargaan</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    @include('penghargaan.modal-edit')
 
     <hr>
 
@@ -188,7 +34,7 @@
             </div>
             <div class="d-flex align-items-center gap-2 text-white">
                 <i class="fas fa-info-circle"></i>
-                <span>Total: {{ $totalPenghargaan }} penghargaan</span>
+                <span>Total: {{ $totalPenghargaan ?? 0 }} penghargaan</span>
             </div>
         </div>
 
@@ -208,10 +54,8 @@
                         <div class="col-md-3">
                             <select name="jenis" class="form-select filter-select">
                                 <option value="">Semua Jenis</option>
-                                <option value="bulanan" {{ request('jenis') == 'bulanan' ? 'selected' : '' }}>Bulanan
-                                </option>
-                                <option value="spesial" {{ request('jenis') == 'spesial' ? 'selected' : '' }}>Spesial
-                                </option>
+                                <option value="bulanan" {{ request('jenis') == 'bulanan' ? 'selected' : '' }}>Bulanan</option>
+                                <option value="spesial" {{ request('jenis') == 'spesial' ? 'selected' : '' }}>Spesial</option>
                             </select>
                         </div>
                         <div class="col-md-3">
@@ -219,7 +63,7 @@
                                 <option value="">Semua Bulan</option>
                                 @for ($month = 1; $month <= 12; $month++)
                                     <option value="{{ sprintf('%d-%02d', now()->year, $month) }}"
-                                        {{ $selectedMonth == sprintf('%d-%02d', now()->year, $month) ? 'selected' : '' }}>
+                                        {{ ($selectedMonth ?? '') == sprintf('%d-%02d', now()->year, $month) ? 'selected' : '' }}>
                                         {{ \Carbon\Carbon::create(now()->year, $month, 1)->translatedFormat('F Y') }}
                                     </option>
                                 @endfor
@@ -238,37 +82,60 @@
 
             <div class="awards-grid mt-4">
                 <div class="row g-4">
-                    @forelse ($penghargaan as $item)
-                        @if (is_object($item) && $item->id && $item->siswa)
+                    @forelse ($penghargaan ?? [] as $item)
+                        @if (is_object($item) && isset($item->id) && isset($item->siswa))
                             <div class="col-lg-4 col-md-6">
                                 <div class="award-card">
                                     <div class="award-icon">
                                         <i class="fas fa-trophy"></i>
                                     </div>
                                     <div class="award-content">
-                                        <div class="award-title">{{ Str::limit($item->deskripsi_penghargaan, 100) }}</div>
+                                        <div class="award-title">{{ Str::limit($item->deskripsi_penghargaan ?? 'Tidak ada deskripsi', 100) }}</div>
                                         <div class="award-meta">
                                             <span>
-                                                <i class="fas fa-award"></i> Jenis: {{ ucfirst($item->jenis) }}
+                                                <i class="fas fa-award"></i> Jenis: {{ ucfirst($item->jenis ?? 'Tidak diketahui') }}
                                             </span>
                                             <span>
                                                 <i class="fas fa-calendar"></i> Tanggal:
-                                                {{ \Carbon\Carbon::parse($item->bulan_tahun)->translatedFormat('d F Y') }}
+                                                @if($item->bulan_tahun)
+                                                    {{ \Carbon\Carbon::parse($item->bulan_tahun)->translatedFormat('d F Y') }}
+                                                @else
+                                                    Tanggal tidak tersedia
+                                                @endif
                                             </span>
                                         </div>
                                         <div class="award-recipient">
-                                            <div class="recipient-avatar">{{ substr($item->siswa->nama ?? '?', 0, 2) }}
-                                            </div>
+                                            <div class="recipient-avatar">{{ substr($item->siswa->nama ?? '?', 0, 2) }}</div>
                                             <div class="recipient-name">{{ $item->siswa->nama ?? 'Unknown' }}</div>
                                         </div>
+                                        
+                                        <!-- Rating Section - Dipindahkan ke dalam award-content -->
+                                        @if(isset($item->artikel) && isset($item->artikel->rating))
+                                            <div class="award-rating mt-3">
+                                                <div class="rating-info">
+                                                    <i class="fas fa-star rating-icon"></i>
+                                                    <span class="rating-label">Rating:</span>
+                                                    <span class="rating-value">{{ number_format($item->artikel->rating, 1) }}</span>
+                                                </div>
+                                                <div class="rating-stars">
+                                                    @php 
+                                                        $rating = floatval($item->artikel->rating ?? 0);
+                                                    @endphp
+                                                    @for ($i = 1; $i <= 5; $i++)
+                                                        <span class="rating-star {{ $i <= $rating ? 'filled' : 'empty' }}">
+                                                            {{ $i <= $rating ? '⭐' : '☆' }}
+                                                        </span>
+                                                    @endfor
+                                                </div>
+                                            </div>
+                                        @endif
                                     </div>
                                     <div class="award-actions">
                                         <button class="btn-action-card btn-edit-card" data-bs-toggle="modal"
                                             data-bs-target="#modalEditPenghargaan" data-id="{{ $item->id }}">
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <form action="{{ route('penghargaan.destroy', $item->id) }}" method="POST"
-                                            class="d-inline">
+                                        <form action="{{ route('penghargaan.destroy', $item->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn-action-card btn-delete-card"
@@ -286,11 +153,18 @@
                         @endif
                     @empty
                         <div class="col-12">
-                            <p class="text-center text-muted">Tidak ada penghargaan yang ditemukan.</p>
+                            <div class="alert alert-info text-center">
+                                <i class="fas fa-trophy fa-3x mb-3 text-muted"></i>
+                                <h5>Belum Ada Penghargaan</h5>
+                                <p class="mb-0">Tidak ada penghargaan yang ditemukan. Silakan tambahkan penghargaan baru.</p>
+                            </div>
                         </div>
                     @endforelse
                 </div>
-                {{ $penghargaan->links() }}
+                
+                @if(isset($penghargaan) && method_exists($penghargaan, 'links'))
+                    {{ $penghargaan->links() }}
+                @endif
             </div>
 
             <hr>
@@ -298,24 +172,28 @@
             <div class="artikel-section mt-5">
                 <div class="card-header-custom">
                     <div>
-                        <i class="fas fa-book me-2"></i>Daftar Artikel Bulan Ini (Filter: {{ $selectedMonth }})
-                        <form method="GET" style="display:inline;">
-                            <select name="year" onchange="this.form.submit()" style="margin-right: 10px;">
-                                @for ($year = $minYear; $year <= $maxYear; $year++)
+                        <i class="fas fa-book me-2"></i>Daftar Artikel Bulan Ini 
+                        @if(isset($selectedMonth))
+                            (Filter: {{ \Carbon\Carbon::parse($selectedMonth)->translatedFormat('F Y') }})
+                        @endif
+                        
+                        <form method="GET" style="display:inline;" class="ms-3">
+                            <select name="year" onchange="this.form.submit()" class="form-select d-inline" style="width: auto; margin-right: 10px;">
+                                @for ($year = ($minYear ?? date('Y')); $year <= ($maxYear ?? date('Y')); $year++)
                                     <option value="{{ $year }}"
-                                        {{ date('Y', strtotime($selectedMonth)) == $year ? 'selected' : '' }}>
+                                        {{ (isset($selectedMonth) && date('Y', strtotime($selectedMonth)) == $year) ? 'selected' : '' }}>
                                         {{ $year }}
                                     </option>
                                 @endfor
                             </select>
-                            <select name="month" onchange="this.form.submit()">
+                            <select name="month" onchange="this.form.submit()" class="form-select d-inline" style="width: auto;">
                                 @foreach (range(1, 12) as $month)
-                                    <?php
-                                    $monthName = \Carbon\Carbon::create(now()->year, $month, 1)->translatedFormat('F');
-                                    $monthValue = date('Y-m', mktime(0, 0, 0, $month, 1, date('Y', strtotime($selectedMonth))));
-                                    ?>
+                                    @php
+                                        $monthName = \Carbon\Carbon::create(now()->year, $month, 1)->translatedFormat('F');
+                                        $monthValue = date('Y-m', mktime(0, 0, 0, $month, 1, date('Y', strtotime($selectedMonth ?? now()))));
+                                    @endphp
                                     <option value="{{ $monthValue }}"
-                                        {{ $selectedMonth == $monthValue ? 'selected' : '' }}>
+                                        {{ ($selectedMonth ?? '') == $monthValue ? 'selected' : '' }}>
                                         {{ $monthName }}
                                     </option>
                                 @endforeach
@@ -326,13 +204,13 @@
                 <div class="card-body-custom">
                     <div class="articles-grid">
                         <div class="row g-4">
-                            @forelse ($artikel as $index => $artikelItem)
-                                @if (is_object($artikelItem) && $artikelItem->id)
+                            @forelse ($artikel ?? [] as $index => $artikelItem)
+                                @if (is_object($artikelItem) && isset($artikelItem->id))
                                     <div class="col-lg-4 col-md-6">
                                         <div class="article-card">
                                             <div class="article-image">
-                                                <img src="{{ $artikelItem->gambar ? asset('storage/' . $artikelItem->gambar) : 'https://via.placeholder.com/400x200' }}"
-                                                    alt="{{ $artikelItem->judul }}"
+                                                <img src="{{ isset($artikelItem->gambar) && $artikelItem->gambar ? asset('storage/' . $artikelItem->gambar) : 'https://via.placeholder.com/400x200' }}"
+                                                    alt="{{ $artikelItem->judul ?? 'Artikel' }}"
                                                     title="Path: {{ $artikelItem->gambar ?? 'Tidak ada' }}"
                                                     onerror="this.src='https://via.placeholder.com/400x200'; console.log('Gagal memuat gambar: ' + this.src + ', Path DB: ' + '{{ $artikelItem->gambar ?? 'null' }}');">
                                                 <div class="article-overlay">
@@ -354,21 +232,23 @@
                                             </div>
                                             <div class="article-content">
                                                 <div class="article-category">
-                                                    <span
-                                                        class="category-tag">{{ $artikelItem->kategori->nama ?? 'Tanpa Kategori' }}</span>
+                                                    <span class="category-tag">
+                                                        {{ (isset($artikelItem->kategori) && $artikelItem->kategori->nama) ? $artikelItem->kategori->nama : 'Tanpa Kategori' }}
+                                                    </span>
                                                 </div>
                                                 <h5 class="article-title-card">
-                                                    {{ $artikelItem->judul ?? 'Judul Tidak Tersedia' }}</h5>
+                                                    {{ $artikelItem->judul ?? 'Judul Tidak Tersedia' }}
+                                                </h5>
                                                 <p class="article-excerpt-card">
                                                     {{ Str::limit(strip_tags($artikelItem->isi ?? 'Isi tidak tersedia'), 100) }}
                                                 </p>
                                                 <div class="article-author-card">
                                                     <div class="author-avatar">
-                                                        {{ substr($artikelItem->siswa->nama ?? '?', 0, 2) }}
+                                                        {{ substr((isset($artikelItem->siswa) ? $artikelItem->siswa->nama : '?'), 0, 2) }}
                                                     </div>
                                                     <div class="author-info">
                                                         <div class="author-name">
-                                                            {{ $artikelItem->siswa ? $artikelItem->siswa->nama : 'Siswa Tidak Ditemukan' }}
+                                                            {{ (isset($artikelItem->siswa) && $artikelItem->siswa->nama) ? $artikelItem->siswa->nama : 'Siswa Tidak Ditemukan' }}
                                                         </div>
                                                         <div class="author-role">Penulis</div>
                                                     </div>
@@ -377,7 +257,11 @@
                                                     <div class="meta-stats">
                                                         <span>
                                                             <i class="fas fa-calendar"></i>
-                                                            {{ \Carbon\Carbon::parse($artikelItem->diterbitkan_pada)->translatedFormat('d F Y') }}
+                                                            @if(isset($artikelItem->diterbitkan_pada))
+                                                                {{ \Carbon\Carbon::parse($artikelItem->diterbitkan_pada)->translatedFormat('d F Y') }}
+                                                            @else
+                                                                Tanggal tidak tersedia
+                                                            @endif
                                                         </span>
                                                     </div>
                                                 </div>
@@ -391,21 +275,27 @@
                                 @endif
                             @empty
                                 <div class="col-12">
-                                    <p class="text-center text-muted">Tidak ada artikel untuk bulan ini.</p>
+                                    <div class="alert alert-info text-center">
+                                        <i class="fas fa-book fa-3x mb-3 text-muted"></i>
+                                        <h5>Tidak Ada Artikel</h5>
+                                        <p class="mb-0">Tidak ada artikel untuk bulan ini.</p>
+                                    </div>
                                 </div>
                             @endforelse
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center mt-4">
-                        <div class="pagination-info text-muted">
-                            {{ 'Showing ' . $artikel->firstItem() . ' to ' . $artikel->lastItem() . ' of ' . $artikel->total() . ' results' }}
-                        </div>
+                    @if(isset($artikel) && method_exists($artikel, 'links'))
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <div class="pagination-info text-muted">
+                                {{ 'Showing ' . $artikel->firstItem() . ' to ' . $artikel->lastItem() . ' of ' . $artikel->total() . ' results' }}
+                            </div>
 
-                        <div>
-                            {{ $artikel->appends(request()->query())->links('vendor.pagination.custom-pagination') }}
+                            <div>
+                                {{ $artikel->appends(request()->query())->links('vendor.pagination.custom-pagination') }}
+                            </div>
                         </div>
-                    </div>
+                    @endif
                 </div>
             </div>
 
@@ -419,34 +309,39 @@
                 </div>
                 <div class="card-body-custom">
                     <div class="winners-list">
-                        @forelse ($penghargaan as $item)
-                            @if (is_object($item) && $item->id && $item->siswa)
+                        @forelse ($penghargaan ?? [] as $item)
+                            @if (is_object($item) && isset($item->id) && isset($item->siswa))
                                 <div class="winner-item fade-in">
                                     <div class="winner-avatar"
-                                        style="background: linear-gradient(135deg, {{ $item->jenis == 'bulanan' ? '#f59e0b, #d97706' : '#8b5cf6, #7c3aed' }});">
-                                        {{ $item->siswa ? Str::substr($item->siswa->nama, 0, 1) : '-' }}
+                                        style="background: linear-gradient(135deg, {{ ($item->jenis ?? '') == 'bulanan' ? '#f59e0b, #d97706' : '#8b5cf6, #7c3aed' }});">
+                                        {{ isset($item->siswa) ? Str::substr($item->siswa->nama, 0, 1) : '-' }}
                                     </div>
                                     <div class="winner-info">
                                         <div class="winner-name">
-                                            {{ $item->siswa ? $item->siswa->nama : 'Siswa tidak ditemukan' }}</div>
+                                            {{ isset($item->siswa) ? $item->siswa->nama : 'Siswa tidak ditemukan' }}
+                                        </div>
                                         <div class="winner-description">
-                                            {{ $item->artikel ? $item->artikel->judul : $item->deskripsi_penghargaan }}
+                                            {{ (isset($item->artikel) && $item->artikel->judul) ? $item->artikel->judul : ($item->deskripsi_penghargaan ?? 'Tidak ada deskripsi') }}
                                         </div>
                                     </div>
                                 </div>
                             @else
                                 <div class="winner-item fade-in">
-                                    <div class="winner-avatar"
-                                        style="background: linear-gradient(135deg, #f59e0b, #d97706);">-</div>
+                                    <div class="winner-avatar" style="background: linear-gradient(135deg, #f59e0b, #d97706);">-</div>
                                     <div class="winner-info">
                                         <div class="winner-name">Data tidak valid</div>
                                         <div class="winner-description">
-                                            {{ $item->deskripsi_penghargaan ?? 'Tidak ada deskripsi' }}</div>
+                                            {{ (is_object($item) ? ($item->deskripsi_penghargaan ?? 'Tidak ada deskripsi') : 'Tidak ada deskripsi') }}
+                                        </div>
                                     </div>
                                 </div>
                             @endif
                         @empty
-                            <p class="text-center text-muted">Tidak ada pemenang penghargaan yang ditemukan.</p>
+                            <div class="alert alert-info text-center">
+                                <i class="fas fa-crown fa-3x mb-3 text-muted"></i>
+                                <h5>Belum Ada Pemenang</h5>
+                                <p class="mb-0">Tidak ada pemenang penghargaan yang ditemukan untuk bulan ini.</p>
+                            </div>
                         @endforelse
                     </div>
                 </div>
@@ -455,7 +350,7 @@
     </div>
 
     @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3" role="alert" style="z-index: 1050;">
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
@@ -468,63 +363,81 @@
                 button.addEventListener('click', function() {
                     const id = this.getAttribute('data-id');
                     fetch(`/penghargaan/${id}/edit`)
-                        .then(response => response.json())
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
                         .then(data => {
                             const form = document.getElementById('editPenghargaanForm');
-                            form.action = `/penghargaan/${id}`;
-                            document.getElementById('edit_id').value = data.penghargaan.id ||
-                                '';
-                            document.getElementById('edit_id_artikel').value = data.penghargaan
-                                .id_artikel || '';
-                            document.getElementById('edit_id_siswa').value = data.penghargaan
-                                .id_siswa || '';
-                            document.getElementById('edit_jenis').value = data.penghargaan
-                                .jenis || '';
-                            document.getElementById('edit_bulan_tahun').value = data.penghargaan
-                                .bulan_tahun || '';
-                            document.getElementById('edit_deskripsi_penghargaan').value = data
-                                .penghargaan.deskripsi_penghargaan || '';
-                            const select = document.getElementById('edit_id_artikel');
-                            select.innerHTML = '<option value="">Pilih Artikel</option>';
-                            if (data.highestRatedArtikel) {
-                                select.innerHTML +=
-                                    `<option value="${data.highestRatedArtikel.id}">${data.highestRatedArtikel.judul} (Rating Tertinggi: ${data.highestRatedArtikel.nilai_rata_rata})</option>`;
-                            }
-                            data.artikel.forEach(artikel => {
-                                if (!data.highestRatedArtikel || artikel.id != data
-                                    .highestRatedArtikel.id) {
-                                    select.innerHTML +=
-                                        `<option value="${artikel.id}">${artikel.judul} (Rating: ${artikel.nilai_rata_rata})</option>`;
+                            if (form) {
+                                form.action = `/penghargaan/${id}`;
+                                
+                                // Helper function to safely set input values
+                                const setInputValue = (elementId, value) => {
+                                    const element = document.getElementById(elementId);
+                                    if (element) {
+                                        element.value = value || '';
+                                    }
+                                };
+                                
+                                setInputValue('edit_id', data.penghargaan?.id);
+                                setInputValue('edit_id_artikel', data.penghargaan?.id_artikel);
+                                setInputValue('edit_id_siswa', data.penghargaan?.id_siswa);
+                                setInputValue('edit_jenis', data.penghargaan?.jenis);
+                                setInputValue('edit_bulan_tahun', data.penghargaan?.bulan_tahun);
+                                setInputValue('edit_deskripsi_penghargaan', data.penghargaan?.deskripsi_penghargaan);
+                                
+                                // Update artikel select
+                                const select = document.getElementById('edit_id_artikel');
+                                if (select) {
+                                    select.innerHTML = '<option value="">Pilih Artikel</option>';
+                                    
+                                    if (data.highestRatedArtikel) {
+                                        select.innerHTML += `<option value="${data.highestRatedArtikel.id}">${data.highestRatedArtikel.judul} (Rating Tertinggi: ${data.highestRatedArtikel.nilai_rata_rata || 'N/A'})</option>`;
+                                    }
+                                    
+                                    if (data.artikel && Array.isArray(data.artikel)) {
+                                        data.artikel.forEach(artikel => {
+                                            if (!data.highestRatedArtikel || artikel.id != data.highestRatedArtikel.id) {
+                                                select.innerHTML += `<option value="${artikel.id}">${artikel.judul} (Rating: ${artikel.nilai_rata_rata || 'N/A'})</option>`;
+                                            }
+                                        });
+                                    }
+                                    
+                                    if (data.penghargaan?.id_artikel) {
+                                        select.value = data.penghargaan.id_artikel;
+                                    }
                                 }
-                            });
-                            // Select the correct article in the edit modal
-                            if (data.penghargaan.id_artikel) {
-                                document.getElementById('edit_id_artikel').value = data
-                                    .penghargaan.id_artikel;
                             }
                         })
-                        .catch(error => console.error('Error:', error));
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Terjadi kesalahan saat memuat data penghargaan.');
+                        });
                 });
             });
 
+            // Global function for selecting artikel
             window.selectArtikel = function(button) {
                 const artikelId = button.getAttribute('data-id');
-                fetch(`/artikel/${artikelId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        document.getElementById('id_artikel').value = data.id;
-                        document.getElementById('id_siswa').value = data.siswa_id;
-                        document.getElementById('bulan_tahun').value = data.diterbitkan_pada.substring(0,
-                            7) + '-01';
-                        document.getElementById('deskripsi_penghargaan').value =
-                            `Penghargaan untuk artikel: ${data.judul}`;
-                        // Automatically open the modal after filling the data
-                        const modal = new bootstrap.Modal(document.getElementById(
-                            'modalTambahPenghargaan'));
-                        modal.show();
-                    })
-                    .catch(error => console.error('Error:', error));
+                if (artikelId) {
+                    window.location.href = `{{ route('penghargaan.create') }}?artikel_id=${artikelId}`;
+                }
             };
+            
+            // Auto-hide success alert after 5 seconds
+            const successAlert = document.querySelector('.alert-success');
+            if (successAlert) {
+                setTimeout(() => {
+                    successAlert.style.transition = 'opacity 0.3s';
+                    successAlert.style.opacity = '0';
+                    setTimeout(() => {
+                        successAlert.remove();
+                    }, 300);
+                }, 5000);
+            }
         });
     </script>
 @endsection

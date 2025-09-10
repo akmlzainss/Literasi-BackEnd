@@ -4,36 +4,51 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateArtikelTable extends Migration
+return new class extends Migration
 {
     public function up()
     {
-        Schema::create('artikel', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('id_siswa')->nullable(); // Make nullable
-            $table->unsignedBigInteger('id_kategori')->nullable();
-            $table->string('judul');
-            $table->text('isi');
+        Schema::table('artikel', function (Blueprint $table) {
+            // Hapus foreign key lama
+            $table->dropForeign(['id_siswa']);
+            $table->dropForeign(['id_kategori']);
+        });
 
-            $table->enum('jenis', ['bebas', 'resensi_buku', 'resensi_film', 'video']);
-            $table->enum('status', ['draf', 'menunggu', 'disetujui', 'ditolak'])->default('menunggu');
-            $table->text('alasan_penolakan')->nullable();
-            $table->timestamp('diterbitkan_pada')->nullable();
-            $table->integer('jumlah_dilihat')->default(0);
-            $table->integer('jumlah_suka')->default(0);
-            $table->decimal('nilai_rata_rata', 5, 2)->nullable();
-            $table->json('riwayat_persetujuan')->nullable();
-            $table->string('usulan_kategori')->nullable();
-            $table->timestamp('dibuat_pada')->useCurrent();
-            $table->softDeletes();
+        Schema::table('artikel', function (Blueprint $table) {
+            // Rename kolom
+            $table->renameColumn('id_siswa', 'siswa_id');
+            $table->renameColumn('id_kategori', 'kategori_id');
+        });
 
-            $table->foreign('id_siswa')->references('id')->on('siswa')->onDelete('set null');
-            $table->foreign('id_kategori')->references('id')->on('kategori')->onDelete('set null');
+        Schema::table('artikel', function (Blueprint $table) {
+            // Pastikan kolom nullable untuk set null
+            $table->unsignedBigInteger('siswa_id')->nullable()->change();
+            $table->unsignedBigInteger('kategori_id')->nullable()->change();
+
+            // Tambahkan foreign key baru
+            $table->foreign('siswa_id')->references('id')->on('siswa')->onDelete('set null');
+            $table->foreign('kategori_id')->references('id')->on('kategori')->onDelete('set null');
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('artikel');
+        Schema::table('artikel', function (Blueprint $table) {
+            $table->dropForeign(['siswa_id']);
+            $table->dropForeign(['kategori_id']);
+        });
+
+        Schema::table('artikel', function (Blueprint $table) {
+            $table->renameColumn('siswa_id', 'id_siswa');
+            $table->renameColumn('kategori_id', 'id_kategori');
+        });
+
+        Schema::table('artikel', function (Blueprint $table) {
+            $table->unsignedBigInteger('id_siswa')->nullable()->change();
+            $table->unsignedBigInteger('id_kategori')->nullable()->change();
+
+            $table->foreign('id_siswa')->references('id')->on('siswa')->onDelete('set null');
+            $table->foreign('id_kategori')->references('id')->on('kategori')->onDelete('set null');
+        });
     }
-}
+};

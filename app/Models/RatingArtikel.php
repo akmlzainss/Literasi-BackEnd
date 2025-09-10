@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class RatingArtikel extends Model
 {
+    use HasFactory;
+
     protected $table = 'rating_artikel';
-    protected $primaryKey = 'id';
-    public $timestamps = false;
 
     protected $fillable = [
         'id_artikel',
@@ -18,13 +19,11 @@ class RatingArtikel extends Model
         'dibuat_pada',
     ];
 
-    public function artikel()
-    {
-        return $this->belongsTo(Artikel::class, 'id_artikel');
-    }
+    protected $casts = [
+        'riwayat_rating' => 'array',  // otomatis JSON ↔ array
+        'dibuat_pada'    => 'datetime',
+    ];
 
-    public function siswa()
-    {
-        return $this->belongsTo(Siswa::class, 'id_siswa');
-    }
+    // Nonaktifkan timestamps default Laravel
+    public $timestamps = false;
 }
