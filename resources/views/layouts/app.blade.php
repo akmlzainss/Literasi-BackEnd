@@ -302,8 +302,7 @@
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{ route('artikel') }}"
-                    class="nav-link {{ Request::routeIs('artikel.artikel') ? 'active' : '' }}">
+                <a href="{{ route('artikel') }}" class="nav-link {{ Request::routeIs('artikel') ? 'active' : '' }}">
                     <i class="fas fa-newspaper nav-icon"></i>
                     <span class="nav-text">Artikel</span>
                 </a>
@@ -329,7 +328,8 @@
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{ route('laporan.aktivitas') }}" class="nav-link {{ Request::routeIs('laporan') ? 'active' : '' }}">
+                <a href="{{ route('laporan.aktivitas') }}"
+                    class="nav-link {{ Request::routeIs('laporan') ? 'active' : '' }}">
                     <i class="fas fa-chart-line nav-icon"></i>
                     <span class="nav-text">Laporan</span>
                 </a>
@@ -355,28 +355,45 @@
         </nav>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Topbar -->
-        <div class="topbar">
-            <div class="topbar-left">
-                <h6 class="mb-0 fw-bold text-primary">Selamat datang kembali, Admin!</h6>
-            </div>
-            <div class="topbar-right">
-                <div class="user-profile">
-                    <div class="user-avatar">
-                        A
-                    </div>
-                    <span class="fw-semibold">Admin</span>
-                    <i class="fas fa-chevron-down ms-1"></i>
-                </div>
-            </div>
-        </div>
+  <!-- Main Content -->
+<div class="main-content">
 
-        <!-- Content Area -->
-        <div class="content-area">
-            @yield('content')
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-left">
+            <h6 class="mb-0 fw-bold text-primary">Selamat datang kembali, Admin!</h6>
         </div>
+        <div class="topbar-right">
+            <div class="user-profile">
+                <div class="user-avatar">A</div>
+                <span class="fw-semibold">Admin</span>
+                <i class="fas fa-chevron-down ms-1"></i>
+            </div>
+        </div>
+    </div>
+
+    {{-- Flash Message (pindahkan ke bawah Topbar, sebelum content-area) --}}
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show m-3" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    <!-- Content Area -->
+    <div class="content-area">
+        @yield('content')
+    </div>
+</div>
+
+
 
         <!-- Footer -->
         <div class="footer">

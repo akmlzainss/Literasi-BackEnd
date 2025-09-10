@@ -43,25 +43,46 @@
                             <div class="author-role">{{ $artikel->siswa->kelas ?? 'Administrator' }}</div>
                         </div>
                     </div>
-                    
+
                     <div class="article-content-detail mb-4">
                         {!! $artikel->isi !!}
                     </div>
 
                     <div class="article-meta-detail">
                         <p><strong>Jenis:</strong> {{ ucfirst($artikel->jenis) }}</p>
-                        <p><strong>Status:</strong> <span class="status-badge status-{{ $artikel->status }}">{{ ucfirst($artikel->status) }}</span></p>
-                        
+                        <p><strong>Status:</strong> <span
+                                class="status-badge status-{{ $artikel->status }}">{{ ucfirst($artikel->status) }}</span>
+                        </p>
+
                         {{-- PERBAIKAN DI SINI --}}
                         <p><strong>Dibuat pada:</strong> {{ $artikel->created_at?->format('d M Y, H:i') }}</p>
-                        
+
                         @if ($artikel->diterbitkan_pada)
-                            <p><strong>Diterbitkan pada:</strong> {{ $artikel->diterbitkan_pada?->format('d M Y, H:i') }}</p>
+                            <p><strong>Diterbitkan pada:</strong> {{ $artikel->diterbitkan_pada?->format('d M Y, H:i') }}
+                            </p>
                         @endif
 
                         <p><strong>Jumlah Dilihat:</strong> {{ $artikel->jumlah_dilihat }}</p>
                         <p><strong>Jumlah Suka:</strong> {{ $artikel->jumlah_suka }}</p>
                         <p><strong>Jumlah Komentar:</strong> {{ $artikel->komentarArtikel->count() }}</p>
+                        <p><strong>Rating:</strong>
+                            @if ($artikel->ratingArtikel->count() > 0)
+                                @php
+                                    $avgRating = round($artikel->ratingArtikel->avg('rating'), 1);
+                                @endphp
+
+                                @for ($i = 1; $i <= 5; $i++)
+                                    @if ($i <= round($avgRating))
+                                        ⭐
+                                    @else
+                                        ☆
+                                    @endif
+                                @endfor
+                                ({{ $avgRating }}/5)
+                            @else
+                                Belum ada rating
+                            @endif
+                        </p>
                     </div>
                 </div>
             </div>

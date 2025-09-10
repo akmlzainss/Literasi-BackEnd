@@ -107,9 +107,9 @@
                 @forelse ($artikels as $artikel)
                     <div class="article-card">
                         <div class="article-image">
-                            <img src="{{ $artikel->gambar ? asset('storage/' . $artikel->gambar) : 'https://via.placeholder.com/400x200' }}"
-                                alt="{{ $artikel->judul }}"
-                                onerror="this.src='https://via.placeholder.com/400x200';">
+                            <img src="{{ $artikel->gambar ? asset('storage/' . $artikel->gambar) : asset('images/no-image.png') }}"
+                                alt="{{ $artikel->judul }}" onerror="this.src='{{ asset('images/no-image.png') }}';">
+
                             <div class="article-overlay">
                                 <div class="article-actions">
                                     <a href="{{ route('artikel.show', $artikel->id) }}"
@@ -132,8 +132,7 @@
                                 </div>
                             </div>
                             <div class="article-status">
-                                <span
-                                    class="status-badge status-{{ $artikel->status }}">
+                                <span class="status-badge status-{{ $artikel->status }}">
                                     {{ ucfirst($artikel->status) }}
                                 </span>
                             </div>
@@ -145,6 +144,43 @@
                             <h5 class="article-title-card">{{ $artikel->judul }}</h5>
 
                             <p class="article-excerpt-card">{{ Str::limit(strip_tags($artikel->isi), 100) }}</p>
+                            <!-- Rating section -->
+                            <div class="article-rating">
+                                <div class="rating-display">
+
+                                    @php
+                                        // ambil rata-rata dari relasi ratingArtikel
+                                        $rating =
+                                            $artikel->ratingArtikel->avg('rating') ?? ($artikel->nilai_rata_rata ?? 0);
+                                        $totalReviews = $artikel->ratingArtikel->count();
+
+                                        $fullStars = floor($rating);
+                                        $hasHalfStar = $rating - $fullStars >= 0.5;
+                                        $emptyStars = 5 - $fullStars - ($hasHalfStar ? 1 : 0);
+                                    @endphp
+
+
+                                    <div class="stars">
+                                        @for ($i = 0; $i < $fullStars; $i++)
+                                            <i class="fas fa-star star-filled text-warning"></i>
+                                        @endfor
+
+                                        @if ($hasHalfStar)
+                                            <i class="fas fa-star-half-alt star-half text-warning"></i>
+                                        @endif
+
+                                        @for ($i = 0; $i < $emptyStars; $i++)
+                                            <i class="far fa-star star-empty text-warning"></i>
+                                        @endfor
+                                    </div>
+
+                                    <div class="rating-info">
+                                        <span class="rating-value">{{ number_format($rating, 1) }}</span>
+                                        <span class="rating-count">({{ $totalReviews }} ulasan)</span>
+                                    </div>
+                                </div>
+                            </div>
+
 
                             <div class="article-author-card">
                                 <div class="author-avatar">
@@ -163,7 +199,6 @@
                                     <span><i class="fas fa-comment"></i>
                                         {{ $artikel->komentarArtikel->count() }}</span>
                                     <div class="article-date">
-                                        {{-- PERBAIKAN DI SINI --}}
                                         <small>Dibuat: {{ $artikel->created_at?->format('d M Y') }}</small>
                                         @if ($artikel->deleted_at)
                                             <small>Dihapus: {{ $artikel->deleted_at?->format('d M Y') }}</small>

@@ -9,25 +9,41 @@ class KomentarArtikel extends Model
     protected $table = 'komentar_artikel';
     protected $primaryKey = 'id';
     public $timestamps = false;
-    protected $fillable = ['id_artikel', 'id_siswa', 'id_komentar_parent', 'depth', 'komentar', 'dibuat_pada'];
 
+    protected $fillable = [
+        'artikel_id',       // ✅ harus artikel_id sesuai tabel
+        'id_siswa',
+        'id_komentar_parent',
+        'depth',
+        'komentar',
+        'dibuat_pada',
+    ];
+
+    /* =====================
+     |   RELASI
+     ===================== */
+
+    // Relasi ke artikel
     public function artikel()
     {
-        return $this->belongsTo(Artikel::class, 'id_artikel');
+        return $this->belongsTo(Artikel::class, 'artikel_id', 'id');
     }
 
+    // Relasi ke siswa
     public function siswa()
     {
-        return $this->belongsTo(Siswa::class, 'id_siswa');
+        return $this->belongsTo(Siswa::class, 'id_siswa', 'id');
     }
 
+    // Relasi ke komentar parent (nested comment)
     public function parentKomentar()
     {
-        return $this->belongsTo(KomentarArtikel::class, 'id_komentar_parent');
+        return $this->belongsTo(KomentarArtikel::class, 'id_komentar_parent', 'id');
     }
 
+    // Relasi ke balasan komentar
     public function replies()
     {
-        return $this->hasMany(KomentarArtikel::class, 'id_komentar_parent');
+        return $this->hasMany(KomentarArtikel::class, 'id_komentar_parent', 'id');
     }
 }

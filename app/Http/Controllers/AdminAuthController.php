@@ -15,9 +15,7 @@ use Exception;
 class AdminAuthController extends Controller
 {
     /**
-     * Display the admin login form.
-     *
-     * @return \Illuminate\View\View
+     * Tampilkan form login admin.
      */
     public function showLoginForm()
     {
@@ -25,14 +23,11 @@ class AdminAuthController extends Controller
     }
 
     /**
-     * Handle an admin login attempt.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * Proses login admin.
      */
     public function login(Request $request)
     {
-        // Validate the incoming request data
+        // Validasi input
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|min:6',
@@ -44,17 +39,17 @@ class AdminAuthController extends Controller
         ]);
 
         $credentials = $request->only('email', 'password');
+        $remember = $request->filled('remember'); // ✅ aktifkan Remember Me
 
-        // Attempt to authenticate the admin
-        if (Auth::guard('admin')->attempt($credentials)) {
+        if (Auth::guard('admin')->attempt($credentials, $remember)) {
+            /** @var \App\Models\Admin $admin */
             $admin = Auth::guard('admin')->user();
 
-            // Try to perform post-login actions like logging and updating timestamps
             try {
-                // Update the last_login_at timestamp for the admin
+                // Update last_login_at
                 $admin->update(['last_login_at' => now()]);
 
-                // Create a log entry for the successful login
+                // Buat log login sukses
                 LogAdmin::create([
                     'id_admin' => $admin->id,
                     'jenis_aksi' => 'login',
@@ -63,23 +58,19 @@ class AdminAuthController extends Controller
                     'referensi_id' => $admin->id,
                 ]);
             } catch (Exception $e) {
-                // Log any errors that occur, but still allow the user to proceed
-                Log::error('Error during post-login process for admin ' . $admin->id . ': ' . $e->getMessage());
+                Log::error('Error post-login admin ' . $admin->id . ': ' . $e->getMessage());
             }
 
-            // Regenerate the session to prevent session fixation attacks and redirect
+            // Regenerasi session
             $request->session()->regenerate();
             return redirect()->intended(route('dashboard'));
         }
 
-        // If authentication fails, redirect back with an error message
         return back()->withErrors(['email' => 'Email atau password salah.'])->withInput();
     }
 
     /**
-     * Display the admin registration form.
-     *
-     * @return \Illuminate\View\View
+     * Tampilkan form registrasi admin.
      */
     public function showRegisterForm()
     {
@@ -87,14 +78,10 @@ class AdminAuthController extends Controller
     }
 
     /**
-     * Handle a new admin registration.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * Proses registrasi admin.
      */
     public function register(Request $request)
     {
-        // Validate the registration data
         $request->validate([
             'nama_pengguna' => 'required|string|max:255|unique:admin,nama_pengguna',
             'email' => 'required|email|unique:admin,email',
@@ -112,7 +99,7 @@ class AdminAuthController extends Controller
 
         DB::beginTransaction();
         try {
-            // Create the new admin record
+            /** @var \App\Models\Admin $admin */
             $admin = Admin::create([
                 'nama_pengguna' => $request->nama_pengguna,
                 'email' => $request->email,
@@ -120,7 +107,7 @@ class AdminAuthController extends Controller
                 'status_aktif' => true,
             ]);
 
-            // Create a log entry for the registration
+            // Log registrasi
             LogAdmin::create([
                 'id_admin' => $admin->id,
                 'jenis_aksi' => 'register',
@@ -133,24 +120,21 @@ class AdminAuthController extends Controller
             return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
         } catch (Exception $e) {
             DB::rollback();
-            Log::error('Error during registration: ' . $e->getMessage());
+            Log::error('Error registrasi: ' . $e->getMessage());
             return back()->withErrors(['error' => 'Registrasi gagal. Silakan coba lagi.'])->withInput();
         }
     }
 
     /**
-     * Handle admin logout.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * Proses logout admin.
      */
     public function logout(Request $request)
     {
+        /** @var \App\Models\Admin|null $admin */
         $admin = Auth::guard('admin')->user();
 
         if ($admin) {
             try {
-                // Create a log entry for the logout event
                 LogAdmin::create([
                     'id_admin' => $admin->id,
                     'jenis_aksi' => 'logout',
@@ -159,12 +143,11 @@ class AdminAuthController extends Controller
                     'referensi_id' => $admin->id,
                 ]);
             } catch (Exception $e) {
-                Log::error('Error during logout logging for admin ' . $admin->id . ': ' . $e->getMessage());
+                Log::error('Error logout logging admin ' . $admin->id . ': ' . $e->getMessage());
             }
         }
 
         Auth::guard('admin')->logout();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
@@ -172,16 +155,13 @@ class AdminAuthController extends Controller
     }
 
     /**
-     * Update the authenticated admin's password.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * Update password admin.
      */
     public function updatePassword(Request $request)
     {
+        /** @var \App\Models\Admin $admin */
         $admin = Auth::guard('admin')->user();
 
-        // Validate the password update request
         $request->validate([
             'current_password' => 'required|string',
             'new_password' => [
@@ -196,20 +176,17 @@ class AdminAuthController extends Controller
             'new_password.regex' => 'Password baru harus mengandung huruf besar, huruf kecil, angka, dan karakter khusus.',
         ]);
         
-        // Check if the current password is correct
         if (!Hash::check($request->current_password, $admin->password)) {
             return back()->withErrors(['current_password' => 'Password saat ini salah.']);
         }
 
         DB::beginTransaction();
         try {
-            // Update the password and the timestamp
             $admin->update([
                 'password' => Hash::make($request->new_password),
-                'last_password_changed_at' => now(), // <-- Perubahan ditambahkan di sini
+                'last_password_changed_at' => now(),
             ]);
 
-            // Create a log entry for the password update
             LogAdmin::create([
                 'id_admin' => $admin->id,
                 'jenis_aksi' => 'update_password',
@@ -220,10 +197,9 @@ class AdminAuthController extends Controller
             
             DB::commit();
             return redirect()->back()->with('success', 'Password berhasil diubah.');
-
         } catch (Exception $e) {
             DB::rollback();
-            Log::error('Error saat membuat log update password: ' . $e->getMessage());
+            Log::error('Error update password admin: ' . $e->getMessage());
             return redirect()->back()->withErrors(['error' => 'Gagal mengubah password. Silakan coba lagi.']);
         }
     }

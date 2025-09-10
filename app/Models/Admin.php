@@ -17,6 +17,7 @@ class Admin extends Authenticatable
         'status_aktif',
         'last_login_at',
         'last_password_changed_at',
+        'remember_token',
     ];
 
     protected $hidden = ['password'];

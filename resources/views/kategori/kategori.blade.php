@@ -223,35 +223,6 @@
             document.getElementById('nama_kategori').focus();
         });
 
-        var modalEditKategori = document.getElementById('modalEditKategori');
-        modalEditKategori.addEventListener('shown.bs.modal', function() {
-            var id = $('#modalEditKategori').data('id');
-            console.log('Loading edit data for ID:', id); // Debug
-            if (id) {
-                $.get('{{ route('kategori.edit', ['id' => ':id']) }}'.replace(':id', id))
-                    .done(function(data) {
-                        console.log('Response data:', data); // Debug
-                        if (data && data.id) {
-                            $('#editId').val(data.id);
-                            $('#edit_nama_kategori').val(data.nama);
-                            $('#edit_deskripsi').val(data.deskripsi);
-                            $('#editForm').attr('action', '{{ route('kategori.update', ['id' => ':id']) }}'
-                                .replace(':id', id));
-                        } else {
-                            $('#customNotificationModal').modal('show');
-                            $('#notificationMessage').text('Data tidak ditemukan.');
-                            $('#confirmAction').hide();
-                        }
-                    })
-                    .fail(function(xhr, status, error) {
-                        console.error('AJAX Error:', error, 'Status:', status, 'Response:', xhr
-                        .responseText); // Debug
-                        $('#customNotificationModal').modal('show');
-                        $('#notificationMessage').text('Gagal memuat data untuk edit.');
-                        $('#confirmAction').hide();
-                    });
-            }
-        });
 
         // Search and Filter functionality
         document.getElementById('searchInput').addEventListener('keypress', function(e) {
