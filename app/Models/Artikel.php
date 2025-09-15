@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,16 +11,24 @@ class Artikel extends Model
 {
     use HasFactory, SoftDeletes;
 
+    /**
+     * Nama tabel yang terhubung dengan model.
+     *
+     * @var string
+     */
     protected $table = 'artikel';
 
     /**
-     * AKTIFKAN timestamps agar Laravel mengelola created_at & updated_at.
+     * Mengindikasikan bahwa model harus memiliki timestamps (created_at dan updated_at).
+     *
      * @var bool
      */
     public $timestamps = true;
 
     /**
-     * Hapus 'dibuat_pada' dari fillable karena sudah dihandle otomatis.
+     * Atribut yang dapat diisi secara massal.
+     *
+     * @var array<int, string>
      */
     protected $fillable = [
         'id_siswa',
@@ -40,14 +49,16 @@ class Artikel extends Model
     ];
 
     /**
-     * Sesuaikan casts untuk kolom tanggal yang baru.
+     * Tipe data asli dari atribut model.
+     *
+     * @var array<string, string>
      */
     protected $casts = [
         'diterbitkan_pada' => 'datetime',
-        'created_at' => 'datetime', // Ganti dari dibuat_pada
-        'updated_at' => 'datetime', // Tambahkan updated_at
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
-        'riwayat_persetujuan' => 'json', // Pastikan kolom json di-cast
+        'riwayat_persetujuan' => 'json',
     ];
 
     //======================================================================
@@ -55,8 +66,22 @@ class Artikel extends Model
     //======================================================================
 
     /**
+     * Accessor untuk mendapatkan URL lengkap gambar.
+     * Membuat properti virtual 'gambar_url' pada model.
+     *
+     * @return string|null
+     */
+    public function getGambarUrlAttribute()
+    {
+        if ($this->gambar) {
+            return Storage::url($this->gambar);
+        }
+        return null;
+    }
+
+    /**
      * Accessor untuk mendapatkan nama penulis secara dinamis.
-     * Di view, panggil dengan: {{ $artikel->penulis_nama }}
+     *
      * @return string
      */
     public function getPenulisNamaAttribute()
@@ -71,28 +96,37 @@ class Artikel extends Model
     // RELATIONS
     //======================================================================
 
+    /**
+     * Relasi one-to-many (inverse) ke model Siswa.
+     */
     public function siswa()
     {
         return $this->belongsTo(Siswa::class, 'id_siswa');
     }
 
+    /**
+     * Relasi one-to-many (inverse) ke model Kategori.
+     */
     public function kategori()
     {
         return $this->belongsTo(Kategori::class, 'id_kategori');
     }
 
+    /**
+     * Relasi one-to-many ke model KomentarArtikel.
+     */
     public function komentarArtikel()
     {
-        // Ganti nama relasi agar konsisten (opsional tapi disarankan)
         return $this->hasMany(KomentarArtikel::class, 'id_artikel');
     }
-
-    // ... Relasi lainnya biarkan seperti semula ...
 
     //======================================================================
     // SCOPES
     //======================================================================
 
+    /**
+     * Scope untuk pencarian berdasarkan judul atau isi.
+     */
     public function scopeSearch($query, $search)
     {
         if ($search) {
@@ -102,9 +136,14 @@ class Artikel extends Model
         return $query;
     }
 
+    /**
+     * Scope untuk menerapkan filter pada query.
+     */
     public function scopeApplyFilter($query, $filter)
     {
-        if (!$filter) return $query;
+        if (!$filter) {
+            return $query;
+        }
 
         switch ($filter) {
             case 'published':
@@ -118,9 +157,9 @@ class Artikel extends Model
             case 'least_viewed':
                 return $query->orderBy('jumlah_dilihat', 'asc');
             case 'newest':
-                return $query->orderBy('created_at', 'desc'); // PERBAIKAN
+                return $query->orderBy('created_at', 'desc');
             case 'oldest':
-                return $query->orderBy('created_at', 'asc'); // PERBAIKAN
+                return $query->orderBy('created_at', 'asc');
             default:
                 return $query->whereHas('kategori', function ($q) use ($filter) {
                     $q->where('nama', $filter);
