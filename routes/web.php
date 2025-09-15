@@ -27,7 +27,8 @@ Route::middleware(['guest'])->group(function () {
     Route::post('/register', [AdminAuthController::class, 'register']);
 });
 
-// ==========================
+
+
 // RUTE UNTUK ADMIN (sudah login)
 // ==========================
 Route::middleware(['admin'])->group(function () {
@@ -43,6 +44,7 @@ Route::middleware(['admin'])->group(function () {
     // ==========================
     // ARTIKEL
     // ==========================
+    
     Route::get('/artikel', [ArtikelController::class, 'index'])->name('artikel');
     Route::get('/artikel/create', [ArtikelController::class, 'create'])->name('artikel.create');
     Route::post('/artikel', [ArtikelController::class, 'store'])->name('artikel.store');
@@ -51,6 +53,7 @@ Route::middleware(['admin'])->group(function () {
     Route::put('/artikel/{id}', [ArtikelController::class, 'update'])->name('artikel.update');
     Route::delete('/artikel/{id}', [ArtikelController::class, 'destroy'])->name('artikel.destroy');
     Route::get('/artikel/{id}', [ArtikelController::class, 'show'])->name('artikel.show');
+    Route::post('/artikel/{id}/rate', [ArtikelController::class, 'rate'])->name('artikel.rate');
     Route::get('/artikel/export', [ArtikelController::class, 'export'])->name('artikel.export');
     Route::get('/admin/search-siswa', [ArtikelController::class, 'searchSiswa'])->name('admin.search.siswa');
 
@@ -71,7 +74,7 @@ Route::middleware(['admin'])->group(function () {
     // ==========================
     Route::prefix('penghargaan')->group(function () {
         Route::get('/', [PenghargaanController::class, 'index'])->name('penghargaan');
-        Route::get('/create', [PenghargaanController::class, 'create'])->name('penghargaan.create');
+        Route::get('penghargaan/create', [PenghargaanController::class, 'create'])->name('penghargaan.create');
         Route::post('/', [PenghargaanController::class, 'store'])->name('penghargaan.store');
         Route::get('/{id}', [PenghargaanController::class, 'show'])->name('penghargaan.show');
         Route::get('/{id}/edit', [PenghargaanController::class, 'edit'])->name('penghargaan.edit');
@@ -105,4 +108,5 @@ Route::middleware(['admin'])->group(function () {
     Route::patch('/pengaturan', [PengaturanController::class, 'update'])->name('pengaturan.update');
     Route::get('/pengaturan/keamanan', [PengaturanController::class, 'keamanan'])->name('pengaturan.keamanan');
     Route::put('/pengaturan/umum', [PengaturanController::class, 'updateUmum'])->name('pengaturan.umum.update');
+    
 });

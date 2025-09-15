@@ -11,25 +11,9 @@ class Artikel extends Model
 {
     use HasFactory, SoftDeletes;
 
-    /**
-     * Nama tabel yang terhubung dengan model.
-     *
-     * @var string
-     */
     protected $table = 'artikel';
-
-    /**
-     * Mengindikasikan bahwa model harus memiliki timestamps (created_at dan updated_at).
-     *
-     * @var bool
-     */
     public $timestamps = true;
 
-    /**
-     * Atribut yang dapat diisi secara massal.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'id_siswa',
         'id_kategori',
@@ -48,42 +32,25 @@ class Artikel extends Model
         'usulan_kategori',
     ];
 
-    /**
-     * Tipe data asli dari atribut model.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
-        'diterbitkan_pada' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime',
-        'riwayat_persetujuan' => 'json',
+        'diterbitkan_pada'    => 'datetime',
+        'created_at'          => 'datetime',
+        'updated_at'          => 'datetime',
+        'deleted_at'          => 'datetime',
+        'riwayat_persetujuan' => 'array', // bisa juga 'json', keduanya setara
     ];
 
-    //======================================================================
-    // ACCESSORS
-    //======================================================================
+    /* =====================
+     |   ACCESSORS
+     ===================== */
 
-    /**
-     * Accessor untuk mendapatkan URL lengkap gambar.
-     * Membuat properti virtual 'gambar_url' pada model.
-     *
-     * @return string|null
-     */
+    // URL gambar (untuk API/WEB)
     public function getGambarUrlAttribute()
     {
-        if ($this->gambar) {
-            return Storage::url($this->gambar);
-        }
-        return null;
+        return $this->gambar ? Storage::url($this->gambar) : null;
     }
 
-    /**
-     * Accessor untuk mendapatkan nama penulis secara dinamis.
-     *
-     * @return string
-     */
+    // Nama penulis dinamis
     public function getPenulisNamaAttribute()
     {
         if ($this->penulis_type === 'siswa' && $this->siswa) {
@@ -92,58 +59,57 @@ class Artikel extends Model
         return 'Admin';
     }
 
-    //======================================================================
-    // RELATIONS
-    //======================================================================
+    // Rata-rata rating
+    public function getRatingAttribute()
+    {
+        return $this->ratingArtikel()->avg('rating') ?? 0;
+    }
 
-    /**
-     * Relasi one-to-many (inverse) ke model Siswa.
-     */
+    // Jumlah review
+    public function getTotalReviewsAttribute()
+    {
+        return $this->ratingArtikel()->count();
+    }
+
+    /* =====================
+     |   RELASI
+     ===================== */
+
     public function siswa()
     {
-        return $this->belongsTo(Siswa::class, 'id_siswa');
+        return $this->belongsTo(Siswa::class, 'id_siswa', 'id');
     }
 
-    /**
-     * Relasi one-to-many (inverse) ke model Kategori.
-     */
     public function kategori()
     {
-        return $this->belongsTo(Kategori::class, 'id_kategori');
+        return $this->belongsTo(Kategori::class, 'id_kategori', 'id');
     }
 
-    /**
-     * Relasi one-to-many ke model KomentarArtikel.
-     */
     public function komentarArtikel()
     {
-        return $this->hasMany(KomentarArtikel::class, 'id_artikel');
+        return $this->hasMany(KomentarArtikel::class, 'artikel_id', 'id');
     }
 
-    //======================================================================
-    // SCOPES
-    //======================================================================
+    public function ratingArtikel()
+    {
+        return $this->hasMany(RatingArtikel::class, 'id_artikel', 'id');
+    }
 
-    /**
-     * Scope untuk pencarian berdasarkan judul atau isi.
-     */
+    /* =====================
+     |   SCOPES (untuk API)
+     ===================== */
+
     public function scopeSearch($query, $search)
     {
-        if ($search) {
-            return $query->where('judul', 'like', "%{$search}%")
-                         ->orWhere('isi', 'like', "%{$search}%");
-        }
-        return $query;
+        return $query->where(function ($q) use ($search) {
+            $q->where('judul', 'like', "%$search%")
+              ->orWhere('isi', 'like', "%$search%");
+        });
     }
 
-    /**
-     * Scope untuk menerapkan filter pada query.
-     */
     public function scopeApplyFilter($query, $filter)
     {
-        if (!$filter) {
-            return $query;
-        }
+        if (!$filter) return $query;
 
         switch ($filter) {
             case 'published':

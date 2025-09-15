@@ -9,6 +9,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('komentar_artikel', function (Blueprint $table) {
+            // Mengubah nama kolom dari 'id_artikel' menjadi 'artikel_id'
             $table->renameColumn('id_artikel', 'artikel_id');
         });
     }
@@ -16,6 +17,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('komentar_artikel', function (Blueprint $table) {
+            // Fungsi untuk rollback jika diperlukan
             $table->renameColumn('artikel_id', 'id_artikel');
         });
     }

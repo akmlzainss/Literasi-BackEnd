@@ -10,14 +10,17 @@ class CreateRatingArtikelTable extends Migration
     {
         Schema::create('rating_artikel', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_artikel');
-            $table->unsignedBigInteger('id_siswa');
-            $table->tinyInteger('rating'); // Misalnya 1-5 bintang
+            $table->foreignId('id_artikel')
+                  ->constrained('artikel')
+                  ->cascadeOnDelete();
+
+            $table->foreignId('id_siswa')
+                  ->constrained('siswa')
+                  ->cascadeOnDelete();
+
+            $table->tinyInteger('rating'); // nilai rating 1–5
             $table->json('riwayat_rating')->nullable();
             $table->timestamp('dibuat_pada')->useCurrent();
-
-            $table->foreign('id_artikel')->references('id')->on('artikel')->onDelete('cascade');
-            $table->foreign('id_siswa')->references('id')->on('siswa')->onDelete('cascade');
         });
     }
 

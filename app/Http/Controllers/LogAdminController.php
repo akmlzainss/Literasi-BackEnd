@@ -14,7 +14,7 @@ class LogAdminController extends Controller
 
         // Ambil aktivitas admin terbaru dengan paginate
         $aktivitasAdmin = LogAdmin::with('admin')
-            ->orderByDesc('dibuat_pada')
+            ->orderByDesc('created_at')
             ->paginate(5); // 10 log per halaman
 
         // Ambil aktivitas siswa (opsional, bisa juga di paginate jika perlu)
