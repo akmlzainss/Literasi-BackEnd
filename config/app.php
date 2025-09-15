@@ -159,6 +159,8 @@ return [
         /*
          * Package Service Providers...
          */
+        Mews\Purifier\PurifierServiceProvider::class,
+        Laravel\Sanctum\SanctumServiceProvider::class, // <-- TAMBAHKAN BARIS INI
 
         /*
          * Application Service Providers...
@@ -183,6 +185,7 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         // 'Example' => App\Facades\Example::class,
+        'Purifier' => Mews\Purifier\Facades\Purifier::class,
     ])->toArray(),
 
 ];

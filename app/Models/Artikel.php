@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -36,50 +37,99 @@ class Artikel extends Model
         'created_at'          => 'datetime',
         'updated_at'          => 'datetime',
         'deleted_at'          => 'datetime',
-        'riwayat_persetujuan' => 'array',
+        'riwayat_persetujuan' => 'array', // bisa juga 'json', keduanya setara
     ];
+
+    /* =====================
+     |   ACCESSORS
+     ===================== */
+
+    // URL gambar (untuk API/WEB)
+    public function getGambarUrlAttribute()
+    {
+        return $this->gambar ? Storage::url($this->gambar) : null;
+    }
+
+    // Nama penulis dinamis
+    public function getPenulisNamaAttribute()
+    {
+        if ($this->penulis_type === 'siswa' && $this->siswa) {
+            return $this->siswa->nama;
+        }
+        return 'Admin';
+    }
+
+    // Rata-rata rating
+    public function getRatingAttribute()
+    {
+        return $this->ratingArtikel()->avg('rating') ?? 0;
+    }
+
+    // Jumlah review
+    public function getTotalReviewsAttribute()
+    {
+        return $this->ratingArtikel()->count();
+    }
 
     /* =====================
      |   RELASI
      ===================== */
 
-    // Relasi ke tabel siswa
     public function siswa()
     {
         return $this->belongsTo(Siswa::class, 'id_siswa', 'id');
     }
 
-    // Relasi ke tabel kategori
     public function kategori()
     {
         return $this->belongsTo(Kategori::class, 'id_kategori', 'id');
     }
 
-    // Relasi ke komentar artikel
     public function komentarArtikel()
     {
         return $this->hasMany(KomentarArtikel::class, 'artikel_id', 'id');
     }
 
-    // Relasi ke rating artikel
     public function ratingArtikel()
     {
         return $this->hasMany(RatingArtikel::class, 'id_artikel', 'id');
     }
 
     /* =====================
-     |   ACCESSORS
+     |   SCOPES (untuk API)
      ===================== */
 
-    // Hitung rata-rata rating artikel
-    public function getRatingAttribute()
+    public function scopeSearch($query, $search)
     {
-        return $this->ratingArtikel()->avg('rating') ?? 0;
+        return $query->where(function ($q) use ($search) {
+            $q->where('judul', 'like', "%$search%")
+              ->orWhere('isi', 'like', "%$search%");
+        });
     }
 
-    // Hitung jumlah review artikel
-    public function getTotalReviewsAttribute()
+    public function scopeApplyFilter($query, $filter)
     {
-        return $this->ratingArtikel()->count();
+        if (!$filter) return $query;
+
+        switch ($filter) {
+            case 'published':
+                return $query->where('status', 'disetujui')->whereNotNull('diterbitkan_pada');
+            case 'draft':
+                return $query->where('status', 'draf');
+            case 'archived':
+                return $query->where('status', 'ditolak')->orWhereNotNull('deleted_at');
+            case 'most_viewed':
+                return $query->orderBy('jumlah_dilihat', 'desc');
+            case 'least_viewed':
+                return $query->orderBy('jumlah_dilihat', 'asc');
+            case 'newest':
+                return $query->orderBy('created_at', 'desc');
+            case 'oldest':
+                return $query->orderBy('created_at', 'asc');
+            default:
+                return $query->whereHas('kategori', function ($q) use ($filter) {
+                    $q->where('nama', $filter);
+                });
+        }
     }
 }
