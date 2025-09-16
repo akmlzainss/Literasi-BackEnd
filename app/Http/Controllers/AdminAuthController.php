@@ -19,12 +19,12 @@ class AdminAuthController extends Controller
      */
     public function showLoginForm()
     {
-        return view('auth.login-admin');
+        return view('auth.login-admin'); // Gunakan satu view login untuk admin dan siswa
     }
 
     public function showLoginFormSiswa()
     {
-        return view('auth.login-siswa');
+        return view('auth.login-siswa'); // Opsional, jika ingin terpisah
     }
 
     /**
@@ -33,59 +33,48 @@ class AdminAuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email'    => 'required|email',
+            'email' => 'required|email',
             'password' => 'required|min:6',
+            'role' => 'required|in:admin,siswa', // Tambahkan validasi role
         ]);
 
         $credentials = $request->only('email', 'password');
-        $remember    = $request->filled('remember');
+        $remember = $request->filled('remember');
+        $role = $request->role;
 
-        if (Auth::guard('admin')->attempt($credentials, $remember)) {
-            /** @var Admin $admin */
-            $admin = Auth::guard('admin')->user();
+        $guard = ($role === 'admin') ? 'admin' : 'siswa';
+        $model = ($role === 'admin') ? Admin::class : Siswa::class;
+        $redirectRoute = ($role === 'admin') ? 'dashboard' : 'dashboard-siswa';
+
+        if (Auth::guard($guard)->attempt($credentials, $remember)) {
+            $user = Auth::guard($guard)->user();
 
             try {
-                $admin->update(['last_login_at' => now()]);
-                LogAdmin::create([
-                    'id_admin'       => $admin->id,
-                    'jenis_aksi'     => 'login',
-                    'aksi'           => 'Admin berhasil login',
-                    'referensi_tipe' => 'admin',
-                    'referensi_id'   => $admin->id,
-                ]);
+                if ($role === 'admin') {
+                    /** @var Admin $user */
+                    $user->update(['last_login_at' => now()]);
+                    LogAdmin::create([
+                        'id_admin' => $user->id,
+                        'jenis_aksi' => 'login',
+                        'aksi' => 'Admin berhasil login',
+                        'referensi_tipe' => 'admin',
+                        'referensi_id' => $user->id,
+                    ]);
+                } else {
+                    /** @var Siswa $user */
+                    $user->update(['last_login_at' => now()]);
+                }
             } catch (Exception $e) {
-                Log::error('Error post-login admin ' . $admin->id . ': ' . $e->getMessage());
+                Log::error("Error post-login $role " . $user->id . ': ' . $e->getMessage());
             }
 
             $request->session()->regenerate();
-            return redirect()->intended(route('dashboard'));
+            return redirect()->intended(route($redirectRoute));
         }
 
-        return back()->withErrors(['email' => 'Email atau password salah.'])->withInput();
-    }
-
-    public function loginSiswa(Request $request)
-    {
-        $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required|min:6',
-        ]);
-
-        $credentials = $request->only('email', 'password');
-        $remember    = $request->filled('remember');
-
-        if (Auth::guard('siswa')->attempt($credentials, $remember)) {
-            /** @var Siswa $siswa */
-            $siswa = Auth::guard('siswa')->user();
-
-            try {
-                $siswa->update(['last_login_at' => now()]);
-            } catch (Exception $e) {
-                Log::error('Error post-login siswa ' . $siswa->id . ': ' . $e->getMessage());
-            }
-
-            $request->session()->regenerate();
-            return redirect()->intended(route('dashboard-siswa'));
+        // Hapus cookie "remember me" jika tidak dicentang
+        if (!$remember) {
+            $request->session()->forget('remember_web_' . $guard . '_' . sha1($credentials['email']));
         }
 
         return back()->withErrors(['email' => 'Email atau password salah.'])->withInput();
@@ -108,25 +97,25 @@ class AdminAuthController extends Controller
     {
         $request->validate([
             'nama_pengguna' => 'required|string|max:255|unique:admins,nama_pengguna',
-            'email'         => 'required|email|unique:admins,email',
-            'password'      => 'required|min:6|confirmed',
+            'email' => 'required|email|unique:admins,email',
+            'password' => 'required|min:6|confirmed',
         ]);
 
         DB::beginTransaction();
         try {
             $admin = Admin::create([
                 'nama_pengguna' => $request->nama_pengguna,
-                'email'         => $request->email,
-                'password'      => Hash::make($request->password),
-                'status_aktif'  => true,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'status_aktif' => true,
             ]);
 
             LogAdmin::create([
-                'id_admin'       => $admin->id,
-                'jenis_aksi'     => 'register',
-                'aksi'           => 'Admin baru registrasi',
+                'id_admin' => $admin->id,
+                'jenis_aksi' => 'register',
+                'aksi' => 'Admin baru registrasi',
                 'referensi_tipe' => 'admin',
-                'referensi_id'   => $admin->id,
+                'referensi_id' => $admin->id,
             ]);
 
             DB::commit();
@@ -142,21 +131,21 @@ class AdminAuthController extends Controller
     {
         $request->validate([
             'nama_pengguna' => 'required|string|max:255|unique:siswa,nama_pengguna',
-            'email'         => 'required|email|unique:siswa,email',
-            'password'      => 'required|min:6|confirmed',
+            'email' => 'required|email|unique:siswa,email',
+            'password' => 'required|min:6|confirmed',
         ]);
 
         DB::beginTransaction();
         try {
             $siswa = Siswa::create([
                 'nama_pengguna' => $request->nama_pengguna,
-                'email'         => $request->email,
-                'password'      => Hash::make($request->password),
-                'status_aktif'  => true,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'status_aktif' => true,
             ]);
 
             DB::commit();
-            return redirect()->route('login-siswa')->with('success', 'Registrasi berhasil! Silakan login.');
+            return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Error registrasi siswa: ' . $e->getMessage());
@@ -174,11 +163,11 @@ class AdminAuthController extends Controller
         if ($admin) {
             try {
                 LogAdmin::create([
-                    'id_admin'       => $admin->id,
-                    'jenis_aksi'     => 'logout',
-                    'aksi'           => 'Admin logout',
+                    'id_admin' => $admin->id,
+                    'jenis_aksi' => 'logout',
+                    'aksi' => 'Admin logout',
                     'referensi_tipe' => 'admin',
-                    'referensi_id'   => $admin->id,
+                    'referensi_id' => $admin->id,
                 ]);
             } catch (Exception $e) {
                 Log::error('Error logout logging admin ' . $admin->id . ': ' . $e->getMessage());
@@ -208,7 +197,7 @@ class AdminAuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login-siswa')->with('success', 'Logout berhasil.');
+        return redirect()->route('login')->with('success', 'Logout berhasil.');
     }
 
     /**
@@ -220,7 +209,7 @@ class AdminAuthController extends Controller
 
         $request->validate([
             'current_password' => 'required|string',
-            'new_password'     => [
+            'new_password' => [
                 'required', 'string', 'min:8', 'confirmed',
                 'regex:/[a-z]/', 'regex:/[A-Z]/', 'regex:/[0-9]/', 'regex:/[@$!%*#?&]/'
             ],
@@ -233,16 +222,16 @@ class AdminAuthController extends Controller
         DB::beginTransaction();
         try {
             $admin->update([
-                'password'                 => Hash::make($request->new_password),
+                'password' => Hash::make($request->new_password),
                 'last_password_changed_at' => now(),
             ]);
 
             LogAdmin::create([
-                'id_admin'       => $admin->id,
-                'jenis_aksi'     => 'update_password',
-                'aksi'           => 'Admin ganti password',
+                'id_admin' => $admin->id,
+                'jenis_aksi' => 'update_password',
+                'aksi' => 'Admin ganti password',
                 'referensi_tipe' => 'admin',
-                'referensi_id'   => $admin->id,
+                'referensi_id' => $admin->id,
             ]);
 
             DB::commit();
@@ -260,7 +249,7 @@ class AdminAuthController extends Controller
 
         $request->validate([
             'current_password' => 'required|string',
-            'new_password'     => [
+            'new_password' => [
                 'required', 'string', 'min:8', 'confirmed',
                 'regex:/[a-z]/', 'regex:/[A-Z]/', 'regex:/[0-9]/', 'regex:/[@$!%*#?&]/'
             ],
@@ -273,7 +262,7 @@ class AdminAuthController extends Controller
         DB::beginTransaction();
         try {
             $siswa->update([
-                'password'                 => Hash::make($request->new_password),
+                'password' => Hash::make($request->new_password),
                 'last_password_changed_at' => now(),
             ]);
 
