@@ -22,10 +22,15 @@ Route::get('/', function () {
 // ==========================
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [AdminAuthController::class, 'login']);
+    Route::post('/login', [AdminAuthController::class, 'login'])->name('login.submit'); // ✅ tambahkan name
     Route::get('/register', [AdminAuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AdminAuthController::class, 'register']);
+
+    Route::get('siswa/login', [AdminAuthController::class, 'showLoginForm'])->name('siswa.login');
+    Route::post('siswa/login', [AdminAuthController::class, 'login'])->name('siswa.login.submit');
 });
+
+
 
 
 

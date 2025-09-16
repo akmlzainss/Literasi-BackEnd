@@ -5,21 +5,18 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Notifications\Notifiable; // penting biar bisa pakai fitur auth bawaan
 
 class Siswa extends Authenticatable
 {
-    use HasApiTokens, HasFactory;
+    use HasApiTokens, HasFactory, Notifiable;
 
-    protected $table = 'siswa';
+    protected $table = 'siswa'; // atau 'siswas' kalau migration kamu pakai plural
     public $timestamps = true;
 
-    /**
-     * Kolom created_at dan updated_at tidak perlu ada di fillable.
-     * Laravel mengisinya secara otomatis.
-     */
     protected $fillable = [
         'nis',
-        'nama',
+        'nama_pengguna',
         'email',
         'kelas',
         'password',
@@ -28,16 +25,12 @@ class Siswa extends Authenticatable
 
     protected $hidden = [
         'password',
+        'remember_token', // sebaiknya tambahkan ini
     ];
 
-    //protected $guard = 'siswa';
-
-    //public function getAuthPassword()
-    //{
-      //  return $this->password;
-    //}
-
-    // Relasi-relasi (sesuaikan jika kamu tidak pakai fitur ini)
+    /**
+     * Relasi-relasi siswa
+     */
     public function artikel()
     {
         return $this->hasMany(Artikel::class, 'id_siswa');
