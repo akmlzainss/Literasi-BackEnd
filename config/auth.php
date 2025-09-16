@@ -18,12 +18,12 @@ return [
         ],
         'siswa' => [ // Guard ini untuk web/session based
             'driver' => 'session',
-            'provider' => 'siswas',
+            'provider' => 'siswa', // ✅ perbaiki di sini
         ],
-        // TAMBAHKAN GUARD INI KHUSUS UNTUK API FLUTTER
+        // Guard khusus API siswa (misal untuk Flutter)
         'siswa-api' => [
             'driver' => 'sanctum',
-            'provider' => 'siswas',
+            'provider' => 'siswa', // ✅ harus sama
         ],
     ],
 
@@ -32,10 +32,10 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\Admin::class,
         ],
-        'siswas' => [
+        'siswa' => [
             'driver'=> 'eloquent',
             'model'=> App\Models\Siswa::class,
-        ]
+        ],
     ],
 
     'passwords' => [
@@ -45,8 +45,8 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
-        'siswas' => [
-            'provider' => 'siswas',
+        'siswa' => [
+            'provider' => 'siswa', // ✅ samakan
             'table' => 'password_reset_tokens',
             'expire' => 60,
             'throttle' => 60,
