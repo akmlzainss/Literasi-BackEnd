@@ -12,7 +12,6 @@ Route::post('/siswa/register', [SiswaAuthController::class, 'register']);
 Route::post('/siswa/login', [SiswaAuthController::class, 'login']);
 Route::get('/kategori', [KategoriController::class, 'index']);
 
-
 // --- Rute Terproteksi (Wajib Login) ---
 Route::middleware(['auth:siswa-api', 'ability:siswa-access'])->group(function () {
     // Auth
@@ -22,15 +21,16 @@ Route::middleware(['auth:siswa-api', 'ability:siswa-access'])->group(function ()
     });
 
     // Artikel
-    Route::get('/artikel', [ArtikelController::class, 'index']); // Timeline semua artikel
-    Route::post('/artikel', [ArtikelController::class, 'store']); // Upload artikel baru
-    Route::get('/siswa/artikel-saya', [ArtikelController::class, 'myArticles']); // Artikel milik sendiri
+    Route::get('/artikel', [ArtikelController::class, 'index']);
+    Route::post('/artikel', [ArtikelController::class, 'store']);
+    Route::get('/siswa/artikel-saya', [ArtikelController::class, 'myArticles']);
 
     // Interaksi
-    Route::post('/artikel/{artikel}/interaksi', [InteraksiController::class, 'toggleInteraksi']);
-    Route::post('/artikel/{artikel}/rating', [InteraksiController::class, 'beriRating']);
-    Route::get('/siswa/interaksi', [InteraksiController::class, 'getInteractedArticles']); // Ambil artikel yg disukai/dibookmark
+    Route::post('/artikel/{id}/interaksi', [InteraksiController::class, 'toggleInteraksi'])->where('id', '[0-9]+');
+    Route::post('/artikel/{id}/rating', [InteraksiController::class, 'beriRating'])->where('id', '[0-9]+');
+    Route::get('/siswa/interaksi', [InteraksiController::class, 'getInteractedArticles']);
 
-    Route::post('/artikel/{artikel}/komentar', [ArtikelController::class, 'storeComment']);
-    Route::get('/artikel/{artikel}/komentar', [ArtikelController::class, 'indexComments']);
+    // Komentar
+    Route::post('/artikel/{id}/komentar', [ArtikelController::class, 'storeComment'])->where('id', '[0-9]+');
+    Route::get('/artikel/{id}/komentar', [ArtikelController::class, 'indexComments'])->where('id', '[0-9]+');
 });

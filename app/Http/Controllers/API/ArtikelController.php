@@ -67,7 +67,7 @@ class ArtikelController extends Controller
 
         $data['id_siswa'] = $siswa->id;
         $data['penulis_type'] = 'siswa';
-        $data['status'] = 'menunggu'; // Status awal saat submit
+        $data['status'] = 'menunggu';
 
         $artikel = Artikel::create($data);
 
@@ -77,9 +77,12 @@ class ArtikelController extends Controller
         ], 201);
     }
 
-    // Method untuk menyimpan komentar (sudah ada di konteks sebelumnya)
-    public function storeComment(Request $request, Artikel $artikel)
+    /**
+     * Menyimpan komentar baru pada artikel tertentu.
+     */
+    public function storeComment(Request $request, $id)
     {
+        $artikel = Artikel::findOrFail($id); // Cari artikel berdasarkan ID
         $request->validate([
             'komentar' => 'required|string|max:1000',
         ]);
@@ -105,22 +108,24 @@ class ArtikelController extends Controller
         return response()->json(['message' => 'Komentar berhasil ditambahkan.', 'data' => $komentar], 201);
     }
 
-    // Method baru untuk mengambil daftar komentar
-    public function indexComments(Artikel $artikel)
+    /**
+     * Mengambil daftar komentar untuk artikel tertentu.
+     */
+    public function indexComments(Request $request, $id)
     {
-        $komentar = KomentarArtikel::where('id_artikel', $artikel->id)
-            ->with('siswa') // Ambil data siswa untuk nama
+        $artikel = Artikel::findOrFail($id); // Cari artikel berdasarkan ID
+        $komentar = $artikel->komentarArtikel()
+            ->with('siswa:id,nama')
             ->get()
             ->map(function ($item) {
                 return [
                     'id' => $item->id,
                     'nama_siswa' => $item->siswa->nama,
                     'komentar' => $item->komentar,
-                    'dibuat_pada' => $item->dibuat_pada,
+                    'dibuat_pada' => $item->dibuat_pada ? $item->dibuat_pada->toIso8601String() : null,
                 ];
             });
 
         return response()->json(['data' => $komentar], 200);
     }
 }
-

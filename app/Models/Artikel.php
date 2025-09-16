@@ -87,7 +87,7 @@ class Artikel extends Model
 
     public function komentarArtikel()
     {
-        return $this->hasMany(KomentarArtikel::class, 'artikel_id', 'id');
+        return $this->hasMany(KomentarArtikel::class, 'id_artikel', 'id');
     }
 
     public function ratingArtikel()
