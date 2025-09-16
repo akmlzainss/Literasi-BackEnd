@@ -13,49 +13,64 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    /**
+     * Dashboard untuk ADMIN
+     */
     public function index()
     {
         Paginator::useBootstrapFive(); // supaya pagination pakai Bootstrap 5
 
-        $totalArtikel = Artikel::count();
-        $totalKategori = Kategori::count();
+        $totalArtikel     = Artikel::count();
+        $totalKategori    = Kategori::count();
         $totalPenghargaan = Penghargaan::count();
-        $totalSiswa = Siswa::count();
+        $totalSiswa       = Siswa::count();
 
         // paginate 5 log per halaman (pakai created_at)
         $logs = LogAdmin::with('admin')
             ->orderByDesc('created_at')
             ->paginate(5);
 
-        // Data untuk Bar Chart - Artikel berdasarkan kategori (jika ada relasi)
-        $chartData = $this->getChartData();
-
-        // Data untuk Pie Chart - Distribusi semua data
-        $statsData = [
-            'labels' => ['Artikel', 'Kategori', 'Penghargaan', 'Siswa'],
-            'data' => [$totalArtikel, $totalKategori, $totalPenghargaan, $totalSiswa]
-        ];
-
-        // Data untuk Line Chart - Aktivitas 7 hari terakhir
+        // Data untuk chart
+        $chartData   = $this->getChartData();
+        $statsData   = $this->getStatsData();
         $activityData = $this->getActivityData();
 
         return view('admin.dashboard', [
-            'artikelCount'      => $totalArtikel,
-            'kategoriCount'     => $totalKategori,
-            'penghargaanCount'  => $totalPenghargaan,
-            'siswaCount'        => $totalSiswa,
-            'logs'              => $logs,
-            'chartData'         => $chartData,
-            'statsData'         => $statsData,
-            'activityData'      => $activityData
+            'artikelCount'     => $totalArtikel,
+            'kategoriCount'    => $totalKategori,
+            'penghargaanCount' => $totalPenghargaan,
+            'siswaCount'       => $totalSiswa,
+            'logs'             => $logs,
+            'chartData'        => $chartData,
+            'statsData'        => $statsData,
+            'activityData'     => $activityData,
+        ]);
+    }
+
+    /**
+     * Dashboard untuk SISWA
+     */
+    public function indexSiswa()
+    {
+        Paginator::useBootstrapFive();
+
+        // Ambil data khusus untuk siswa (misalnya jumlah artikel yang dia buat, penghargaan yang dia terima, dll.)
+        $totalArtikelSiswa = Artikel::where('id_siswa', auth('siswa')->id())->count();
+        $totalPenghargaanSiswa = Penghargaan::where('id_siswa', auth('siswa')->id())->count();
+
+        // Bisa juga tambahkan artikel terbaru untuk ditampilkan di dashboard siswa
+        $artikelTerbaru = Artikel::latest()->take(5)->get();
+
+        return view('web_siswa.dashboard', [
+            'artikelSiswaCount'     => $totalArtikelSiswa,
+            'penghargaanSiswaCount' => $totalPenghargaanSiswa,
+            'artikelTerbaru'        => $artikelTerbaru,
         ]);
     }
 
     private function getChartData()
     {
-        // Cek apakah tabel artikel memiliki kolom kategori_id
         if (DB::getSchemaBuilder()->hasColumn('artikel', 'kategori_id')) {
-            // Jika ada relasi kategori
             $artikelByCategory = DB::table('artikel')
                 ->join('kategori', 'artikel.kategori_id', '=', 'kategori.id')
                 ->select('kategori.nama_kategori', DB::raw('count(*) as total'))
@@ -65,32 +80,43 @@ class DashboardController extends Controller
             if ($artikelByCategory->count() > 0) {
                 return [
                     'categoryNames' => $artikelByCategory->pluck('nama_kategori')->toArray(),
-                    'categories' => $artikelByCategory->pluck('total')->toArray()
+                    'categories'    => $artikelByCategory->pluck('total')->toArray(),
                 ];
             }
         }
 
-        // Fallback jika tidak ada relasi kategori atau data kosong
         return [
             'categoryNames' => ['Artikel', 'Kategori', 'Penghargaan', 'Siswa'],
-            'categories' => [
+            'categories'    => [
                 Artikel::count(),
-                Kategori::count(), 
+                Kategori::count(),
                 Penghargaan::count(),
-                Siswa::count()
-            ]
+                Siswa::count(),
+            ],
+        ];
+    }
+
+    private function getStatsData()
+    {
+        return [
+            'labels' => ['Artikel', 'Kategori', 'Penghargaan', 'Siswa'],
+            'data'   => [
+                Artikel::count(),
+                Kategori::count(),
+                Penghargaan::count(),
+                Siswa::count(),
+            ],
         ];
     }
 
     private function getActivityData()
     {
-        $dates = [];
+        $dates      = [];
         $activities = [];
-        
-        // Buat array 7 hari terakhir
+
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::now()->subDays($i);
-            
+
             if ($i == 0) {
                 $dates[] = 'Hari ini';
             } elseif ($i == 1) {
@@ -98,25 +124,25 @@ class DashboardController extends Controller
             } else {
                 $dates[] = $date->format('d M');
             }
-            
-            // Hitung aktivitas per hari dari log_admin (pakai created_at)
+
             $activityCount = LogAdmin::whereDate('created_at', $date->format('Y-m-d'))->count();
-            
-            // Jika tidak ada data, beri nilai random kecil untuk demo
+
             if ($activityCount == 0 && $i <= 2) {
-                $activityCount = rand(1, 8);
+                $activityCount = rand(1, 8); // dummy kecil
             }
-            
+
             $activities[] = $activityCount;
         }
 
         return [
             'labels' => $dates,
-            'data' => $activities
+            'data'   => $activities,
         ];
     }
 
-    // Method untuk mendapatkan data chart via AJAX (opsional)
+    /**
+     * Endpoint AJAX untuk chart
+     */
     public function getChartDataAjax($type = 'category')
     {
         switch ($type) {
@@ -125,15 +151,7 @@ class DashboardController extends Controller
             case 'activity':
                 return response()->json($this->getActivityData());
             case 'stats':
-                return response()->json([
-                    'labels' => ['Artikel', 'Kategori', 'Penghargaan', 'Siswa'],
-                    'data' => [
-                        Artikel::count(),
-                        Kategori::count(),
-                        Penghargaan::count(),
-                        Siswa::count()
-                    ]
-                ]);
+                return response()->json($this->getStatsData());
             default:
                 return response()->json(['error' => 'Invalid type'], 400);
         }

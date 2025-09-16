@@ -22,9 +22,12 @@
                         <label for="role" class="form-label">Login Sebagai</label>
                         <select name="role" id="role" class="form-select" required>
                             <option value="">-- Pilih Role --</option>
-                            <option value="admin">Admin</option>
-                            <option value="siswa">Siswa</option>
+                            <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin</option>
+                            <option value="siswa" {{ old('role') === 'siswa' ? 'selected' : '' }}>Siswa</option>
                         </select>
+                        @error('role')
+                            <div class="text-danger mt-1" style="font-size: 0.85rem;">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     {{-- Email --}}
@@ -36,7 +39,7 @@
                             </span>
                             <input type="email" name="email" id="email"
                                 class="form-control search-input border-start-0"
-                                placeholder="Masukkan email" required>
+                                placeholder="Masukkan email" value="{{ old('email') }}" required>
                         </div>
                         @error('email')
                             <div class="text-danger mt-1" style="font-size: 0.85rem;">{{ $message }}</div>
@@ -59,10 +62,16 @@
                         @enderror
                     </div>
 
+                    <!-- Remember Me -->
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                        <label class="form-check-label" for="remember">Remember Me</label>
+                    </div>
+
                     <button type="submit" class="btn btn-primary-custom w-100">Login</button>
                 </form>
 
-                @if ($errors->any() && !$errors->has('email') && !$errors->has('password'))
+                @if ($errors->any() && !$errors->has('role') && !$errors->has('email') && !$errors->has('password'))
                     <div class="alert alert-danger mt-3" role="alert">
                         {{ $errors->first() }}
                     </div>
