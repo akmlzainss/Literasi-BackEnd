@@ -10,7 +10,9 @@ use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\PengaturanController;
 use App\Http\Controllers\AktivitasSiswaController;
 use App\Http\Controllers\LogAdminController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DashboardController; // Admin
+use App\Http\Controllers\Siswa\SiswaArtikelController;
+use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
 
 // Redirect root ke halaman login
 Route::get('/', function () {
@@ -29,7 +31,7 @@ Route::middleware(['guest'])->group(function () {
     Route::get('/register', [AdminAuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AdminAuthController::class, 'register']);
 
-    // Registrasi siswa (opsional terpisah jika diperlukan)
+    // Registrasi siswa
     Route::get('/siswa/register', [AdminAuthController::class, 'showRegisterFormSiswa'])->name('register-siswa');
     Route::post('/siswa/register', [AdminAuthController::class, 'registerSiswa']);
 });
@@ -38,16 +40,11 @@ Route::middleware(['guest'])->group(function () {
 // RUTE UNTUK ADMIN (sudah login)
 // ==========================
 Route::middleware(['admin'])->group(function () {
-    // Logout
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
-
-    // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    // AJAX Routes untuk chart data
     Route::get('/dashboard/chart/{type}', [DashboardController::class, 'getChartDataAjax'])->name('dashboard.chart');
 
-    // ARTIKEL
+    // Artikel
     Route::get('/artikel', [ArtikelController::class, 'index'])->name('artikel');
     Route::get('/artikel/create', [ArtikelController::class, 'create'])->name('artikel.create');
     Route::post('/artikel', [ArtikelController::class, 'store'])->name('artikel.store');
@@ -60,7 +57,7 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/artikel/export', [ArtikelController::class, 'export'])->name('artikel.export');
     Route::get('/admin/search-siswa', [ArtikelController::class, 'searchSiswa'])->name('admin.search.siswa');
 
-    // KATEGORI
+    // Kategori
     Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori');
     Route::get('/kategori/create', [KategoriController::class, 'create'])->name('kategori.create');
     Route::post('/kategori', [KategoriController::class, 'store'])->name('kategori.store');
@@ -70,7 +67,7 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/kategori/export', [KategoriController::class, 'export'])->name('kategori.export');
     Route::get('/kategori/{id}/detail', [KategoriController::class, 'detail'])->name('kategori.detail');
 
-    // PENGHARGAAN
+    // Penghargaan
     Route::prefix('penghargaan')->group(function () {
         Route::get('/', [PenghargaanController::class, 'index'])->name('penghargaan');
         Route::get('penghargaan/create', [PenghargaanController::class, 'create'])->name('penghargaan.create');
@@ -82,7 +79,7 @@ Route::middleware(['admin'])->group(function () {
         Route::post('/send-award-notification', [PenghargaanController::class, 'sendAwardNotification'])->name('send.award.notification');
     });
 
-    // SISWA
+    // Siswa
     Route::get('/siswa', [KelolaSiswaController::class, 'index'])->name('siswa');
     Route::post('/siswa/store', [KelolaSiswaController::class, 'store'])->name('siswa.store');
     Route::get('/siswa/{nis}/detail', [KelolaSiswaController::class, 'show'])->name('siswa.detail');
@@ -92,10 +89,10 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/siswa/export', [KelolaSiswaController::class, 'exportCsv'])->name('siswa.export');
     Route::post('/siswa/import', [KelolaSiswaController::class, 'import'])->name('siswa.import');
 
-    // LAPORAN
+    // Laporan
     Route::get('/laporan/aktivitas', [LogAdminController::class, 'laporan'])->name('laporan.aktivitas');
 
-    // PENGATURAN
+    // Pengaturan
     Route::get('/pengaturan', [PengaturanController::class, 'index'])->name('pengaturan');
     Route::patch('/pengaturan', [PengaturanController::class, 'update'])->name('pengaturan.update');
     Route::get('/pengaturan/keamanan', [PengaturanController::class, 'keamanan'])->name('pengaturan.keamanan');
@@ -107,5 +104,7 @@ Route::middleware(['admin'])->group(function () {
 // ==========================
 Route::middleware(['siswa'])->group(function () {
     Route::post('/siswa/logout', [AdminAuthController::class, 'logoutSiswa'])->name('logout-siswa');
-    Route::get('/dashboard-siswa', [DashboardController::class, 'indexSiswa'])->name('dashboard-siswa');
+    Route::get('/dashboard-siswa', [SiswaDashboardController::class, 'indexSiswa'])->name('dashboard-siswa');
+    Route::get('/artikel-siswa', [SiswaArtikelController::class, 'index'])->name('artikel-siswa');
+    Route::get('/artikel-siswa/{id}', [SiswaArtikelController::class, 'show'])->name('artikel-siswa.show');
 });

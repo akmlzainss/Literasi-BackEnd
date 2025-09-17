@@ -107,8 +107,9 @@
                 @forelse ($artikels as $artikel)
                     <div class="article-card">
                         <div class="article-image">
-                            <img src="{{ $artikel->gambar ? asset('storage/' . $artikel->gambar) : asset('images/no-image.png') }}"
-                                alt="{{ $artikel->judul }}" onerror="this.src='{{ asset('images/no-image.png') }}';">
+                            <img src="{{ $artikel->gambar ? asset('storage/' . $artikel->gambar) : asset('images/no-image.jpg') }}"
+                                alt="{{ $artikel->judul }}"
+                                onerror="this.onerror=null; this.src='{{ asset('images/no-image.jpg') }}';">
 
                             <div class="article-overlay">
                                 <div class="article-actions">
