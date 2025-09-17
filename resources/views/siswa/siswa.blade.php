@@ -288,7 +288,6 @@
                                 <th scope="col">NIS</th>
                                 <th scope="col">Nama Lengkap</th>
                                 <th scope="col">Email</th>
-                                <th scope="col">Password</th>
                                 <th scope="col">Kelas</th>
                                 <th scope="col">Aksi</th>
                             </tr>
@@ -303,9 +302,6 @@
                                     </td>
                                     <td>
                                         <div class="student-email">{{ $student->email }}</div>
-                                    </td>
-                                    <td>
-                                        <div class="student-password">{{ $student->password }}</div>
                                     </td>
                                     <td>
                                         <span class="class-badge">{{ $student->kelas }}</span>
