@@ -73,7 +73,7 @@
                             <button class="btn btn-sm btn-outline-primary">
                                 <i class="fas fa-download"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-secondary">
+                            <button class="btn btn-sm btn-outline-secondary"> 
                                 <i class="fas fa-expand"></i>
                             </button>
                         </div>

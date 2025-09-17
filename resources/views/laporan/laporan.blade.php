@@ -16,14 +16,6 @@
                 <i class="fas fa-filter"></i>
                 Filter Aktivitas
             </button>
-            <button type="button" class="btn-outline-custom" onclick="exportAktivitas()">
-                <i class="fas fa-file-export"></i>
-                Export Data
-            </button>
-            <button class="btn-success-custom" id="autoRefreshBtn">
-                <i class="fas fa-sync-alt"></i>
-                Auto Refresh
-            </button>
         </div>
     </div>
 
