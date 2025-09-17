@@ -267,15 +267,18 @@
 .article-image {
     position: relative;
     width: 100%;
-    height: 200px; /* Tinggi tetap untuk gambar */
+    padding-top: 56.25%; /* Ini trik untuk rasio 16:9 (landscape), Hapus height: 200px */
     overflow: hidden;
+    background-color: #f0f0f0; /* Warna latar jika gambar lambat dimuat */
 }
 
 .article-image img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Gambar di-crop untuk mengisi ruang tanpa mengubah proporsi */
-    object-position: center; /* Posisi tengah untuk cropping yang baik */
+    object-fit: cover; /* Ini bagian terpenting: gambar akan dipotong (crop) agar pas tanpa gepeng */
     transition: transform 0.3s ease;
 }
 
