@@ -9,7 +9,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="css/websiswa.css">
+    <link rel="stylesheet" href="{{ asset('css/websiswa.css') }}">
 </head>
 
 <body>
@@ -26,10 +26,10 @@
                         <span class="notification-badge">3</span>
                     </button>
                     <div class="d-none d-md-block text-end">
-                        <div class="fw-semibold">John Doe</div>
+                        <div class="fw-semibold">{{ auth()->guard('siswa')->user()->nama ?? 'John Doe' }}</div>
                         <small class="text-muted">Siswa Aktif</small>
                     </div>
-                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
+                    <img src="{{ auth()->guard('siswa')->user()->profile_photo ?? 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face' }}"
                         alt="Profile" class="user-avatar">
                 </div>
             </div>
@@ -46,11 +46,9 @@
                     <p class="welcome-subtitle">Mari lanjutkan perjalanan belajar Anda. Hari ini adalah kesempatan baru
                         untuk tumbuh dan berkembang.</p>
                     <div class="quick-actions">
-                        <a href="#" class="quick-action-btn"><i class="fas fa-plus"></i>Buat Artikel Baru</a>
-                        <a href="#" class="quick-action-btn secondary"><i class="fas fa-book-open"></i>Jelajahi
-                            Konten</a>
-                        <a href="#" class="quick-action-btn secondary"><i class="fas fa-chart-line"></i>Lihat
-                            Progress</a>
+                        <a href="{{ route('artikel.create') }}" class="quick-action-btn"><i class="fas fa-plus"></i>Buat Artikel Baru</a>
+                        <a href="{{ route('artikel-siswa') }}" class="quick-action-btn secondary"><i class="fas fa-book-open"></i>Jelajahi Konten</a>
+                        <a href="#" class="quick-action-btn secondary"><i class="fas fa-chart-line"></i>Lihat Progress</a>
                     </div>
                 </div>
                 <div class="col-lg-4 text-center d-none d-lg-block">
@@ -160,7 +158,7 @@
                     </div>
                 </div>
                 <div class="text-center mt-3">
-                    <a href="#" class="btn btn-outline-primary rounded-pill px-4"><i
+                    <a href="{{ route('artikel-siswa') }}" class="btn btn-outline-primary rounded-pill px-4"><i
                             class="fas fa-plus me-2"></i>Lihat Semua Artikel</a>
                 </div>
             </section>
@@ -169,26 +167,26 @@
             <aside class="sidebar fade-in fade-in-delay-3">
                 <!-- Profile Card -->
                 <div class="sidebar-card profile-card">
-                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
+                    <img src="{{ auth()->guard('siswa')->user()->profile_photo ?? 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face' }}"
                         alt="Profile" class="profile-avatar-lg">
-                    <h5 class="profile-name">John Doe</h5>
-                    <p class="profile-email">john.doe@student.edu</p>
+                    <h5 class="profile-name">{{ auth()->guard('siswa')->user()->nama ?? 'John Doe' }}</h5>
+                    <p class="profile-email">{{ auth()->guard('siswa')->user()->email ?? 'john.doe@student.edu' }}</p>
                     <div class="profile-stats">
                         <div class="profile-stat">
-                            <div class="profile-stat-number">24</div>
+                            <div class="profile-stat-number">{{ auth()->guard('siswa')->user()->artikel->count() ?? 24 }}</div>
                             <div class="profile-stat-label">Artikel</div>
                         </div>
                         <div class="profile-stat">
-                            <div class="profile-stat-number">4.2K</div>
+                            <div class="profile-stat-number">{{ auth()->guard('siswa')->user()->artikel->sum('jumlah_dilihat') ?? '4.2K' }}</div>
                             <div class="profile-stat-label">Views</div>
                         </div>
                         <div class="profile-stat">
-                            <div class="profile-stat-number">892</div>
+                            <div class="profile-stat-number">{{ auth()->guard('siswa')->user()->artikel->sum('jumlah_suka') ?? 892 }}</div>
                             <div class="profile-stat-label">Likes</div>
                         </div>
                     </div>
                     <div class="mt-3">
-                        <small class="text-muted"><i class="fas fa-calendar me-1"></i>Bergabung September 2024</small>
+                        <small class="text-muted"><i class="fas fa-calendar me-1"></i>Bergabung {{ auth()->guard('siswa')->user()->created_at?->format('F Y') ?? 'September 2024' }}</small>
                     </div>
                 </div>
 
