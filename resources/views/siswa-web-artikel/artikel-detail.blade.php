@@ -3,348 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Konten - {{ $konten->judul }}</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>{{ $konten->judul }} - SiPena</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/websiswa.css') }}">
-    <style>
-        :root {
-            --primary-blue: #1e3a8a;
-            --primary-light: #3b82f6;
-            --primary-gradient: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%);
-            --secondary-blue: #0ea5e9;
-            --accent-blue: #06b6d4;
-            --dark-blue: #0f172a;
-            --light-blue: #f0f9ff;
-            --bg-primary: #f8fafc;
-            --bg-secondary: #ffffff;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --border-color: #e2e8f0;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.2);
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-        }
-
-        .container-fluid {
-            padding: 0 1rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .welcome-section {
-            background: var(--bg-secondary);
-            border-radius: 20px;
-            padding: 2rem;
-            margin: 2rem 0;
-            box-shadow: var(--shadow-md);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .welcome-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--primary-gradient);
-        }
-
-        .welcome-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 0.5rem;
-        }
-
-        .welcome-subtitle {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .quick-actions {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .quick-action-btn {
-            background: var(--primary-gradient);
-            border: none;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-            transform: perspective(1000px) rotateX(0deg);
-        }
-
-        .quick-action-btn:hover {
-            color: white;
-            transform: perspective(1000px) rotateX(-10deg) translateY(-5px);
-            box-shadow: var(--shadow-xl);
-        }
-
-        .quick-action-btn.secondary {
-            background: var(--bg-secondary);
-            color: var(--primary-blue);
-            border: 2px solid var(--primary-light);
-        }
-
-        .quick-action-btn.secondary:hover {
-            background: var(--primary-light);
-            color: white;
-        }
-
-        .detail-card {
-            background: var(--bg-secondary);
-            border-radius: 20px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border-color);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .card-header-custom {
-            background: var(--primary-gradient);
-            color: white;
-            padding: 1.2rem;
-            border-radius: 16px 16px 0 0;
-            margin: -2rem -2rem 2rem;
-            font-weight: 600;
-        }
-
-        .detail-content {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .detail-image {
-            width: 100%;
-            max-height: 400px;
-            overflow: hidden;
-            border-radius: 12px;
-        }
-
-        .img-fluid {
-            width: 100%;
-            height: auto;
-            object-fit: cover;
-            border-radius: 12px;
-            transition: transform 0.3s ease;
-        }
-
-        .content-type .category-tag {
-            background: rgba(59, 130, 246, 0.1);
-            color: var(--primary-blue);
-            padding: 0.3rem 0.8rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-
-        .detail-title {
-            font-size: 2rem;
-            font-weight: 800;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 1rem;
-        }
-
-        .content-meta {
-            display: flex;
-            gap: 1rem;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-
-        .article-content-detail {
-            font-size: 1rem;
-            line-height: 1.6;
-            color: var(--text-primary);
-        }
-
-        .video-content video {
-            border-radius: 12px;
-        }
-
-        .video-content p {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-
-        .detail-stats p {
-            margin: 0.5rem 0;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-
-        .detail-stats strong {
-            color: var(--text-primary);
-        }
-
-        .fade-in {
-            opacity: 0;
-            transform: translateY(30px);
-            animation: fadeInUp 0.8s ease forwards;
-        }
-
-        .fade-in-delay-2 { animation-delay: 0.2s; }
-
-        @keyframes fadeInUp {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 1024px) {
-            .detail-content { gap: 1rem; }
-        }
-
-        @media (max-width: 768px) {
-            .welcome-section { padding: 1.5rem; }
-            .welcome-title { font-size: 2rem; }
-            .quick-actions { justify-content: center; }
-            .quick-action-btn { padding: 0.5rem 1rem; font-size: 0.9rem; }
-            .card-header-custom { margin: -1.5rem -1.5rem 1.5rem; padding: 1rem; }
-            .detail-card { padding: 1.5rem; }
-            .detail-title { font-size: 1.5rem; }
-        }
-
-        @media (max-width: 480px) {
-            .welcome-title { font-size: 1.75rem; }
-            .quick-action-btn { width: 100%; justify-content: center; }
-            .detail-image { max-height: 200px; }
-        }
-    </style>
 </head>
-<body>
-    <div class="container-fluid">
-        <!-- Welcome Section -->
-        <section class="welcome-section fade-in">
-            <div class="row align-items-center">
-                <div class="col-12">
-                    <h1 class="welcome-title">Detail Konten</h1>
-                    <p class="welcome-subtitle">Jelajahi isi lengkap konten literasi akhlak.</p>
-                    <div class="quick-actions">
-                        <a href="{{ route('artikel-siswa') }}" class="quick-action-btn secondary">
-                            <i class="fas fa-arrow-left me-2"></i>Kembali ke Jelajah
-                        </a>
+<body class="page-artikel-detail"> 
+
+    <header class="header">
+        <nav class="container navbar navbar-expand-lg">
+            <a href="{{ route('dashboard-siswa') }}" class="logo"><i class="fas fa-graduation-cap"></i> SIPENA</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav ms-auto align-items-lg-center">
+                    <li class="nav-item"><a href="{{ route('dashboard-siswa') }}" class="nav-link">Beranda</a></li>
+                    <li class="nav-item"><a href="{{ route('artikel-siswa') }}" class="nav-link active">Artikel</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link">Upload</a></li>
+                    <li class="nav-item d-none d-lg-block"><div class="vr mx-3"></div></li>
+                    @auth('siswa')
+                        <li class="nav-item"><a href="#" class="nav-link" title="Notifikasi"><i class="fas fa-bell fs-5"></i></a></li>
+                        <li class="nav-item"><a href="#" class="nav-link" title="Profil"><i class="fas fa-user-circle fs-5"></i></a></li>
+                        <li class="nav-item ms-lg-3"><form action="{{ route('logout-siswa') }}" method="POST">@csrf<button type="submit" class="btn btn-danger btn-sm">Keluar</button></form></li>
+                    @else
+                        <li class="nav-item"><a href="{{ route('login') }}" class="btn btn-outline-primary btn-sm">Masuk</a></li>
+                        <li class="nav-item ms-2"><a href="#" class="btn btn-primary btn-sm">Daftar</a></li>
+                    @endauth
+                </ul>
+            </div>
+        </nav>
+    </header>
+    
+    <main class="container py-4">
+        <section class="content-section">
+            <div class="row g-5">
+                <div class="col-lg-4">
+                    <div class="sticky-top" style="top: 100px;">
+      {{-- KODE BARU --}}
+<a href="{{ url()->previous() }}" class="btn-kembali mb-4">
+    <i class="fas fa-arrow-left me-2"></i>Kembali
+</a>
+                        @if($konten->gambar)
+                            <img src="{{ asset('storage/' . $konten->gambar) }}" alt="{{ $konten->judul }}" class="detail-page-image" onerror="this.style.display='none';">
+                        @endif
+                        <div class="author-card-siswa">
+                            <div class="author-avatar-siswa">{{ strtoupper(substr($konten->siswa->nama ?? 'AD', 0, 2)) }}</div>
+                            <div class="author-info-siswa">
+                                <p class="name">{{ $konten->siswa->nama ?? 'Admin' }}</p>
+                                <p class="date">Dipublikasikan pada {{ $konten->created_at?->format('d F Y') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <article>
+                        <header>
+                            <span class="badge bg-primary-subtle text-primary-emphasis rounded-pill mb-3 fs-6">{{ $konten->kategori->nama ?? 'Umum' }}</span>
+                            <h1 class="detail-page-title">{{ $konten->judul }}</h1>
+                            <div class="meta-info">
+                                <span><i class="fas fa-eye"></i> {{ $konten->jumlah_dilihat }} Dilihat</span>
+                                <span id="comment-count"><i class="fas fa-comments"></i> {{ $konten->komentarArtikel->count() }} Komentar</span>
+                                <span id="rating-summary">
+                                    <i class="fas fa-star"></i> 
+                                    @if ($konten->ratingArtikel->count() > 0)
+                                        {{ round($konten->ratingArtikel->avg('rating'), 1) }}/5
+                                    @else
+                                        Belum ada rating
+                                    @endif
+                                </span>
+                                <span id="like-count"><i class="fas fa-heart"></i> {{ $konten->jumlah_suka ?? 0 }} Suka</span>
+                            </div>
+                        </header>
+                        
+                        <div class="article-body mt-4">{!! $konten->isi !!}</div>
+                    </article>
+
+                    @auth('siswa')
+                    <div class="action-buttons-wrapper mt-4">
+                        <button class="btn-action {{ $userHasLiked ? 'active' : '' }}" data-action="suka" data-id="{{ $konten->id }}">
+                            <i class="{{ $userHasLiked ? 'fas' : 'far' }} fa-heart"></i> Suka
+                        </button>
+                        <button class="btn-action {{ $userHasBookmarked ? 'active' : '' }}" data-action="bookmark" data-id="{{ $konten->id }}">
+                            <i class="{{ $userHasBookmarked ? 'fas' : 'far' }} fa-bookmark"></i> Simpan
+                        </button>
+                    </div>
+                    @endauth
+
+                    <div class="feedback-section mt-4">
+                        @auth('siswa')
+                            <form id="feedbackForm" action="{{ route('komentar.store', $konten->id) }}" method="POST">
+                                @csrf
+                                <h3 class="mb-3">Beri Tanggapan Anda</h3>
+                                <div class="mb-3">
+                                    <label class="form-label">Beri Rating:</label>
+                                    <div class="rating-stars">
+                                        <input type="radio" id="star5" name="rating" value="5" {{ ($userRating && $userRating->rating == 5) ? 'checked' : '' }} /><label for="star5" title="Luar biasa"><i class="fas fa-star"></i></label>
+                                        <input type="radio" id="star4" name="rating" value="4" {{ ($userRating && $userRating->rating == 4) ? 'checked' : '' }} /><label for="star4" title="Bagus"><i class="fas fa-star"></i></label>
+                                        <input type="radio" id="star3" name="rating" value="3" {{ ($userRating && $userRating->rating == 3) ? 'checked' : '' }} /><label for="star3" title="Cukup"><i class="fas fa-star"></i></label>
+                                        <input type="radio" id="star2" name="rating" value="2" {{ ($userRating && $userRating->rating == 2) ? 'checked' : '' }} /><label for="star2" title="Kurang"><i class="fas fa-star"></i></label>
+                                        <input type="radio" id="star1" name="rating" value="1" {{ ($userRating && $userRating->rating == 1) ? 'checked' : '' }} /><label for="star1" title="Buruk"><i class="fas fa-star"></i></label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="komentar" class="form-label">Tulis Komentar:</label>
+                                    <textarea class="form-control" id="komentar" name="komentar" rows="4" placeholder="Bagikan pendapat Anda..."></textarea>
+                                </div>
+                                <button type="submit" id="submitBtn" class="btn btn-primary">Kirim Tanggapan</button>
+                            </form>
+                        @else
+                            <div class="text-center p-4 border rounded">
+                                <p class="mb-1">Silakan <a href="{{ route('login') }}">masuk</a> untuk memberi rating dan komentar.</p>
+                            </div>
+                        @endauth
+
+                        <div class="komentar-section mt-5">
+                            <h3 class="mb-4" id="comment-title">Komentar ({{ $konten->komentarArtikel->count() }})</h3>
+                            <div id="comment-list">
+                                @forelse($konten->komentarArtikel as $komentar)
+                                    @include('partials.komentar', ['komentar' => $komentar])
+                                @empty
+                                    <p id="no-comment-msg">Belum ada komentar. Jadilah yang pertama!</p>
+                                @endforelse
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
+    </main>
 
-        <!-- Detail Card -->
-        <div class="detail-card fade-in fade-in-delay-2">
-            <div class="card-header-custom">
-                <div>
-                    <i class="{{ $konten->jenis == 'artikel' ? 'fas fa-book-open' : 'fas fa-play' }} me-2"></i>{{ $konten->judul }}
-                </div>
-            </div>
-            <div class="card-body-custom">
-                <div class="detail-content">
-                    <div class="detail-image">
-                        <img src="{{ $konten->gambar ? asset('storage/' . $konten->gambar) : ($konten->jenis == 'video' ? asset('images/video-placeholder.jpg') : asset('images/no-image.png')) }}"
-                            alt="{{ $konten->judul }}" class="img-fluid"
-                            onerror="this.src='{{ $konten->jenis == 'video' ? asset('images/video-placeholder.jpg') : asset('images/no-image.png') }}';">
-                    </div>
-                    <div class="detail-info">
-                        <div class="content-type mb-3">
-                            <span class="category-tag">{{ ucfirst($konten->jenis) }}</span>
-                        </div>
-                        <h2 class="detail-title">{{ $konten->judul }}</h2>
-                        <div class="content-meta mb-3">
-                            <span><i class="fas fa-user"></i> {{ $konten->siswa->nama ?? 'Admin' }}</span>
-                            <span><i class="fas fa-eye"></i> {{ $konten->jumlah_dilihat }}</span>
-                            <span><i class="fas fa-clock"></i> {{ $konten->created_at?->format('d M Y') }}</span>
-                        </div>
-                        <div class="detail-body">
-                            @if ($konten->jenis == 'artikel')
-                                <div class="article-content-detail">
-                                    {!! $konten->isi !!}
-                                </div>
-                            @else
-                                <div class="video-content">
-                                    <video controls class="w-100" poster="{{ $konten->gambar ?? asset('images/video-placeholder.jpg') }}">
-                                        <source src="{{ asset('storage/' . $konten->file) }}" type="video/mp4">
-                                        Browser Anda tidak mendukung tag video.
-                                    </video>
-                                    <p class="mt-2">{{ $konten->deskripsi }}</p>
-                                </div>
-                            @endif
-                        </div>
-                        <div class="detail-stats mt-4">
-                            <p><strong>Jenis:</strong> {{ ucfirst($konten->jenis) }}</p>
-                            <p><strong>Dibuat pada:</strong> {{ $konten->created_at?->format('d M Y, H:i') }}</p>
-                            @if ($konten->diterbitkan_pada)
-                                <p><strong>Diterbitkan pada:</strong> {{ $konten->diterbitkan_pada?->format('d M Y, H:i') }}</p>
-                            @endif
-                            <p><strong>Jumlah Suka:</strong> {{ $konten->jumlah_suka }}</p>
-                            <p><strong>Jumlah Komentar:</strong> {{ $konten->komentarKonten->count() }}</p>
-                            <p><strong>Rating:</strong>
-                                @if ($konten->ratingKonten->count() > 0)
-                                    @php
-                                        $avgRating = round($konten->ratingKonten->avg('rating'), 1);
-                                    @endphp
-                                    @for ($i = 1; $i <= 5; $i++)
-                                        @if ($i <= round($avgRating))
-                                            <i class="fas fa-star text-warning"></i>
-                                        @else
-                                            <i class="far fa-star text-warning"></i>
-                                        @endif
-                                    @endfor
-                                    <span>({{ $avgRating }}/5)</span>
-                                @else
-                                    Belum ada rating
-                                @endif
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <footer class="bg-dark text-white text-center p-3 mt-4">
+        <p class="mb-0">&copy; {{ date('Y') }} EduHub. Hak Cipta Dilindungi.</p>
+    </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.animationPlayState = 'running';
-                    }
-                });
-            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    document.addEventListener('DOMContentLoaded', function () {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-            document.querySelectorAll('.fade-in').forEach(el => {
-                el.style.animationPlayState = 'paused';
-                observer.observe(el);
+        document.querySelectorAll('.btn-action').forEach(button => {
+            button.addEventListener('click', function() {
+                this.disabled = true;
+                const jenis = this.dataset.action;
+                const artikelId = this.dataset.id;
+                const url = `/artikel-siswa/${artikelId}/interaksi`;
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+                    body: JSON.stringify({ jenis: jenis })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.classList.toggle('active');
+                        const icon = this.querySelector('i');
+                        icon.classList.toggle('far');
+                        icon.classList.toggle('fas');
+                        if (jenis === 'suka') {
+                            document.getElementById('like-count').innerHTML = `<i class="fas fa-heart"></i> ${data.like_count} Suka`;
+                        }
+                    }
+                })
+                .catch(error => console.error('Error:', error))
+                .finally(() => { this.disabled = false; });
             });
         });
+        
+        const form = document.getElementById('feedbackForm');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const submitBtn = document.getElementById('submitBtn');
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Mengirim...';
+
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: new FormData(form)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        submitBtn.classList.replace('btn-primary', 'btn-success');
+                        submitBtn.innerHTML = '<i class="fas fa-check"></i> Terkirim!';
+                        
+                        const ratingSummary = document.getElementById('rating-summary');
+                        if (data.new_rating_count > 0) {
+                            ratingSummary.innerHTML = `<i class="fas fa-star"></i> ${data.new_avg_rating}/5`;
+                        }
+
+                        const commentCount = document.getElementById('comment-count');
+                        const commentTitle = document.getElementById('comment-title');
+                        commentCount.innerHTML = `<i class="fas fa-comments"></i> ${data.new_comment_count} Komentar`;
+                        commentTitle.innerText = `Komentar (${data.new_comment_count})`;
+                        
+                        if (data.new_comment_html) {
+                            document.getElementById('no-comment-msg')?.remove();
+                            const commentList = document.getElementById('comment-list');
+                            const newCommentEl = document.createElement('div');
+                            newCommentEl.innerHTML = data.new_comment_html;
+                            newCommentEl.querySelector('.komentar-item').classList.add('new-comment');
+                            commentList.prepend(newCommentEl);
+                        }
+
+                        setTimeout(() => {
+                            form.reset();
+                            const checkedStar = document.querySelector('.rating-stars input:checked');
+                            if (checkedStar) checkedStar.checked = false;
+                            submitBtn.disabled = false;
+                            submitBtn.classList.replace('btn-success', 'btn-primary');
+                            submitBtn.innerHTML = originalBtnText;
+                        }, 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                    alert('Terjadi kesalahan.');
+                });
+            });
+        }
+    });
     </script>
 </body>
 </html>

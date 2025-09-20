@@ -11,37 +11,36 @@ class DashboardController extends Controller
 {
     public function indexSiswa(Request $request)
     {
+        // Query untuk artikel terbaru (tidak berubah)
         $query = Artikel::query()->where('status', 'disetujui');
-
-        // Filter pencarian berdasarkan kata kunci
         if ($request->filled('search')) {
             $query->where('judul', 'like', '%' . $request->search . '%');
         }
-
-        // Filter berdasarkan kategori dari link
         if ($request->filled('kategori')) {
             $query->whereHas('kategori', function($q) use ($request) {
                 $q->where('nama', $request->kategori);
             });
         }
-
-        // Filter berdasarkan bulan dan tahun
-        if ($request->filled('month') && $request->filled('year')) {
-            $query->whereYear('created_at', $request->year)
-                  ->whereMonth('created_at', $request->month);
+        if ($request->filled('month')) {
+            $query->whereMonth('created_at', $request->month);
         }
+        if ($request->filled('year')) {
+            $query->whereYear('created_at', $request->year);
+        }
+        $artikels = $query->with(['siswa', 'kategori'])->latest()->paginate(12);
 
-        // Urutkan berdasarkan terbaru (created_at DESC)
-        $query->orderBy('created_at', 'desc');
+        // ======================================================
+        // PERBAIKAN DI SINI: Filter artikel populer berdasarkan bulan ini
+        // ======================================================
+        $artikelPopuler = Artikel::where('status', 'disetujui')
+                                 ->whereMonth('created_at', now()->month) // Hanya ambil artikel dari bulan ini
+                                 ->whereYear('created_at', now()->year)   // Dan dari tahun ini
+                                 ->orderBy('jumlah_dilihat', 'desc')
+                                 ->take(10)
+                                 ->get();
 
-        // Ambil data artikel dengan batas 12 per halaman
-        $artikels = $query->with(['siswa', 'ratingArtikel', 'kategori'])
-                          ->paginate(12);
+        $kategoris = Kategori::orderBy('nama', 'asc')->get();
 
-        // Ambil data kategori
-        $kategoris = Kategori::all();
-
-        // Kirim kedua data ke view
-        return view('web_siswa.dashboard', compact('artikels', 'kategoris'));
+        return view('web_siswa.dashboard', compact('artikels', 'artikelPopuler', 'kategoris'));
     }
 }
