@@ -107,4 +107,10 @@ Route::middleware(['siswa'])->group(function () {
     Route::get('/dashboard-siswa', [SiswaDashboardController::class, 'indexSiswa'])->name('dashboard-siswa');
     Route::get('/artikel-siswa', [SiswaArtikelController::class, 'index'])->name('artikel-siswa');
     Route::get('/artikel-siswa/{id}', [SiswaArtikelController::class, 'show'])->name('artikel-siswa.show');
+
+    // BARIS INI YANG DITAMBAHKAN
+    Route::post('/artikel-siswa/{id}/komentar', [SiswaArtikelController::class, 'storeKomentar'])->name('komentar.store');
+
+    // Rute baru untuk Suka & Simpan
+    Route::post('/artikel-siswa/{id}/interaksi', [SiswaArtikelController::class, 'storeInteraksi'])->name('artikel.interaksi');
 });

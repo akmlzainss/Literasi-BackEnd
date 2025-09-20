@@ -38,6 +38,7 @@ class Artikel extends Model
         'updated_at'          => 'datetime',
         'deleted_at'          => 'datetime',
         'riwayat_persetujuan' => 'array', // bisa juga 'json', keduanya setara
+        'jumlah_dilihat'      => 'integer'
     ];
 
     /* =====================
@@ -94,6 +95,11 @@ class Artikel extends Model
     {
         return $this->hasMany(RatingArtikel::class, 'id_artikel', 'id');
     }
+
+    public function interaksis()
+{
+    return $this->hasMany(InteraksiArtikel::class, 'id_artikel');
+}
 
     /* =====================
      |   SCOPES (untuk API)
