@@ -33,6 +33,10 @@
                 <i class="fas fa-download"></i>
                 Export Data
             </a>
+              <a href="{{ route('artikel.status', ['status' => 'menunggu']) }}" class="btn-warning-custom">
+        <i class="fas fa-clock"></i>
+        Status Menunggu
+    </a>
         </div>
     </div>
 
