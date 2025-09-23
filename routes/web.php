@@ -3,18 +3,20 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\ArtikelController;
+use App\Http\Controllers\KomentarController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\KelolaSiswaController;
 use App\Http\Controllers\PenghargaanController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\PengaturanController;
-use App\Http\Controllers\AktivitasSiswaController;
 use App\Http\Controllers\LogAdminController;
-use App\Http\Controllers\DashboardController; // Admin
+use App\Http\Controllers\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Siswa\SiswaArtikelController;
 use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
 
-// Redirect root ke halaman login
+// ==========================
+// RUTE ROOT
+// ==========================
 Route::get('/', function () {
     return redirect()->route('login');
 });
@@ -23,26 +25,23 @@ Route::get('/', function () {
 // RUTE UNTUK GUEST (belum login)
 // ==========================
 Route::middleware(['guest'])->group(function () {
-    // Form login tunggal untuk admin dan siswa
+    // Form login (satu untuk admin & siswa)
     Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AdminAuthController::class, 'login'])->name('login.submit');
 
-    // Registrasi admin
-    Route::get('/register', [AdminAuthController::class, 'showRegisterForm'])->name('register');
-    Route::post('/register', [AdminAuthController::class, 'register']);
-
-    // Registrasi siswa
-    Route::get('/siswa/register', [AdminAuthController::class, 'showRegisterFormSiswa'])->name('register-siswa');
-    Route::post('/siswa/register', [AdminAuthController::class, 'registerSiswa']);
+    // Registrasi (hanya untuk siswa, diproses oleh satu fungsi)
+    // PERBAIKAN: Route GET /register tidak diperlukan lagi karena form ada di halaman login
+    Route::post('/register', [AdminAuthController::class, 'register'])->name('register.submit');
 });
 
 // ==========================
-// RUTE UNTUK ADMIN (sudah login)
+// RUTE UNTUK ADMIN (dilindungi middleware 'admin')
 // ==========================
 Route::middleware(['admin'])->group(function () {
-    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard/chart/{type}', [DashboardController::class, 'getChartDataAjax'])->name('dashboard.chart');
+    // Logout & dashboard
+    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout'); // URL: /logout
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/chart/{type}', [AdminDashboardController::class, 'getChartDataAjax'])->name('dashboard.chart');
 
     // Artikel
     Route::get('/artikel', [ArtikelController::class, 'index'])->name('artikel');
@@ -56,6 +55,11 @@ Route::middleware(['admin'])->group(function () {
     Route::post('/artikel/{id}/rate', [ArtikelController::class, 'rate'])->name('artikel.rate');
     Route::get('/artikel/export', [ArtikelController::class, 'export'])->name('artikel.export');
     Route::get('/admin/search-siswa', [ArtikelController::class, 'searchSiswa'])->name('admin.search.siswa');
+    Route::get('/artikel/status/{status}', [ArtikelController::class, 'status'])->name('artikel.status');
+
+    // Komentar (ADMIN)
+    Route::post('/komentar/{id}', [KomentarController::class, 'store'])->name('admin.komentar.store');
+    Route::delete('/komentar/{id}', [KomentarController::class, 'destroy'])->name('admin.komentar.destroy');
 
     // Kategori
     Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori');
@@ -70,7 +74,7 @@ Route::middleware(['admin'])->group(function () {
     // Penghargaan
     Route::prefix('penghargaan')->group(function () {
         Route::get('/', [PenghargaanController::class, 'index'])->name('penghargaan');
-        Route::get('penghargaan/create', [PenghargaanController::class, 'create'])->name('penghargaan.create');
+        Route::get('/create', [PenghargaanController::class, 'create'])->name('penghargaan.create');
         Route::post('/', [PenghargaanController::class, 'store'])->name('penghargaan.store');
         Route::get('/{id}', [PenghargaanController::class, 'show'])->name('penghargaan.show');
         Route::get('/{id}/edit', [PenghargaanController::class, 'edit'])->name('penghargaan.edit');
@@ -79,7 +83,7 @@ Route::middleware(['admin'])->group(function () {
         Route::post('/send-award-notification', [PenghargaanController::class, 'sendAwardNotification'])->name('send.award.notification');
     });
 
-    // Siswa
+    // Siswa (kelola oleh admin)
     Route::get('/siswa', [KelolaSiswaController::class, 'index'])->name('siswa');
     Route::post('/siswa/store', [KelolaSiswaController::class, 'store'])->name('siswa.store');
     Route::get('/siswa/{nis}/detail', [KelolaSiswaController::class, 'show'])->name('siswa.detail');
@@ -100,17 +104,21 @@ Route::middleware(['admin'])->group(function () {
 });
 
 // ==========================
-// RUTE UNTUK SISWA (sudah login)
+// RUTE UNTUK SISWA (dilindungi middleware 'siswa')
 // ==========================
 Route::middleware(['siswa'])->group(function () {
-    Route::post('/siswa/logout', [AdminAuthController::class, 'logoutSiswa'])->name('logout-siswa');
+    // PERBAIKAN: URL logout siswa dibuat unik untuk menghindari konflik
+    Route::post('/siswa/logout', [AdminAuthController::class, 'logoutSiswa'])->name('logout-siswa'); // URL: /siswa/logout
+    
     Route::get('/dashboard-siswa', [SiswaDashboardController::class, 'indexSiswa'])->name('dashboard-siswa');
+
+    // Artikel siswa
     Route::get('/artikel-siswa', [SiswaArtikelController::class, 'index'])->name('artikel-siswa');
     Route::get('/artikel-siswa/{id}', [SiswaArtikelController::class, 'show'])->name('artikel-siswa.show');
 
-    // BARIS INI YANG DITAMBAHKAN
-    Route::post('/artikel-siswa/{id}/komentar', [SiswaArtikelController::class, 'storeKomentar'])->name('komentar.store');
+    // Komentar (SISWA)
+    Route::post('/artikel-siswa/{id}/komentar', [SiswaArtikelController::class, 'storeKomentar'])->name('siswa.komentar.store');
 
-    // Rute baru untuk Suka & Simpan
+    // Interaksi artikel
     Route::post('/artikel-siswa/{id}/interaksi', [SiswaArtikelController::class, 'storeInteraksi'])->name('artikel.interaksi');
 });

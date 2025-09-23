@@ -7,271 +7,128 @@ use App\Models\Siswa;
 use App\Models\LogAdmin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rules\Password;
 use Exception;
 
 class AdminAuthController extends Controller
 {
     /**
-     * FORM LOGIN
+     * Menampilkan form login & register yang sudah disatukan.
      */
     public function showLoginForm()
     {
-        return view('auth.login-admin'); // Gunakan satu view login untuk admin dan siswa
-    }
-
-    public function showLoginFormSiswa()
-    {
-        return view('auth.login-siswa'); // Opsional, jika ingin terpisah
+        // Fungsi ini mengarah ke satu file tampilan untuk login dan register
+        return view('auth.login'); 
     }
 
     /**
-     * LOGIN
+     * LOGIN CERDAS: Tanpa perlu 'role' dari form.
+     * Sistem akan otomatis mengecek ke tabel admin, lalu ke tabel siswa.
      */
     public function login(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
-            'password' => 'required|min:6',
-            'role' => 'required|in:admin,siswa', // Tambahkan validasi role
+            'password' => 'required|string|min:6',
         ]);
 
         $credentials = $request->only('email', 'password');
         $remember = $request->filled('remember');
-        $role = $request->role;
 
-        $guard = ($role === 'admin') ? 'admin' : 'siswa';
-        $model = ($role === 'admin') ? Admin::class : Siswa::class;
-        $redirectRoute = ($role === 'admin') ? 'dashboard' : 'dashboard-siswa';
-
-        if (Auth::guard($guard)->attempt($credentials, $remember)) {
-            $user = Auth::guard($guard)->user();
-
+        // Prioritas 1: Coba login sebagai Admin
+        if (Auth::guard('admin')->attempt($credentials, $remember)) {
+            $request->session()->regenerate();
+            
+            // Log aktivitas admin jika berhasil login
             try {
-                if ($role === 'admin') {
-                    /** @var Admin $user */
-                    $user->update(['last_login_at' => now()]);
+                $admin = Auth::guard('admin')->user();
+                if ($admin) {
+                    $admin->update(['last_login_at' => now()]);
                     LogAdmin::create([
-                        'id_admin' => $user->id,
-                        'jenis_aksi' => 'login',
-                        'aksi' => 'Admin berhasil login',
-                        'referensi_tipe' => 'admin',
-                        'referensi_id' => $user->id,
+                        'id_admin' => $admin->id, 'jenis_aksi' => 'login',
+                        'aksi' => 'Admin berhasil login', 'referensi_tipe' => 'admin',
+                        'referensi_id' => $admin->id,
                     ]);
-                } else {
-                    /** @var Siswa $user */
-                    $user->update(['last_login_at' => now()]);
                 }
             } catch (Exception $e) {
-                Log::error("Error post-login $role " . $user->id . ': ' . $e->getMessage());
+                Log::error("Gagal mencatat log login admin: " . $e->getMessage());
             }
 
+            return redirect()->intended(route('dashboard'));
+        }
+
+        // Prioritas 2: Coba login sebagai Siswa
+        if (Auth::guard('siswa')->attempt($credentials, $remember)) {
             $request->session()->regenerate();
-            return redirect()->intended(route($redirectRoute));
+            return redirect()->intended(route('dashboard-siswa'));
         }
-
-        // Hapus cookie "remember me" jika tidak dicentang
-        if (!$remember) {
-            $request->session()->forget('remember_web_' . $guard . '_' . sha1($credentials['email']));
-        }
-
-        return back()->withErrors(['email' => 'Email atau password salah.'])->withInput();
+        
+        // Jika keduanya gagal, kembali dengan pesan error
+        return back()->with('error', 'Email atau Password yang Anda masukkan salah.')->withInput($request->only('email', 'remember'));
     }
 
     /**
-     * REGISTER
+     * PERBAIKAN UTAMA DI SINI:
+     * REGISTRASI AMAN: Controller ini hanya akan memproses registrasi Siswa.
      */
-    public function showRegisterForm()
-    {
-        return view('auth.register-admin');
-    }
-
-    public function showRegisterFormSiswa()
-    {
-        return view('auth.register-siswa');
-    }
-
     public function register(Request $request)
     {
-        $request->validate([
-            'nama_pengguna' => 'required|string|max:255|unique:admins,nama_pengguna',
-            'email' => 'required|email|unique:admins,email',
-            'password' => 'required|min:6|confirmed',
-        ]);
-
-        DB::beginTransaction();
-        try {
-            $admin = Admin::create([
-                'nama_pengguna' => $request->nama_pengguna,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'status_aktif' => true,
-            ]);
-
-            LogAdmin::create([
-                'id_admin' => $admin->id,
-                'jenis_aksi' => 'register',
-                'aksi' => 'Admin baru registrasi',
-                'referensi_tipe' => 'admin',
-                'referensi_id' => $admin->id,
-            ]);
-
-            DB::commit();
-            return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
-        } catch (Exception $e) {
-            DB::rollBack();
-            Log::error('Error registrasi admin: ' . $e->getMessage());
-            return back()->withErrors(['error' => 'Registrasi gagal.'])->withInput();
+        // KEAMANAN: Pastikan form hanya memproses jika 'role' dari hidden input adalah 'siswa'
+        if ($request->input('role') !== 'siswa') {
+            return redirect()->route('login')->with('error', 'Registrasi tidak diizinkan.');
         }
-    }
 
-    public function registerSiswa(Request $request)
-    {
+        // PERBAIKAN: Validasi disesuaikan dengan field di form registrasi siswa
         $request->validate([
-            'nama_pengguna' => 'required|string|max:255|unique:siswa,nama_pengguna',
-            'email' => 'required|email|unique:siswa,email',
-            'password' => 'required|min:6|confirmed',
+            'nama' => 'required|string|max:255',
+            'nis' => 'required|string|max:50|unique:siswa,nis',
+            'email' => 'required|email|max:255|unique:siswa,email|unique:admin,email',
+            'password' => ['required', 'confirmed', Password::min(8)], // Password minimal 8 karakter
+            'terms' => 'accepted',
+        ], [
+            'nis.unique' => 'NIS ini sudah terdaftar di sistem.',
+            'email.unique' => 'Email ini sudah digunakan.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'terms.accepted' => 'Anda harus menyetujui Syarat & Ketentuan kami.',
         ]);
 
-        DB::beginTransaction();
         try {
-            $siswa = Siswa::create([
-                'nama_pengguna' => $request->nama_pengguna,
+            // PERBAIKAN: Membuat record baru di tabel 'siswa'
+            Siswa::create([
+                'nama' => $request->nama,
+                'nis' => $request->nis,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'status_aktif' => true,
             ]);
-
-            DB::commit();
-            return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
+            return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login dengan akun Anda.');
         } catch (Exception $e) {
-            DB::rollBack();
             Log::error('Error registrasi siswa: ' . $e->getMessage());
-            return back()->withErrors(['error' => 'Registrasi gagal.'])->withInput();
+            return back()->with('error', 'Terjadi kesalahan. Gagal mendaftarkan akun.')->withInput();
         }
     }
 
     /**
-     * LOGOUT
+     * LOGOUT ADMIN
      */
     public function logout(Request $request)
     {
-        $admin = Auth::guard('admin')->user();
-
-        if ($admin) {
-            try {
-                LogAdmin::create([
-                    'id_admin' => $admin->id,
-                    'jenis_aksi' => 'logout',
-                    'aksi' => 'Admin logout',
-                    'referensi_tipe' => 'admin',
-                    'referensi_id' => $admin->id,
-                ]);
-            } catch (Exception $e) {
-                Log::error('Error logout logging admin ' . $admin->id . ': ' . $e->getMessage());
-            }
-        }
-
         Auth::guard('admin')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-
-        return redirect()->route('login')->with('success', 'Logout berhasil.');
-    }
-
-    public function logoutSiswa(Request $request)
-    {
-        $siswa = Auth::guard('siswa')->user();
-
-        if ($siswa) {
-            try {
-                $siswa->update(['last_logout_at' => now()]);
-            } catch (Exception $e) {
-                Log::error('Error logout siswa ' . $siswa->id . ': ' . $e->getMessage());
-            }
-        }
-
-        Auth::guard('siswa')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect()->route('login')->with('success', 'Logout berhasil.');
+        return redirect()->route('login')->with('success', 'Anda berhasil logout.');
     }
 
     /**
-     * UPDATE PASSWORD
+     * LOGOUT SISWA
      */
-    public function updatePassword(Request $request)
+    public function logoutSiswa(Request $request)
     {
-        $admin = Auth::guard('admin')->user();
-
-        $request->validate([
-            'current_password' => 'required|string',
-            'new_password' => [
-                'required', 'string', 'min:8', 'confirmed',
-                'regex:/[a-z]/', 'regex:/[A-Z]/', 'regex:/[0-9]/', 'regex:/[@$!%*#?&]/'
-            ],
-        ]);
-
-        if (!Hash::check($request->current_password, $admin->password)) {
-            return back()->withErrors(['current_password' => 'Password saat ini salah.']);
-        }
-
-        DB::beginTransaction();
-        try {
-            $admin->update([
-                'password' => Hash::make($request->new_password),
-                'last_password_changed_at' => now(),
-            ]);
-
-            LogAdmin::create([
-                'id_admin' => $admin->id,
-                'jenis_aksi' => 'update_password',
-                'aksi' => 'Admin ganti password',
-                'referensi_tipe' => 'admin',
-                'referensi_id' => $admin->id,
-            ]);
-
-            DB::commit();
-            return back()->with('success', 'Password berhasil diubah.');
-        } catch (Exception $e) {
-            DB::rollBack();
-            Log::error('Error update password admin: ' . $e->getMessage());
-            return back()->withErrors(['error' => 'Gagal mengubah password.']);
-        }
-    }
-
-    public function updatePasswordSiswa(Request $request)
-    {
-        $siswa = Auth::guard('siswa')->user();
-
-        $request->validate([
-            'current_password' => 'required|string',
-            'new_password' => [
-                'required', 'string', 'min:8', 'confirmed',
-                'regex:/[a-z]/', 'regex:/[A-Z]/', 'regex:/[0-9]/', 'regex:/[@$!%*#?&]/'
-            ],
-        ]);
-
-        if (!Hash::check($request->current_password, $siswa->password)) {
-            return back()->withErrors(['current_password' => 'Password saat ini salah.']);
-        }
-
-        DB::beginTransaction();
-        try {
-            $siswa->update([
-                'password' => Hash::make($request->new_password),
-                'last_password_changed_at' => now(),
-            ]);
-
-            DB::commit();
-            return back()->with('success', 'Password berhasil diubah.');
-        } catch (Exception $e) {
-            DB::rollBack();
-            Log::error('Error update password siswa: ' . $e->getMessage());
-            return back()->withErrors(['error' => 'Gagal mengubah password.']);
-        }
+        Auth::guard('siswa')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect()->route('login')->with('success', 'Anda berhasil logout.');
     }
 }
