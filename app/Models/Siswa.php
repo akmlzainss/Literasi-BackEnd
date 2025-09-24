@@ -5,13 +5,14 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Notifications\Notifiable; // penting biar bisa pakai fitur auth bawaan
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Siswa extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
-    protected $table = 'siswa'; // atau 'siswas' kalau migration kamu pakai plural
+    protected $table = 'siswa'; 
     public $timestamps = true;
 
     protected $fillable = [
@@ -25,12 +26,16 @@ class Siswa extends Authenticatable
 
     protected $hidden = [
         'password',
-        'remember_token', // sebaiknya tambahkan ini
+        'remember_token',
     ];
 
-    /**
-     * Relasi-relasi siswa
-     */
+    protected $casts = [
+        'deleted_at' => 'datetime',
+    ];
+
+    /* =====================
+     |   RELASI
+     ===================== */
     public function artikel()
     {
         return $this->hasMany(Artikel::class, 'id_siswa');
@@ -64,5 +69,25 @@ class Siswa extends Authenticatable
     public function notifikasi()
     {
         return $this->hasMany(Notifikasi::class, 'id_siswa');
+    }
+
+    /* =====================
+     |   HELPER TRASH/RESTORE
+     ===================== */
+    public static function getTrash()
+    {
+        return self::onlyTrashed()->get();
+    }
+
+    public static function restoreById($id)
+    {
+        $siswa = self::onlyTrashed()->findOrFail($id);
+        return $siswa->restore();
+    }
+
+    public static function forceDeleteById($id)
+    {
+        $siswa = self::onlyTrashed()->findOrFail($id);
+        return $siswa->forceDelete();
     }
 }

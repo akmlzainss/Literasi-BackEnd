@@ -1,15 +1,13 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Dashboard Admin - SMKN 11 Bandung')</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         :root {
             --primary-blue: #2563eb;
@@ -27,6 +25,9 @@
 
         * {
             font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
@@ -36,7 +37,7 @@
             overflow-x: hidden;
         }
 
-        /* Sidebar Styles */
+        /* Sidebar */
         .sidebar {
             position: fixed;
             top: 0;
@@ -45,7 +46,7 @@
             width: var(--sidebar-width);
             background: linear-gradient(180deg, var(--dark-blue) 0%, var(--primary-blue) 100%);
             z-index: 1000;
-            transition: all 0.3s ease;
+            transition: transform 0.3s ease;
             overflow-y: auto;
             box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
         }
@@ -137,16 +138,7 @@
             flex: 1;
         }
 
-        .nav-badge {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 0.2rem 0.6rem;
-            border-radius: 10px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        /* Mobile Toggle */
+        /* Sidebar Toggle */
         .sidebar-toggle {
             display: none;
             position: fixed;
@@ -167,7 +159,7 @@
         .main-content {
             margin-left: var(--sidebar-width);
             min-height: 100vh;
-            transition: all 0.3s ease;
+            transition: margin-left 0.3s ease;
         }
 
         .topbar {
@@ -276,7 +268,6 @@
         }
     </style>
 </head>
-
 <body>
     <!-- Sidebar Toggle for Mobile -->
     <button class="sidebar-toggle" onclick="toggleSidebar()">
@@ -284,7 +275,7 @@
     </button>
 
     <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
+    <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo">
                 <i class="fas fa-graduation-cap"></i>
@@ -292,11 +283,9 @@
             <h5 class="sidebar-title">SMKN 11 Bandung</h5>
             <p class="sidebar-subtitle">Sistem Literasi Akhlak</p>
         </div>
-
         <nav class="sidebar-nav">
             <div class="nav-item">
-                <a href="{{ route('dashboard') }}"
-                    class="nav-link {{ Request::routeIs('admin.dashboard') ? 'active' : '' }}">
+                <a href="{{ route('dashboard') }}" class="nav-link {{ Request::routeIs('admin.dashboard') ? 'active' : '' }}">
                     <i class="fas fa-tachometer-alt nav-icon"></i>
                     <span class="nav-text">Dashboard</span>
                 </a>
@@ -308,15 +297,13 @@
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{ route('kategori') }}"
-                    class="nav-link {{ Request::routeIs('kategori.kategori') ? 'active' : '' }}">
+                <a href="{{ route('kategori') }}" class="nav-link {{ Request::routeIs('kategori.kategori') ? 'active' : '' }}">
                     <i class="fas fa-tags nav-icon"></i>
                     <span class="nav-text">Kategori</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{ route('penghargaan') }}"
-                    class="nav-link {{ Request::routeIs('penghargaan.penghargaan') ? 'active' : '' }}">
+                <a href="{{ route('penghargaan') }}" class="nav-link {{ Request::routeIs('penghargaan.penghargaan') ? 'active' : '' }}">
                     <i class="fas fa-trophy nav-icon"></i>
                     <span class="nav-text">Penghargaan</span>
                 </a>
@@ -328,16 +315,13 @@
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{ route('laporan.aktivitas') }}"
-                    class="nav-link {{ Request::routeIs('laporan') ? 'active' : '' }}">
+                <a href="{{ route('laporan.aktivitas') }}" class="nav-link {{ Request::routeIs('laporan') ? 'active' : '' }}">
                     <i class="fas fa-chart-line nav-icon"></i>
                     <span class="nav-text">Laporan</span>
                 </a>
             </div>
-
             <div class="nav-item">
-                <a href="{{ route('pengaturan') }}"
-                    class="nav-link {{ Request::routeIs('pengaturan.pengaturan') ? 'active' : '' }}">
+                <a href="{{ route('pengaturan') }}" class="nav-link {{ Request::routeIs('pengaturan.pengaturan') ? 'active' : '' }}">
                     <i class="fas fa-cog nav-icon"></i>
                     <span class="nav-text">Pengaturan</span>
                 </a>
@@ -346,60 +330,64 @@
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                     @csrf
                 </form>
-                <a href="#" class="nav-link"
-                    onclick="event.preventDefault(); if(confirm('Apakah Anda yakin ingin logout?')) { document.getElementById('logout-form').submit(); }">
+                <a href="#" class="nav-link" onclick="event.preventDefault(); if(confirm('Apakah Anda yakin ingin logout?')) document.getElementById('logout-form').submit();">
                     <i class="fas fa-sign-out-alt nav-icon"></i>
                     <span class="nav-text">Logout</span>
                 </a>
             </div>
         </nav>
-    </div>
+    </aside>
 
-  <!-- Main Content -->
-<div class="main-content">
-
-    <!-- Topbar -->
-    <div class="topbar">
-        <div class="topbar-left">
-            <h6 class="mb-0 fw-bold text-primary">Selamat datang kembali, Admin!</h6>
-        </div>
-        <div class="topbar-right">
-            <div class="user-profile">
-                <div class="user-avatar">A</div>
-                <span class="fw-semibold">Admin</span>
-                <i class="fas fa-chevron-down ms-1"></i>
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Topbar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <h6 class="mb-0 fw-bold text-primary">Selamat datang kembali, Admin!</h6>
             </div>
-        </div>
-    </div>
+            <div class="topbar-right">
+                <div class="user-profile dropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="user-avatar">A</div>
+                    <span class="fw-semibold">Admin</span>
+                    <i class="fas fa-chevron-down ms-1"></i>
+                </div>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="{{ route('pengaturan') }}">Pengaturan</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="dropdown-item text-danger">Logout</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </header>
 
-    {{-- Flash Message (pindahkan ke bawah Topbar, sebelum content-area) --}}
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show m-3" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
+        <!-- Flash Messages -->
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show m-3" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
 
-    @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
-    <!-- Content Area -->
-    <div class="content-area">
-        @yield('content')
-    </div>
-</div>
-
-
+        <!-- Content Area -->
+        <section class="content-area">
+            @yield('content')
+        </section>
 
         <!-- Footer -->
-        <div class="footer">
+        <footer class="footer">
             &copy; {{ date('Y') }} SMKN 11 Bandung - Sistem Literasi Akhlak. All rights reserved.
-        </div>
-    </div>
+        </footer>
+    </main>
 
     <script>
         function toggleSidebar() {
@@ -408,5 +396,4 @@
     </script>
     @yield('scripts')
 </body>
-
 </html>

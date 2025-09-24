@@ -83,16 +83,9 @@
 <div class="main-card">
     <div class="card-header-custom">
         <div>
-            <i class="fas fa-user-graduate me-2"></i>Aktivitas Siswa Real-time
+            <i class="fas fa-user-graduate me-2"></i>Aktivitas Siswa 
         </div>
         <div class="header-actions">
-            <span class="live-indicator">
-                <span class="live-dot"></span>
-                Live Updates
-            </span>
-            <button class="refresh-btn" onclick="refreshSiswaTable()">
-                <i class="fas fa-sync-alt"></i>
-            </button>
         </div>
     </div>
 
@@ -143,16 +136,9 @@
     <div class="main-card">
         <div class="card-header-custom">
             <div>
-                <i class="fas fa-user-shield me-2"></i>Aktivitas Admin Real-time
+                <i class="fas fa-user-shield me-2"></i>Aktivitas Admin 
             </div>
             <div class="header-actions">
-                <span class="live-indicator">
-                    <span class="live-dot"></span>
-                    Live Updates
-                </span>
-                <button class="refresh-btn" onclick="refreshAdminTable()">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
             </div>
         </div>
 

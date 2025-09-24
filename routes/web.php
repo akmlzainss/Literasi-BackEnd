@@ -9,6 +9,8 @@ use App\Http\Controllers\KelolaSiswaController;
 use App\Http\Controllers\PenghargaanController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\PengaturanController;
+use App\Http\Controllers\BackupController;
+
 use App\Http\Controllers\LogAdminController;
 use App\Http\Controllers\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Siswa\SiswaArtikelController;
@@ -101,6 +103,17 @@ Route::middleware(['admin'])->group(function () {
     Route::patch('/pengaturan', [PengaturanController::class, 'update'])->name('pengaturan.update');
     Route::get('/pengaturan/keamanan', [PengaturanController::class, 'keamanan'])->name('pengaturan.keamanan');
     Route::put('/pengaturan/umum', [PengaturanController::class, 'updateUmum'])->name('pengaturan.umum.update');
+    // Profil Admin
+    Route::prefix('pengaturan')->group(function () {
+    Route::get('/', [PengaturanController::class, 'index'])->name('pengaturan');
+    Route::get('/keamanan', [PengaturanController::class, 'keamanan'])->name('pengaturan.keamanan');
+
+    // Trash
+    Route::get('/trash', [PengaturanController::class, 'trash'])->name('pengaturan.trash');
+    Route::post('/restore/{model}/{id}', [PengaturanController::class, 'restore'])->name('pengaturan.restore');
+    Route::delete('/force-delete/{model}/{id}', [PengaturanController::class, 'forceDelete'])->name('pengaturan.forceDelete');
+});
+
 });
 
 // ==========================
@@ -121,4 +134,11 @@ Route::middleware(['siswa'])->group(function () {
 
     // Interaksi artikel
     Route::post('/artikel-siswa/{id}/interaksi', [SiswaArtikelController::class, 'storeInteraksi'])->name('artikel.interaksi');
+});
+// ==========================
+// Backup Semua Data (Excel - Multi Sheet)
+// ==========================
+Route::prefix('backup')->group(function () {
+    Route::get('/', [BackupController::class, 'index'])->name('backup.index');
+    Route::get('/all', [BackupController::class, 'backupAll'])->name('backup.all');
 });

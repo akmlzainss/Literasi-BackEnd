@@ -3,20 +3,31 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Kategori extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'kategori';
     protected $primaryKey = 'id';
     public $timestamps = false;
+
     protected $fillable = ['nama', 'deskripsi', 'dibuat_pada'];
 
+    protected $dates = ['deleted_at'];
+
+    /* =====================
+     |   RELASI
+     ===================== */
     public function artikel()
     {
         return $this->hasMany(Artikel::class, 'id_kategori');
     }
 
-    // Scope untuk search
+    /* =====================
+     |   SCOPES
+     ===================== */
     public function scopeSearch($query, $search)
     {
         if ($search) {
@@ -26,7 +37,6 @@ class Kategori extends Model
         return $query;
     }
 
-    // Scope untuk filter
     public function scopeApplyFilter($query, $filter)
     {
         if (!$filter) return $query;
@@ -47,5 +57,25 @@ class Kategori extends Model
             default:
                 return $query;
         }
+    }
+
+    /* =====================
+     |   HELPER TRASH/RESTORE
+     ===================== */
+    public static function getTrash()
+    {
+        return self::onlyTrashed()->get();
+    }
+
+    public static function restoreById($id)
+    {
+        $kategori = self::onlyTrashed()->findOrFail($id);
+        return $kategori->restore();
+    }
+
+    public static function forceDeleteById($id)
+    {
+        $kategori = self::onlyTrashed()->findOrFail($id);
+        return $kategori->forceDelete();
     }
 }

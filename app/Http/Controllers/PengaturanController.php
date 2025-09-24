@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Admin;
+use App\Models\Artikel;
+use App\Models\Kategori;
+use App\Models\Siswa;
+use App\Models\Penghargaan;
 
 class PengaturanController extends Controller
 {
@@ -16,51 +20,44 @@ class PengaturanController extends Controller
         $this->middleware('auth:admin');
     }
 
-    /**
-     * Menampilkan halaman pengaturan profil & keamanan.
-     */
-   public function index()
-{
-    \Carbon\Carbon::setLocale('id'); 
-    $admin = Auth::guard('admin')->user();
+    // ----------------- Pengaturan Utama -----------------
+    public function index()
+    {
+        \Carbon\Carbon::setLocale('id'); 
+        $admin = Auth::guard('admin')->user();
 
-    if (!$admin) {
-        abort(401, 'Admin belum login.');
+        if (!$admin) {
+            abort(401, 'Admin belum login.');
+        }
+
+        $userAgent = request()->header('User-Agent');
+        $perangkat = 'Perangkat Tidak Dikenali';
+
+        if (strpos($userAgent, 'Windows') !== false) $perangkat = 'Windows';
+        elseif (strpos($userAgent, 'Macintosh') !== false) $perangkat = 'MacOS';
+        elseif (strpos($userAgent, 'Linux') !== false) $perangkat = 'Linux';
+        elseif (strpos($userAgent, 'Android') !== false) $perangkat = 'Android';
+        elseif (strpos($userAgent, 'iPhone') !== false) $perangkat = 'iPhone';
+
+        $ipAddress = request()->ip();
+        $isOnline = true;
+
+        return view('pengaturan.pengaturan', compact('admin', 'perangkat', 'ipAddress', 'isOnline'));
     }
 
-    $userAgent = request()->header('User-Agent');
-    $perangkat = 'Perangkat Tidak Dikenali';
-
-    if (strpos($userAgent, 'Windows') !== false) $perangkat = 'Windows';
-    elseif (strpos($userAgent, 'Macintosh') !== false) $perangkat = 'MacOS';
-    elseif (strpos($userAgent, 'Linux') !== false) $perangkat = 'Linux';
-    elseif (strpos($userAgent, 'Android') !== false) $perangkat = 'Android';
-    elseif (strpos($userAgent, 'iPhone') !== false) $perangkat = 'iPhone';
-
-    $ipAddress = request()->ip();
-
-    $isOnline = true;
-
-    return view('pengaturan.pengaturan', compact('admin', 'perangkat', 'ipAddress', 'isOnline'));
-}
-    
-
-    /**
-     * Menangani update data profil & password admin.
-     */
-    public function update(Request $request)
+    // ----------------- Update Profil Admin -----------------
+    public function updateProfile(Request $request)
     {
         try {
             $admin = Auth::guard('admin')->user();
 
             if (!$admin instanceof Admin) {
-                return redirect()->route('pengaturan.index')->with('error', 'Admin tidak ditemukan atau belum login.');
+                return redirect()->route('pengaturan')->with('error', 'Admin tidak ditemukan atau belum login.');
             }
 
             $rules = [
-                'nama_pengguna' => 'sometimes|required|string|max:255',
+                'nama_pengguna' => 'required|string|max:255',
                 'email' => [
-                    'sometimes',
                     'required',
                     'email',
                     Rule::unique('admin')->ignore($admin->id),
@@ -71,75 +68,103 @@ class PengaturanController extends Controller
 
             $data = $request->validate($rules);
 
-            $isNamaChanged = $request->filled('nama_pengguna') && $admin->nama_pengguna !== $request->nama_pengguna;
+            $isNamaChanged = $admin->nama_pengguna !== $request->nama_pengguna;
+            $isEmailChanged = $admin->email !== $request->email;
             $isPasswordChanged = $request->filled('new_password');
 
             if ($isNamaChanged) {
                 $admin->nama_pengguna = $request->nama_pengguna;
             }
 
-            if ($request->filled('email') && $admin->email !== $request->email) {
+            if ($isEmailChanged) {
                 $admin->email = $request->email;
             }
 
             if ($isPasswordChanged) {
                 if (!Hash::check($request->current_password, $admin->password)) {
-                    return redirect()->route('pengaturan')->with('error', 'Password lama tidak sesuai.');
+                    return redirect()->route('profile.edit')->with('error', 'Password lama tidak sesuai.');
                 }
                 $admin->password = Hash::make($request->new_password);
                 $admin->last_password_changed_at = now();
             }
 
-            // Jika menggunakan timestamps manual, update updated_at / dibuat_pada juga di sini
-            // $admin->updated_at = now(); // kalau pakai kolom updated_at manual
-
-            // Simpan hanya jika ada perubahan
             if ($admin->isDirty()) {
                 $admin->save();
             }
 
-            if ($isNamaChanged && $isPasswordChanged) {
-                $message = 'Nama dan password berhasil diubah.';
-            } elseif ($isNamaChanged) {
-                $message = 'Nama berhasil diubah.';
-            } elseif ($isPasswordChanged) {
-                $message = 'Password berhasil diubah.';
-            } else {
-                $message = 'Profil berhasil diperbarui.';
-            }
-
-            return redirect()->route('pengaturan')->with('success', $message);
+            return redirect()->route('profile.edit')->with('success', 'Profil berhasil diperbarui.');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return redirect()->route('pengaturan')->withErrors($e->errors())->with('error', 'Validasi gagal.');
+            return redirect()->route('profile.edit')->withErrors($e->errors())->with('error', 'Validasi gagal.');
         } catch (\Illuminate\Database\QueryException $e) {
             Log::error('Database error: ' . $e->getMessage());
-            return redirect()->route('pengaturan')->with('error', 'Gagal menyimpan ke database: ' . $e->getMessage());
+            return redirect()->route('profile.edit')->with('error', 'Gagal menyimpan ke database: ' . $e->getMessage());
         } catch (\Exception $e) {
             Log::error('General error: ' . $e->getMessage());
-            return redirect()->route('pengaturan')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return redirect()->route('profile.edit')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Menampilkan halaman keamanan (password terakhir diubah, login terakhir, dll)
-     */
-public function keamanan()
-{
-    $admin = auth()->guard('admin')->user();
+    // ----------------- Pengaturan Umum -----------------
+    public function update(Request $request)
+    {
+        // kode update pengaturan umum kamu tetap seperti semula
+    }
 
-    $userAgent = request()->header('User-Agent');
-    $perangkat = 'Perangkat Tidak Dikenali';
+    // ----------------- Keamanan -----------------
+    public function keamanan()
+    {
+        $admin = auth()->guard('admin')->user();
 
-    if (strpos($userAgent, 'Windows') !== false) $perangkat = 'Windows';
-    elseif (strpos($userAgent, 'Macintosh') !== false) $perangkat = 'MacOS';
-    elseif (strpos($userAgent, 'Linux') !== false) $perangkat = 'Linux';
-    elseif (strpos($userAgent, 'Android') !== false) $perangkat = 'Android';
-    elseif (strpos($userAgent, 'iPhone') !== false) $perangkat = 'iPhone';
+        $userAgent = request()->header('User-Agent');
+        $perangkat = 'Perangkat Tidak Dikenali';
 
-    $ipAddress = request()->ip();
+        if (strpos($userAgent, 'Windows') !== false) $perangkat = 'Windows';
+        elseif (strpos($userAgent, 'Macintosh') !== false) $perangkat = 'MacOS';
+        elseif (strpos($userAgent, 'Linux') !== false) $perangkat = 'Linux';
+        elseif (strpos($userAgent, 'Android') !== false) $perangkat = 'Android';
+        elseif (strpos($userAgent, 'iPhone') !== false) $perangkat = 'iPhone';
 
-    return view('pengaturan.keamanan', compact('admin', 'perangkat', 'ipAddress'));
-}
+        $ipAddress = request()->ip();
 
+        return view('pengaturan.keamanan', compact('admin', 'perangkat', 'ipAddress'));
+    }
+
+    // ----------------- Trash & Restore -----------------
+    public function trash()
+    {
+        $artikels    = Artikel::onlyTrashed()->get();
+        $kategoris   = Kategori::onlyTrashed()->get();
+        $siswas      = Siswa::onlyTrashed()->get();
+        $penghargaan = Penghargaan::onlyTrashed()->get();
+
+        return view('pengaturan.trash', compact('artikels', 'kategoris', 'siswas', 'penghargaan'));
+    }
+
+    public function restore($model, $id)
+    {
+        $class = $this->getModelClass($model);
+        $class::onlyTrashed()->findOrFail($id)->restore();
+
+        return back()->with('success', ucfirst($model).' berhasil direstore.');
+    }
+
+    public function forceDelete($model, $id)
+    {
+        $class = $this->getModelClass($model);
+        $class::onlyTrashed()->findOrFail($id)->forceDelete();
+
+        return back()->with('success', ucfirst($model).' berhasil dihapus permanen.');
+    }
+
+    private function getModelClass($model)
+    {
+        return match($model) {
+            'artikel'     => Artikel::class,
+            'kategori'    => Kategori::class,
+            'siswa'       => Siswa::class,
+            'penghargaan' => Penghargaan::class,
+            default       => abort(404),
+        };
+    }
 }

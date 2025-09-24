@@ -37,7 +37,7 @@ class Artikel extends Model
         'created_at'          => 'datetime',
         'updated_at'          => 'datetime',
         'deleted_at'          => 'datetime',
-        'riwayat_persetujuan' => 'array', // bisa juga 'json', keduanya setara
+        'riwayat_persetujuan' => 'array',
         'jumlah_dilihat'      => 'integer'
     ];
 
@@ -45,13 +45,11 @@ class Artikel extends Model
      |   ACCESSORS
      ===================== */
 
-    // URL gambar (untuk API/WEB)
     public function getGambarUrlAttribute()
     {
         return $this->gambar ? Storage::url($this->gambar) : null;
     }
 
-    // Nama penulis dinamis
     public function getPenulisNamaAttribute()
     {
         if ($this->penulis_type === 'siswa' && $this->siswa) {
@@ -60,13 +58,11 @@ class Artikel extends Model
         return 'Admin';
     }
 
-    // Rata-rata rating
     public function getRatingAttribute()
     {
         return $this->ratingArtikel()->avg('rating') ?? 0;
     }
 
-    // Jumlah review
     public function getTotalReviewsAttribute()
     {
         return $this->ratingArtikel()->count();
@@ -97,12 +93,12 @@ class Artikel extends Model
     }
 
     public function interaksis()
-{
-    return $this->hasMany(InteraksiArtikel::class, 'id_artikel');
-}
+    {
+        return $this->hasMany(InteraksiArtikel::class, 'id_artikel');
+    }
 
     /* =====================
-     |   SCOPES (untuk API)
+     |   SCOPES
      ===================== */
 
     public function scopeSearch($query, $search)
@@ -137,5 +133,29 @@ class Artikel extends Model
                     $q->where('nama', $filter);
                 });
         }
+    }
+
+    /* =====================
+     |   HELPER TRASH/RESTORE
+     ===================== */
+
+    // Ambil semua artikel yang dihapus
+    public static function getTrash()
+    {
+        return self::onlyTrashed()->get();
+    }
+
+    // Restore artikel berdasarkan ID
+    public static function restoreById($id)
+    {
+        $artikel = self::onlyTrashed()->findOrFail($id);
+        return $artikel->restore();
+    }
+
+    // Hapus permanen artikel berdasarkan ID
+    public static function forceDeleteById($id)
+    {
+        $artikel = self::onlyTrashed()->findOrFail($id);
+        return $artikel->forceDelete();
     }
 }
