@@ -94,16 +94,32 @@ class ArtikelController extends Controller
     /**
      * Display the specified article.
      */
-    public function show($id)
-    {
-        $artikel = Artikel::with(['siswa', 'kategori', 'komentarArtikel', 'ratingArtikel'])
-            ->findOrFail($id);
+   public function show($id)
+{
+    $artikel = Artikel::with([
+        'siswa',
+        'kategori',
+        'ratingArtikel',
+        'komentarArtikel.siswa',
+        'komentarArtikel.admin', // tambahin ini biar admin ke-load
+    ])->findOrFail($id);
 
-        // hitung rata-rata rating
-        $avgRating = $artikel->ratingArtikel->avg('nilai') ?? 0;
+    // hitung rata-rata rating
+    $avgRating = $artikel->ratingArtikel->avg('nilai') ?? 0;
 
-        return view('artikel.show', compact('artikel', 'avgRating'));
-    }
+    return view('artikel.show', compact('artikel', 'avgRating'));
+}
+public function status($status)
+{
+    $artikels = Artikel::where('status', $status)->paginate(10);
+
+    return view('artikel.artikel', [
+        'artikels' => $artikels,
+        'status'   => $status
+    ]);
+}
+
+
 
 
     /**

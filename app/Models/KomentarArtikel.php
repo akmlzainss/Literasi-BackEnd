@@ -10,11 +10,12 @@ class KomentarArtikel extends Model
     protected $primaryKey = 'id';
 
     protected $fillable = [
-        'id_artikel',       // Foreign key ke tabel artikel
-        'id_siswa',         // Foreign key ke tabel siswa
-        'id_komentar_parent', // Untuk nested comment
-        'depth',            // Tingkat kedalaman komentar
-        'komentar',         // Isi komentar
+        'id_artikel',          // Foreign key ke tabel artikel
+        'id_siswa',            // Foreign key ke tabel siswa
+        'id_admin',            // Foreign key ke tabel admin (tambahkan ini)
+        'id_komentar_parent',  // Untuk nested comment
+        'depth',               // Tingkat kedalaman komentar
+        'komentar',            // Isi komentar
     ];
 
     // Aktifkan timestamps dan gunakan dibuat_pada sebagai created_at
@@ -35,6 +36,12 @@ class KomentarArtikel extends Model
     public function siswa()
     {
         return $this->belongsTo(Siswa::class, 'id_siswa', 'id');
+    }
+
+    // Relasi ke admin
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class, 'id_admin', 'id');
     }
 
     // Relasi ke komentar parent (nested comment)

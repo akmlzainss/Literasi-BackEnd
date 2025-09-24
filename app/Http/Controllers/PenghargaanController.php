@@ -212,8 +212,6 @@ class PenghargaanController extends Controller
             ];
         });
 
-    // 👉 Debug isi variabel
-    dd($artikel->toArray());
 }
 
 

@@ -4,6 +4,8 @@
 
 @section('body_class', 'page-artikel-detail')
 
+@php \Carbon\Carbon::setLocale('id'); @endphp
+
 @section('content')
 <div class="container py-4">
     <section class="content-section">
@@ -14,15 +16,20 @@
                         <i class="fas fa-arrow-left me-2"></i>Kembali
                     </a>
                     @if ($konten->gambar)
-                        <img src="{{ asset('storage/' . $konten->gambar) }}" alt="{{ $konten->judul }}"
-                            class="detail-page-image" onerror="this.style.display='none';">
+                        <img src="{{ asset('storage/' . $konten->gambar) }}" alt="{{ $konten->judul ?? 'Gambar Artikel' }}" class="detail-page-image" onerror="this.src='{{ asset('images/fallback.jpg') }}';">
+                    @else
+                        <img src="{{ asset('images/fallback.jpg') }}" alt="Gambar Default" class="detail-page-image">
                     @endif
                     <div class="author-card-siswa mt-3">
                         <div class="author-avatar-siswa">
-                            {{ strtoupper(substr($konten->siswa->nama ?? 'AD', 0, 2)) }}</div>
+                            {{ strtoupper(substr($konten->siswa->nama ?? 'AD', 0, 2)) }}
+                        </div>
                         <div class="author-info-siswa">
                             <p class="name">{{ $konten->siswa->nama ?? 'Admin' }}</p>
-                            <p class="date">Dipublikasikan pada {{ $konten->created_at?->format('d F Y') }}</p>
+                            <p class="date">
+                                Dipublikasikan pada 
+                                {{ $konten->created_at ? $konten->created_at->translatedFormat('d F Y') : 'Tanggal tidak tersedia' }}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -31,13 +38,11 @@
             <div class="col-lg-8">
                 <article>
                     <header>
-                        <span
-                            class="badge bg-primary-subtle text-primary-emphasis rounded-pill mb-3 fs-6">{{ $konten->kategori->nama ?? 'Umum' }}</span>
-                        <h1 class="detail-page-title">{{ $konten->judul }}</h1>
+                        <span class="badge bg-primary-subtle text-primary-emphasis rounded-pill mb-3 fs-6">{{ $konten->kategori->nama ?? 'Umum' }}</span>
+                        <h1 class="detail-page-title">{{ $konten->judul ?? 'Judul Tidak Tersedia' }}</h1>
                         <div class="meta-info">
-                            <span><i class="fas fa-eye"></i> {{ $konten->jumlah_dilihat }} Dilihat</span>
-                            <span id="comment-count"><i class="fas fa-comments"></i>
-                                {{ $konten->komentarArtikel->count() }} Komentar</span>
+                            <span><i class="fas fa-eye"></i> {{ $konten->jumlah_dilihat ?? 0 }} Dilihat</span>
+                            <span id="comment-count"><i class="fas fa-comments"></i> {{ $konten->komentarArtikel->count() ?? 0 }} Komentar</span>
                             <span id="rating-summary">
                                 <i class="fas fa-star"></i>
                                 @if ($konten->ratingArtikel->count() > 0)
@@ -46,22 +51,18 @@
                                     Belum ada rating
                                 @endif
                             </span>
-                            <span id="like-count"><i class="fas fa-heart"></i> {{ $konten->jumlah_suka ?? 0 }}
-                                Suka</span>
+                            <span id="like-count"><i class="fas fa-heart"></i> {{ $konten->jumlah_suka ?? 0 }} Suka</span>
                         </div>
                     </header>
-
-                    <div class="article-body mt-4">{!! $konten->isi !!}</div>
+                    <div class="article-body mt-4">{!! $konten->isi ?? 'Konten tidak tersedia' !!}</div>
                 </article>
 
                 @auth('siswa')
                     <div class="action-buttons-wrapper mt-4">
-                        <button class="btn-action {{ $userHasLiked ? 'active' : '' }}" data-action="suka"
-                            data-id="{{ $konten->id }}">
+                        <button class="btn-action {{ $userHasLiked ? 'active' : '' }}" data-action="suka" data-id="{{ $konten->id }}">
                             <i class="{{ $userHasLiked ? 'fas' : 'far' }} fa-heart"></i> Suka
                         </button>
-                        <button class="btn-action {{ $userHasBookmarked ? 'active' : '' }}" data-action="bookmark"
-                            data-id="{{ $konten->id }}">
+                        <button class="btn-action {{ $userHasBookmarked ? 'active' : '' }}" data-action="bookmark" data-id="{{ $konten->id }}">
                             <i class="{{ $userHasBookmarked ? 'fas' : 'far' }} fa-bookmark"></i> Simpan
                         </button>
                     </div>
@@ -75,40 +76,26 @@
                             <div class="mb-3">
                                 <label class="form-label">Beri Rating:</label>
                                 <div class="rating-stars">
-                                    <input type="radio" id="star5" name="rating" value="5"
-                                        {{ $userRating && $userRating->rating == 5 ? 'checked' : '' }} /><label
-                                        for="star5" title="Luar biasa"><i class="fas fa-star"></i></label>
-                                    <input type="radio" id="star4" name="rating" value="4"
-                                        {{ $userRating && $userRating->rating == 4 ? 'checked' : '' }} /><label
-                                        for="star4" title="Bagus"><i class="fas fa-star"></i></label>
-                                    <input type="radio" id="star3" name="rating" value="3"
-                                        {{ $userRating && $userRating->rating == 3 ? 'checked' : '' }} /><label
-                                        for="star3" title="Cukup"><i class="fas fa-star"></i></label>
-                                    <input type="radio" id="star2" name="rating" value="2"
-                                        {{ $userRating && $userRating->rating == 2 ? 'checked' : '' }} /><label
-                                        for="star2" title="Kurang"><i class="fas fa-star"></i></label>
-                                    <input type="radio" id="star1" name="rating" value="1"
-                                        {{ $userRating && $userRating->rating == 1 ? 'checked' : '' }} /><label
-                                        for="star1" title="Buruk"><i class="fas fa-star"></i></label>
+                                    @for ($i = 5; $i >= 1; $i--)
+                                        <input type="radio" id="star{{ $i }}" name="rating" value="{{ $i }}" {{ ($userRating && $userRating->rating == $i) ? 'checked' : '' }} />
+                                        <label for="star{{ $i }}" title="{{ ['Buruk', 'Kurang', 'Cukup', 'Bagus', 'Luar biasa'][$i-1] }}"><i class="fas fa-star"></i></label>
+                                    @endfor
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label for="komentar" class="form-label">Tulis Komentar:</label>
-                                <textarea class="form-control" id="komentar" name="komentar" rows="4"
-                                    placeholder="Bagikan pendapat Anda..."></textarea>
+                                <textarea class="form-control" id="komentar" name="komentar" rows="4" placeholder="Bagikan pendapat Anda..."></textarea>
                             </div>
                             <button type="submit" id="submitBtn" class="btn btn-primary">Kirim Tanggapan</button>
                         </form>
                     @else
                         <div class="text-center p-4 border rounded">
-                            <p class="mb-1">Silakan <a href="{{ route('login') }}">masuk</a> untuk memberi rating
-                                dan komentar.</p>
+                            <p class="mb-1">Silakan <a href="{{ route('login') }}">masuk</a> untuk memberi rating dan komentar.</p>
                         </div>
                     @endauth
 
                     <div class="komentar-section mt-5">
-                        <h3 class="mb-4" id="comment-title">Komentar ({{ $konten->komentarArtikel->count() }})
-                        </h3>
+                        <h3 class="mb-4" id="comment-title">Komentar ({{ $konten->komentarArtikel->count() }})</h3>
                         <div id="comment-list">
                             @forelse($konten->komentarArtikel as $komentar)
                                 @include('partials.komentar', ['komentar' => $komentar])
@@ -180,7 +167,8 @@
                 fetch(form.action, {
                     method: 'POST',
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrfToken
                     },
                     body: new FormData(form)
                 })
@@ -221,13 +209,17 @@
                             submitBtn.classList.replace('btn-success', 'btn-primary');
                             submitBtn.innerHTML = originalBtnText;
                         }, 2000);
+                    } else {
+                        alert(data.message || 'Gagal mengirim tanggapan.');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
+                    alert('Terjadi kesalahan.');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalBtnText;
-                    alert('Terjadi kesalahan.');
                 });
             });
         }
