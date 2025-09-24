@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;
 use App\Models\Artikel;
+use App\Models\Kategori;
 use App\Models\KomentarArtikel;
 use App\Models\RatingArtikel;
 use App\Models\InteraksiArtikel;
 use App\Models\Notifikasi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class SiswaArtikelController extends Controller
 {
@@ -25,6 +27,7 @@ class SiswaArtikelController extends Controller
                 $q->where('nama', $request->kategori);
             });
         }
+
         $sort = $request->input('sort', 'terbaru');
         if ($sort == 'terlama') {
             $query->orderBy('created_at', 'asc');
@@ -33,6 +36,7 @@ class SiswaArtikelController extends Controller
         } else {
             $query->latest();
         }
+
         $artikels = $query->with(['siswa', 'kategori'])->paginate(12);
         return view('siswa-web-artikel.artikel', compact('artikels'));
     }
@@ -54,6 +58,65 @@ class SiswaArtikelController extends Controller
         $konten->increment('jumlah_dilihat');
         
         return view('siswa-web-artikel.artikel-detail', compact('konten', 'userRating', 'userHasLiked', 'userHasBookmarked'));
+    }
+    
+    public function showUploadChoice()
+    {
+        return view('siswa-web-artikel.upload-choice');
+    }
+
+    public function createArtikel()
+{
+    // Hapus filter ->where('status', 'diterima') karena kolomnya tidak ada di tabel 'kategori'
+    $kategoris = Kategori::orderBy('nama')->get();
+    return view('siswa-web-artikel.create-artikel', compact('kategoris'));
+}
+
+    public function storeArtikel(Request $request)
+    {
+        $request->validate([
+            'judul' => 'required|string|max:255',
+            'isi' => 'required|string|min:100',
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'id_kategori' => 'required_without:usulan_kategori|nullable|exists:kategori,id',
+            'usulan_kategori' => [
+                'required_without:id_kategori',
+                'nullable',
+                'string',
+                'max:50',
+                Rule::unique('kategori', 'nama'),
+            ],
+            'jenis' => 'required|in:bebas,resensi_buku,resensi_film',
+        ]);
+
+        $idSiswa = Auth::guard('siswa')->id();
+        $idKategori = $request->id_kategori;
+        $usulanKategori = null;
+
+        if ($request->filled('usulan_kategori')) {
+            $kategoriBaru = Kategori::create([
+                'nama' => $request->usulan_kategori,
+                'deskripsi' => 'Kategori ini diusulkan oleh siswa.',
+                'status' => 'menunggu'
+            ]);
+            $idKategori = $kategoriBaru->id;
+        }
+
+        $gambarPath = $request->hasFile('gambar') ? $request->file('gambar')->store('artikel', 'public') : null;
+
+        Artikel::create([
+            'id_siswa' => $idSiswa,
+            'id_kategori' => $idKategori,
+            'usulan_kategori' => $request->filled('usulan_kategori') ? $request->usulan_kategori : null,
+            'judul' => $request->judul,
+            'isi' => $request->isi,
+            'gambar' => $gambarPath,
+            'penulis_type' => 'siswa',
+            'jenis' => $request->jenis,
+            'status' => 'menunggu',
+        ]);
+        
+        return redirect()->route('artikel-siswa')->with('success', 'Artikel berhasil dikirim dan sedang menunggu persetujuan admin!');
     }
 
     public function storeKomentar(Request $request, $id)
@@ -115,9 +178,9 @@ class SiswaArtikelController extends Controller
             ->where('id_siswa', $siswaId)
             ->where('jenis', $jenis)->first();
 
-        $toggled = false;
         if ($interaksi) {
             $interaksi->delete();
+            $toggled = false;
         } else {
             InteraksiArtikel::create(['id_artikel' => $id, 'id_siswa' => $siswaId, 'jenis' => $jenis]);
             $toggled = true;

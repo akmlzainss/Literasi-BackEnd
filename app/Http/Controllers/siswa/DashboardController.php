@@ -6,12 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Artikel;
 use App\Models\Kategori;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function indexSiswa(Request $request)
     {
-        // Query untuk artikel terbaru (tidak berubah)
         $query = Artikel::query()->where('status', 'disetujui');
         if ($request->filled('search')) {
             $query->where('judul', 'like', '%' . $request->search . '%');
@@ -29,15 +29,10 @@ class DashboardController extends Controller
         }
         $artikels = $query->with(['siswa', 'kategori'])->latest()->paginate(12);
 
-        // ======================================================
-        // PERBAIKAN DI SINI: Filter artikel populer berdasarkan bulan ini
-        // ======================================================
         $artikelPopuler = Artikel::where('status', 'disetujui')
-                                 ->whereMonth('created_at', now()->month) // Hanya ambil artikel dari bulan ini
-                                 ->whereYear('created_at', now()->year)   // Dan dari tahun ini
-                                 ->orderBy('jumlah_dilihat', 'desc')
-                                 ->take(10)
-                                 ->get();
+            ->orderByRaw('COALESCE(jumlah_dilihat, 0) + COALESCE(jumlah_suka, 0) DESC')
+            ->take(10)
+            ->get();
 
         $kategoris = Kategori::orderBy('nama', 'asc')->get();
 

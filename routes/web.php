@@ -12,6 +12,8 @@ use App\Http\Controllers\AktivitasSiswaController;
 use App\Http\Controllers\LogAdminController;
 use App\Http\Controllers\DashboardController; // Admin
 use App\Http\Controllers\Siswa\SiswaArtikelController;
+use App\Http\Controllers\Siswa\NotifikasiController;
+use App\Http\Controllers\Siswa\ProfilController;
 use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
 
 // Redirect root ke halaman login
@@ -113,4 +115,24 @@ Route::middleware(['siswa'])->group(function () {
 
     // Rute baru untuk Suka & Simpan
     Route::post('/artikel-siswa/{id}/interaksi', [SiswaArtikelController::class, 'storeInteraksi'])->name('artikel.interaksi');
+
+
+     // BARU: Rute untuk halaman upload siswa
+    Route::get('/upload', [SiswaArtikelController::class, 'showUploadChoice'])->name('artikel-siswa.upload');
+    Route::get('/upload/artikel/create', [SiswaArtikelController::class, 'createArtikel'])->name('artikel-siswa.create');
+    Route::post('/upload/artikel', [SiswaArtikelController::class, 'storeArtikel'])->name('artikel-siswa.store');
+
+    // ===============================================
+    // ==== INI RUTE BARU UNTUK HALAMAN NOTIFIKASI ====
+    // ===============================================
+    Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
+
+
+
+    // ===============================================
+    // ==== INI RUTE BARU UNTUK HALAMAN PROFIL ====
+    // ===============================================
+    Route::get('/profil', [ProfilController::class, 'show'])->name('profil.show');
+    Route::post('/profil/update', [ProfilController::class, 'update'])->name('profil.update');
+    Route::post('/profil/update-password', [ProfilController::class, 'updatePassword'])->name('profil.update-password');
 });

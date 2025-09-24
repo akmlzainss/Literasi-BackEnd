@@ -19,6 +19,7 @@ class Siswa extends Authenticatable
         'nama',
         'email',
         'kelas',
+        'foto_profil',
         'password',
         'status_aktif',
     ];
