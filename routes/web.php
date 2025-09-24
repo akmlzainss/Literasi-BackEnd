@@ -62,6 +62,10 @@ Route::middleware(['admin'])->group(function () {
     Route::post('/komentar/{id}', [KomentarController::class, 'store'])->name('admin.komentar.store');
     Route::delete('/komentar/{id}', [KomentarController::class, 'destroy'])->name('admin.komentar.destroy');
 
+
+Route::post('/komentar/{artikel}', [KomentarController::class, 'store'])->name('komentar.store');
+
+
     // Kategori
     Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori');
     Route::get('/kategori/create', [KategoriController::class, 'create'])->name('kategori.create');
