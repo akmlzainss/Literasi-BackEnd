@@ -7,13 +7,13 @@ use App\Http\Controllers\KomentarController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\KelolaSiswaController;
 use App\Http\Controllers\PenghargaanController;
-use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\PengaturanController;
 use App\Http\Controllers\BackupController;
-
 use App\Http\Controllers\LogAdminController;
 use App\Http\Controllers\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Siswa\SiswaArtikelController;
+use App\Http\Controllers\Siswa\NotifikasiController;
+use App\Http\Controllers\Siswa\ProfilController;
 use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
 
 // ==========================
@@ -27,12 +27,11 @@ Route::get('/', function () {
 // RUTE UNTUK GUEST (belum login)
 // ==========================
 Route::middleware(['guest'])->group(function () {
-    // Form login (satu untuk admin & siswa)
+    // Form login tunggal untuk admin & siswa
     Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AdminAuthController::class, 'login'])->name('login.submit');
 
     // Registrasi (hanya untuk siswa, diproses oleh satu fungsi)
-    // PERBAIKAN: Route GET /register tidak diperlukan lagi karena form ada di halaman login
     Route::post('/register', [AdminAuthController::class, 'register'])->name('register.submit');
 });
 
@@ -40,8 +39,8 @@ Route::middleware(['guest'])->group(function () {
 // RUTE UNTUK ADMIN (dilindungi middleware 'admin')
 // ==========================
 Route::middleware(['admin'])->group(function () {
-    // Logout & dashboard
-    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout'); // URL: /logout
+    // Logout & Dashboard
+    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/chart/{type}', [AdminDashboardController::class, 'getChartDataAjax'])->name('dashboard.chart');
 
@@ -85,7 +84,7 @@ Route::middleware(['admin'])->group(function () {
         Route::post('/send-award-notification', [PenghargaanController::class, 'sendAwardNotification'])->name('send.award.notification');
     });
 
-    // Siswa (kelola oleh admin)
+    // Kelola Siswa
     Route::get('/siswa', [KelolaSiswaController::class, 'index'])->name('siswa');
     Route::post('/siswa/store', [KelolaSiswaController::class, 'store'])->name('siswa.store');
     Route::get('/siswa/{nis}/detail', [KelolaSiswaController::class, 'show'])->name('siswa.detail');
@@ -99,46 +98,48 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/laporan/aktivitas', [LogAdminController::class, 'laporan'])->name('laporan.aktivitas');
 
     // Pengaturan
-    Route::get('/pengaturan', [PengaturanController::class, 'index'])->name('pengaturan');
-    Route::patch('/pengaturan', [PengaturanController::class, 'update'])->name('pengaturan.update');
-    Route::get('/pengaturan/keamanan', [PengaturanController::class, 'keamanan'])->name('pengaturan.keamanan');
-    Route::put('/pengaturan/umum', [PengaturanController::class, 'updateUmum'])->name('pengaturan.umum.update');
-    // Profil Admin
     Route::prefix('pengaturan')->group(function () {
-    Route::get('/', [PengaturanController::class, 'index'])->name('pengaturan');
-    Route::get('/keamanan', [PengaturanController::class, 'keamanan'])->name('pengaturan.keamanan');
+        Route::get('/', [PengaturanController::class, 'index'])->name('pengaturan');
+        Route::patch('/', [PengaturanController::class, 'update'])->name('pengaturan.update');
+        Route::get('/keamanan', [PengaturanController::class, 'keamanan'])->name('pengaturan.keamanan');
+        Route::put('/umum', [PengaturanController::class, 'updateUmum'])->name('pengaturan.umum.update');
+        // Trash
+        Route::get('/trash', [PengaturanController::class, 'trash'])->name('pengaturan.trash');
+        Route::post('/restore/{model}/{id}', [PengaturanController::class, 'restore'])->name('pengaturan.restore');
+        Route::delete('/force-delete/{model}/{id}', [PengaturanController::class, 'forceDelete'])->name('pengaturan.forceDelete');
+    });
 
-    // Trash
-    Route::get('/trash', [PengaturanController::class, 'trash'])->name('pengaturan.trash');
-    Route::post('/restore/{model}/{id}', [PengaturanController::class, 'restore'])->name('pengaturan.restore');
-    Route::delete('/force-delete/{model}/{id}', [PengaturanController::class, 'forceDelete'])->name('pengaturan.forceDelete');
-});
-
+    // Backup Semua Data (Excel - Multi Sheet)
+    Route::prefix('backup')->group(function () {
+        Route::get('/', [BackupController::class, 'index'])->name('backup.index');
+        Route::get('/all', [BackupController::class, 'backupAll'])->name('backup.all');
+    });
 });
 
 // ==========================
 // RUTE UNTUK SISWA (dilindungi middleware 'siswa')
 // ==========================
 Route::middleware(['siswa'])->group(function () {
-    // PERBAIKAN: URL logout siswa dibuat unik untuk menghindari konflik
-    Route::post('/siswa/logout', [AdminAuthController::class, 'logoutSiswa'])->name('logout-siswa'); // URL: /siswa/logout
-    
+    // Logout & Dashboard
+    Route::post('/siswa/logout', [AdminAuthController::class, 'logoutSiswa'])->name('logout-siswa');
     Route::get('/dashboard-siswa', [SiswaDashboardController::class, 'indexSiswa'])->name('dashboard-siswa');
 
-    // Artikel siswa
+    // Artikel Siswa (Melihat & Interaksi)
     Route::get('/artikel-siswa', [SiswaArtikelController::class, 'index'])->name('artikel-siswa');
     Route::get('/artikel-siswa/{id}', [SiswaArtikelController::class, 'show'])->name('artikel-siswa.show');
-
-    // Komentar (SISWA)
     Route::post('/artikel-siswa/{id}/komentar', [SiswaArtikelController::class, 'storeKomentar'])->name('siswa.komentar.store');
-
-    // Interaksi artikel
     Route::post('/artikel-siswa/{id}/interaksi', [SiswaArtikelController::class, 'storeInteraksi'])->name('artikel.interaksi');
-});
-// ==========================
-// Backup Semua Data (Excel - Multi Sheet)
-// ==========================
-Route::prefix('backup')->group(function () {
-    Route::get('/', [BackupController::class, 'index'])->name('backup.index');
-    Route::get('/all', [BackupController::class, 'backupAll'])->name('backup.all');
+
+    // Upload Artikel oleh Siswa
+    Route::get('/upload', [SiswaArtikelController::class, 'showUploadChoice'])->name('artikel-siswa.upload');
+    Route::get('/upload/artikel/create', [SiswaArtikelController::class, 'createArtikel'])->name('artikel-siswa.create');
+    Route::post('/upload/artikel', [SiswaArtikelController::class, 'storeArtikel'])->name('artikel-siswa.store');
+
+    // Notifikasi Siswa
+    Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
+
+    // Profil Siswa
+    Route::get('/profil', [ProfilController::class, 'show'])->name('profil.show');
+    Route::post('/profil/update', [ProfilController::class, 'update'])->name('profil.update');
+    Route::post('/profil/update-password', [ProfilController::class, 'updatePassword'])->name('profil.update-password');
 });
