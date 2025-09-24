@@ -62,9 +62,10 @@
                     <p><strong>Dibuat pada:</strong>
                         {{ $artikel->created_at ? $artikel->created_at->format('d M Y, H:i') : 'Tanggal tidak tersedia' }}
                     </p>
-                    <p><strong>Diterbitkan pada:</strong>
-                        {{ $artikel->diterbitkan_pada ? $artikel->diterbitkan_pada->format('d M Y, H:i') : 'Tanggal tidak tersedia' }}
-                    </p>
+                   <p><strong>Diterbitkan pada:</strong>
+    {{ $artikel->diterbitkan_pada ? $artikel->diterbitkan_pada->format('d M Y, H:i') : 'Tanggal tidak tersedia' }}
+</p>
+
                     <p><strong>Jumlah Dilihat:</strong> {{ $artikel->jumlah_dilihat }}</p>
                     <p><strong>Jumlah Suka:</strong> {{ $artikel->jumlah_suka }}</p>
                     <p><strong>Jumlah Komentar:</strong> {{ $artikel->komentarArtikel->count() }}</p>

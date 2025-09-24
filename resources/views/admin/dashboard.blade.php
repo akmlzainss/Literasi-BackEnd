@@ -67,15 +67,10 @@
             <div class="col-xl-8">
                 <div class="card h-100 enhanced-card" data-aos="fade-right">
                     <div class="card-header glass-effect">
-                        <i class="fas fa-chart-bar me-2 text-primary"></i>
+
                         <span class="fw-bold">Statistik Data Berdasarkan Kategori</span>
                         <div class="card-actions">
-                            <button class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-download"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-secondary"> 
-                                <i class="fas fa-expand"></i>
-                            </button>
+
                         </div>
                     </div>
                     <div class="card-body">
@@ -88,12 +83,9 @@
             <div class="col-xl-4">
                 <div class="card h-100 enhanced-card" data-aos="fade-left">
                     <div class="card-header glass-effect">
-                        <i class="fas fa-chart-pie me-2 text-success"></i>
                         <span class="fw-bold">Distribusi Data</span>
                         <div class="card-actions">
-                            <button class="btn btn-sm btn-outline-success">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
+
                         </div>
                     </div>
                     <div class="card-body">
@@ -108,14 +100,9 @@
             <div class="col-12">
                 <div class="card enhanced-card" data-aos="fade-up">
                     <div class="card-header glass-effect">
-                        <i class="fas fa-chart-line me-2 text-info"></i>
+                       
                         <span class="fw-bold">Trend Aktivitas 7 Hari Terakhir</span>
                         <div class="card-actions">
-                            <select class="form-select form-select-sm" style="width: auto;">
-                                <option>7 Hari</option>
-                                <option>30 Hari</option>
-                                <option>3 Bulan</option>
-                            </select>
                         </div>
                     </div>
                     <div class="card-body">
@@ -134,7 +121,7 @@
                     <div class="card-header glass-effect activity-header">
                         <div class="activity-header-title">
                             <i class="fas fa-clock me-2"></i>
-                            <span class="fw-bold">Aktivitas Terbaru</span>
+                            <span class="fw-bold">Aktivitas Admin</span>
                         </div>
                     </div>
                     <div class="card-body p-0">

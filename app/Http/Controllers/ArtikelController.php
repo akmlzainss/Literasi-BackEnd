@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
+
 
 class ArtikelController extends Controller
 {
@@ -101,14 +103,20 @@ class ArtikelController extends Controller
         'kategori',
         'ratingArtikel',
         'komentarArtikel.siswa',
-        'komentarArtikel.admin', // tambahin ini biar admin ke-load
+        'komentarArtikel.admin',
     ])->findOrFail($id);
+
+    // pastikan diterbitkan_pada berupa Carbon, atau null jika kosong
+    $artikel->diterbitkan_pada = $artikel->diterbitkan_pada
+        ? \Carbon\Carbon::parse($artikel->diterbitkan_pada)
+        : null;
 
     // hitung rata-rata rating
     $avgRating = $artikel->ratingArtikel->avg('nilai') ?? 0;
 
     return view('artikel.show', compact('artikel', 'avgRating'));
 }
+
 public function status($status)
 {
     $artikels = Artikel::where('status', $status)->paginate(10);
@@ -118,8 +126,6 @@ public function status($status)
         'status'   => $status
     ]);
 }
-
-
 
 
     /**
