@@ -47,7 +47,7 @@ class KategoriController extends Controller
         try {
             $request->validate([
                 'nama' => 'required|string|max:255|unique:kategori,nama',
-                'deskripsi' => 'required|string',
+                'deskripsi' => 'nullable|string',
             ], [
                 'nama.unique' => 'Nama kategori sudah digunakan. Silakan gunakan nama lain.',
             ]);
