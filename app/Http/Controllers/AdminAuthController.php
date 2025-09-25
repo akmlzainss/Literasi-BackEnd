@@ -73,42 +73,48 @@ class AdminAuthController extends Controller
      * PERBAIKAN UTAMA DI SINI:
      * REGISTRASI AMAN: Controller ini hanya akan memproses registrasi Siswa.
      */
-    public function register(Request $request)
-    {
-        // KEAMANAN: Pastikan form hanya memproses jika 'role' dari hidden input adalah 'siswa'
-        if ($request->input('role') !== 'siswa') {
-            return redirect()->route('login')->with('error', 'Registrasi tidak diizinkan.');
-        }
+   public function register(Request $request)
+{
+     dd($request->all());
+    // KEAMANAN: Pastikan form hanya memproses jika 'role' dari hidden input adalah 'siswa'
+    if ($request->input('role') !== 'siswa') {
+        return redirect()->route('login')->with('error', 'Registrasi tidak diizinkan.');
+    }
 
-        // PERBAIKAN: Validasi disesuaikan dengan field di form registrasi siswa
-        $request->validate([
-            'nama' => 'required|string|max:255',
-            'nis' => 'required|string|max:50|unique:siswa,nis',
-            'email' => 'required|email|max:255|unique:siswa,email|unique:admin,email',
-            'password' => ['required', 'confirmed', Password::min(8)], // Password minimal 8 karakter
-            'terms' => 'accepted',
-        ], [
-            'nis.unique' => 'NIS ini sudah terdaftar di sistem.',
-            'email.unique' => 'Email ini sudah digunakan.',
-            'password.confirmed' => 'Konfirmasi password tidak cocok.',
-            'terms.accepted' => 'Anda harus menyetujui Syarat & Ketentuan kami.',
+    // Validasi field dari form registrasi siswa
+    $request->validate([
+        'nama' => 'required|string|max:255',
+        'nis' => 'required|string|max:50|unique:siswa,nis',
+        'kelas' => 'required|string|max:50',
+        'email' => 'required|email|max:255|unique:siswa,email|unique:admin,email',
+        'password' => ['required', 'confirmed', Password::min(8)], // Password minimal 8 karakter
+        'terms' => 'accepted',
+    ], [
+        'nis.unique' => 'NIS ini sudah terdaftar di sistem.',
+        'email.unique' => 'Email ini sudah digunakan.',
+        'password.confirmed' => 'Konfirmasi password tidak cocok.',
+        'terms.accepted' => 'Anda harus menyetujui Syarat & Ketentuan kami.',
+    ]);
+
+    try {
+        // Membuat record baru di tabel 'siswa'
+        Siswa::create([
+            'nama' => $request->nama,
+            'nis' => $request->nis,
+            'kelas' => $request->kelas, // <-- tambahkan ini
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'status_aktif' => true,
+            'foto_profil' => null, // opsional
         ]);
 
-        try {
-            // PERBAIKAN: Membuat record baru di tabel 'siswa'
-            Siswa::create([
-                'nama' => $request->nama,
-                'nis' => $request->nis,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'status_aktif' => true,
-            ]);
-            return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login dengan akun Anda.');
-        } catch (Exception $e) {
-            Log::error('Error registrasi siswa: ' . $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan. Gagal mendaftarkan akun.')->withInput();
-        }
+        return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login dengan akun Anda.');
+    } catch (Exception $e) {
+        Log::error('Error registrasi siswa: ' . $e->getMessage());
+        return back()->with('error', 'Terjadi kesalahan. Gagal mendaftarkan akun.')->withInput();
     }
+}
+
 
     /**
      * LOGOUT ADMIN
