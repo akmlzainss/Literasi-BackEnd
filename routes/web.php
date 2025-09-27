@@ -57,6 +57,9 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/artikel/export', [ArtikelController::class, 'export'])->name('artikel.export');
     Route::get('/admin/search-siswa', [ArtikelController::class, 'searchSiswa'])->name('admin.search.siswa');
     Route::get('/artikel/status/{status}', [ArtikelController::class, 'status'])->name('artikel.status');
+    
+Route::get('/artikel/get/{id}', [ArtikelController::class, 'getArtikelById'])
+     ->name('artikel.getById');
 
     // Komentar (ADMIN)
     Route::post('/komentar/{id}', [KomentarController::class, 'store'])->name('admin.komentar.store');
