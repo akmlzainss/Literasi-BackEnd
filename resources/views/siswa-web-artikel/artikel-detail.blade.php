@@ -108,7 +108,6 @@
             </div>
         </div>
     </section>
-</div>
 @endsection
 
 @section('scripts')
@@ -116,12 +115,13 @@
     document.addEventListener('DOMContentLoaded', function() {
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
+        // Handle Suka & Simpan
         document.querySelectorAll('.btn-action').forEach(button => {
             button.addEventListener('click', function() {
                 this.disabled = true;
                 const jenis = this.dataset.action;
                 const artikelId = this.dataset.id;
-                const url = `/artikel-siswa/${artikelId}/interaksi`;
+                const url = `{{ url('/artikel-siswa') }}/${artikelId}/interaksi`; // URL diperbaiki
 
                 fetch(url, {
                     method: 'POST',
@@ -130,11 +130,14 @@
                         'X-CSRF-TOKEN': csrfToken,
                         'X-Requested-With': 'XMLHttpRequest'
                     },
-                    body: JSON.stringify({
-                        jenis: jenis
-                    })
+                    body: JSON.stringify({ jenis: jenis })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         this.classList.toggle('active');
@@ -142,18 +145,21 @@
                         icon.classList.toggle('far');
                         icon.classList.toggle('fas');
                         if (jenis === 'suka') {
-                            document.getElementById('like-count').innerHTML =
-                                `<i class="fas fa-heart"></i> ${data.like_count} Suka`;
+                            document.getElementById('like-count').innerHTML = `<i class="fas fa-heart"></i> ${data.like_count} Suka`;
                         }
                     }
                 })
-                .catch(error => console.error('Error:', error))
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan. Silakan coba lagi.');
+                })
                 .finally(() => {
                     this.disabled = false;
                 });
             });
         });
 
+        // Handle Form Komentar & Rating
         const form = document.getElementById('feedbackForm');
         if (form) {
             form.addEventListener('submit', function(e) {
@@ -161,8 +167,7 @@
                 const submitBtn = document.getElementById('submitBtn');
                 const originalBtnText = submitBtn.innerHTML;
                 submitBtn.disabled = true;
-                submitBtn.innerHTML =
-                    '<span class="spinner-border spinner-border-sm"></span> Mengirim...';
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Mengirim...';
 
                 fetch(form.action, {
                     method: 'POST',
@@ -172,7 +177,12 @@
                     },
                     body: new FormData(form)
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                         throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         submitBtn.classList.replace('btn-primary', 'btn-success');
@@ -180,14 +190,12 @@
 
                         const ratingSummary = document.getElementById('rating-summary');
                         if (data.new_rating_count > 0) {
-                            ratingSummary.innerHTML =
-                                `<i class="fas fa-star"></i> ${data.new_avg_rating}/5`;
+                            ratingSummary.innerHTML = `<i class="fas fa-star"></i> ${data.new_avg_rating}/5`;
                         }
 
                         const commentCount = document.getElementById('comment-count');
                         const commentTitle = document.getElementById('comment-title');
-                        commentCount.innerHTML =
-                            `<i class="fas fa-comments"></i> ${data.new_comment_count} Komentar`;
+                        commentCount.innerHTML = `<i class="fas fa-comments"></i> ${data.new_comment_count} Komentar`;
                         commentTitle.innerText = `Komentar (${data.new_comment_count})`;
 
                         if (data.new_comment_html) {
@@ -195,15 +203,12 @@
                             const commentList = document.getElementById('comment-list');
                             const newCommentEl = document.createElement('div');
                             newCommentEl.innerHTML = data.new_comment_html;
-                            newCommentEl.querySelector('.komentar-item').classList.add(
-                                'new-comment');
-                            commentList.prepend(newCommentEl);
+                            commentList.prepend(newCommentEl.firstChild);
                         }
 
                         setTimeout(() => {
                             form.reset();
-                            const checkedStar = document.querySelector(
-                                '.rating-stars input:checked');
+                            const checkedStar = document.querySelector('.rating-stars input:checked');
                             if (checkedStar) checkedStar.checked = false;
                             submitBtn.disabled = false;
                             submitBtn.classList.replace('btn-success', 'btn-primary');
@@ -217,7 +222,7 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Terjadi kesalahan.');
+                    alert('Terjadi kesalahan. Pastikan Anda sudah login.');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalBtnText;
                 });

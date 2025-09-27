@@ -11,6 +11,7 @@ use App\Models\InteraksiArtikel;
 use App\Models\Notifikasi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL; // Import URL Facade
 use Illuminate\Validation\Rule;
 
 class SiswaArtikelController extends Controller
@@ -43,11 +44,19 @@ class SiswaArtikelController extends Controller
 
     public function show($id)
     {
+        // === PERBAIKAN UNTUK TOMBOL KEMBALI ===
+        $previousUrl = URL::previous();
+        // Simpan URL sebelumnya ke session HANYA JIKA BUKAN halaman detail itu sendiri
+        if (!str_contains($previousUrl, '/artikel-siswa/' . $id)) {
+            session(['previous_artikel_url' => $previousUrl]);
+        }
+        // ======================================
+
         $siswaId = Auth::guard('siswa')->id();
         $konten = Artikel::with([
             'siswa', 'kategori', 'ratingArtikel',
             'komentarArtikel' => function($query) {
-                $query->whereNull('id_komentar_parent')->with('siswa', 'replies.siswa')->latest();
+                $query->whereNull('id_komentar_parent')->with('siswa', 'admin', 'replies.siswa', 'replies.admin')->latest();
             }
         ])->findOrFail($id);
         
@@ -55,7 +64,11 @@ class SiswaArtikelController extends Controller
         $userHasLiked = InteraksiArtikel::where('id_artikel', $id)->where('id_siswa', $siswaId)->where('jenis', 'suka')->exists();
         $userHasBookmarked = InteraksiArtikel::where('id_artikel', $id)->where('id_siswa', $siswaId)->where('jenis', 'bookmark')->exists();
 
-        $konten->increment('jumlah_dilihat');
+        if (Auth::guard('siswa')->check() && $konten->id_siswa != $siswaId) {
+            $konten->increment('jumlah_dilihat');
+        } elseif (!Auth::guard('siswa')->check()){
+             $konten->increment('jumlah_dilihat');
+        }
         
         return view('siswa-web-artikel.artikel-detail', compact('konten', 'userRating', 'userHasLiked', 'userHasBookmarked'));
     }
@@ -66,11 +79,10 @@ class SiswaArtikelController extends Controller
     }
 
     public function createArtikel()
-{
-    // Hapus filter ->where('status', 'diterima') karena kolomnya tidak ada di tabel 'kategori'
-    $kategoris = Kategori::orderBy('nama')->get();
-    return view('siswa-web-artikel.create-artikel', compact('kategoris'));
-}
+    {
+        $kategoris = Kategori::orderBy('nama')->get();
+        return view('siswa-web-artikel.create-artikel', compact('kategoris'));
+    }
 
     public function storeArtikel(Request $request)
     {
@@ -80,10 +92,7 @@ class SiswaArtikelController extends Controller
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'id_kategori' => 'required_without:usulan_kategori|nullable|exists:kategori,id',
             'usulan_kategori' => [
-                'required_without:id_kategori',
-                'nullable',
-                'string',
-                'max:50',
+                'required_without:id_kategori', 'nullable', 'string', 'max:50',
                 Rule::unique('kategori', 'nama'),
             ],
             'jenis' => 'required|in:bebas,resensi_buku,resensi_film',
@@ -91,7 +100,6 @@ class SiswaArtikelController extends Controller
 
         $idSiswa = Auth::guard('siswa')->id();
         $idKategori = $request->id_kategori;
-        $usulanKategori = null;
 
         if ($request->filled('usulan_kategori')) {
             $kategoriBaru = Kategori::create([
@@ -116,7 +124,7 @@ class SiswaArtikelController extends Controller
             'status' => 'menunggu',
         ]);
         
-        return redirect()->route('artikel-siswa')->with('success', 'Artikel berhasil dikirim dan sedang menunggu persetujuan admin!');
+        return redirect()->route('artikel-siswa.index')->with('success', 'Artikel berhasil dikirim dan sedang menunggu persetujuan admin!');
     }
 
     public function storeKomentar(Request $request, $id)
@@ -180,10 +188,8 @@ class SiswaArtikelController extends Controller
 
         if ($interaksi) {
             $interaksi->delete();
-            $toggled = false;
         } else {
             InteraksiArtikel::create(['id_artikel' => $id, 'id_siswa' => $siswaId, 'jenis' => $jenis]);
-            $toggled = true;
 
             if ($jenis == 'suka' && $artikel->id_siswa && $artikel->id_siswa != $siswaId) {
                 Notifikasi::create([
@@ -202,7 +208,6 @@ class SiswaArtikelController extends Controller
 
         return response()->json([
             'success' => true,
-            'toggled' => $toggled,
             'like_count' => $artikel->jumlah_suka
         ]);
     }
