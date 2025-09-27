@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Siswa;
 use App\Models\Artikel;
 use App\Models\Kategori;
-use App\Models\Siswa;
 use App\Models\LogAdmin;
-use App\Models\RatingArtikel;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\RatingArtikel;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Storage;
 
 
 class ArtikelController extends Controller
@@ -91,6 +92,17 @@ class ArtikelController extends Controller
             Log::error('Error creating article: ' . $e->getMessage());
             return back()->with('error', 'Gagal menambahkan artikel. ' . $e->getMessage());
         }
+    }
+    public function getArtikelById($id)
+    {
+        // Panggil stored procedure
+        $artikel = DB::select('CALL getArtikelById(?)', [$id]);
+
+        // Karena hasil DB::select array, ambil index 0
+        $artikel = $artikel[0] ?? null;
+
+        // Kirim ke view
+        return view('artikel.detail', compact('artikel'));
     }
 
     /**
