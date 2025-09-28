@@ -98,13 +98,13 @@
                                     <td>{{ $artikel->created_at }}</td>
                                     <td>{{ $artikel->deleted_at }}</td>
                                     <td class="text-center">
-                                        <form action="{{ route('pengaturan.restore', ['model' => 'artikel', 'id' => $artikel->id]) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('admin.pengaturan.restore', ['model' => 'artikel', 'id' => $artikel->id]) }}" method="POST" class="d-inline">
                                             @csrf
                                             <button type="submit" class="btn btn-sm btn-success me-2" title="Restore Artikel">
                                                 <i class="bi bi-arrow-counterclockwise"></i> Restore
                                             </button>
                                         </form>
-                                        <form action="{{ route('pengaturan.forceDelete', ['model' => 'artikel', 'id' => $artikel->id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus artikel ini secara permanen?')">
+                                        <form action="{{ route('admin.pengaturan.forceDelete', ['model' => 'artikel', 'id' => $artikel->id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus artikel ini secara permanen?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-danger" title="Hapus Permanen">
@@ -151,13 +151,13 @@
                                     <td>{{ $kategori->dibuat_pada }}</td>
                                     <td>{{ $kategori->deleted_at }}</td>
                                     <td class="text-center">
-                                        <form action="{{ route('pengaturan.restore', ['model' => 'kategori', 'id' => $kategori->id]) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('admin.pengaturan.restore', ['model' => 'kategori', 'id' => $kategori->id]) }}" method="POST" class="d-inline">
                                             @csrf
                                             <button type="submit" class="btn btn-sm btn-success me-2" title="Restore Kategori">
                                                 <i class="bi bi-arrow-counterclockwise"></i> Restore
                                             </button>
                                         </form>
-                                        <form action="{{ route('pengaturan.forceDelete', ['model' => 'kategori', 'id' => $kategori->id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus kategori ini secara permanen?')">
+                                        <form action="{{ route('admin.pengaturan.forceDelete', ['model' => 'kategori', 'id' => $kategori->id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus kategori ini secara permanen?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-danger" title="Hapus Permanen">
@@ -214,13 +214,13 @@
                                     <td>{{ $siswa->updated_at }}</td>
                                     <td>{{ $siswa->deleted_at }}</td>
                                     <td class="text-center">
-                                        <form action="{{ route('pengaturan.restore', ['model' => 'siswa', 'id' => $siswa->id]) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('admin.pengaturan.restore', ['model' => 'siswa', 'id' => $siswa->id]) }}" method="POST" class="d-inline">
                                             @csrf
                                             <button type="submit" class="btn btn-sm btn-success me-2" title="Restore Siswa">
                                                 <i class="bi bi-arrow-counterclockwise"></i> Restore
                                             </button>
                                         </form>
-                                        <form action="{{ route('pengaturan.forceDelete', ['model' => 'siswa', 'id' => $siswa->id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus siswa ini secara permanen?')">
+                                        <form action="{{ route('admin.pengaturan.forceDelete', ['model' => 'siswa', 'id' => $siswa->id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus siswa ini secara permanen?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-danger" title="Hapus Permanen">

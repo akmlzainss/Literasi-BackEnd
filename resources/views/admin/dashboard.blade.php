@@ -3,7 +3,8 @@
 @section('title', 'Dashboard Admin')
 
 @section('content')
-    <link rel="stylesheet" href="css/dashboard.css">
+   <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+
     <!-- Content Area -->
     <div class="content-area fade-in">
         <!-- Page Header -->
@@ -38,13 +39,13 @@
                 </div>
             </div>
 
-            <!-- Penghargaan -->
+            <!-- Video -->
             <div class="col-xl-3 col-md-6">
                 <div class="stats-card warning enhanced-card" data-aos="fade-up" data-aos-delay="300">
                     <div class="stats-icon warning">
-                        <i class="fas fa-trophy pulse-icon"></i>
+                        <i class="fas fa-play-circle pulse-icon"></i>
                     </div>
-                    <h5 class="stats-title">Total Penghargaan</h5>
+                    <h5 class="stats-title">Total Video</h5>
                     <div class="stats-number counter" data-target="{{ $penghargaanCount }}">{{ $penghargaanCount }}</div>
                 </div>
             </div>
@@ -263,7 +264,7 @@
                 type: 'bar',
                 data: {
                     labels: chartData.categoryNames && chartData.categoryNames.length > 0 ? chartData.categoryNames : [
-                        'Artikel', 'Kategori', 'Penghargaan', 'Siswa'
+                        'Artikel', 'Kategori', 'Video', 'Siswa'
                     ],
                     datasets: [{
                         label: 'Jumlah Data',
@@ -327,7 +328,7 @@
                 type: 'doughnut',
                 data: {
                     labels: chartData.statsData && chartData.statsData.labels ? chartData.statsData.labels : ['Artikel',
-                        'Kategori', 'Penghargaan', 'Siswa'
+                        'Kategori', 'Video', 'Siswa'
                     ],
                     datasets: [{
                         data: chartData.statsData && chartData.statsData.data ? chartData.statsData.data : [

@@ -13,12 +13,7 @@
             <a href="{{ route('admin.penghargaan.create') }}" class="btn-primary-custom">
                 <i class="fas fa-plus"></i> Tambah Penghargaan Baru
             </a>
-            <a href="#" class="btn-outline-custom">
-                <i class="fas fa-upload"></i> Import Penghargaan
-            </a>
-            <a href="#" class="btn-outline-custom">
-                <i class="fas fa-download"></i> Export Data
-            </a>
+           
         </div>
     </div>
 

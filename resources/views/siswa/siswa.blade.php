@@ -363,44 +363,51 @@
                 });
             }
 
-            // === Populate Edit Student Form via AJAX ===
-            window.editStudent = function(nis) {
-                fetch(`/admin/siswa/${nis}/edit`) // pastikan route edit mengembalikan JSON
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.error) {
-                            alert(data.error);
-                            return;
-                        }
+         window.editStudent = function(nis) {
+    fetch(`/admin/siswa/${nis}/edit`) // ini boleh, route edit return JSON
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
 
-                        // Set value modal
-                        document.getElementById('edit_nis').value = data.nis;
-                        document.getElementById('edit_original_nis').value = data.nis;
-                        document.getElementById('edit_nama').value = data.nama;
-                        document.getElementById('edit_email').value = data.email;
-                        document.getElementById('edit_kelas').value = data.kelas;
-                        document.getElementById('edit_password').value = '';
-                        document.getElementById('edit_password_confirmation').value = '';
+            // Isi form
+            document.getElementById('edit_nis').value = data.nis;
+            document.getElementById('edit_original_nis').value = data.nis;
+            document.getElementById('edit_nama').value = data.nama;
+            document.getElementById('edit_email').value = data.email;
+            document.getElementById('edit_kelas').value = data.kelas;
+            document.getElementById('edit_password').value = '';
+            document.getElementById('edit_password_confirmation').value = '';
 
-                        // Set form action
-                        document.getElementById('editStudentForm').action = `/siswa/${data.nis}`;
+            // Set action form ke route update
+            let url = "{{ route('admin.siswa.update', ':nis') }}";
+            url = url.replace(':nis', data.nis);
+            document.getElementById('editStudentForm').action = url;
 
-                        // Tampilkan modal
-                        const modal = new bootstrap.Modal(document.getElementById('editStudentModal'));
-                        modal.show();
-                    })
-                    .catch(error => {
-                        console.error('Gagal mengambil data siswa:', error);
-                        alert('Gagal mengambil data siswa.');
-                    });
-            };
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('editStudentModal'));
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Gagal mengambil data siswa:', error);
+            alert('Gagal mengambil data siswa.');
+        });
+};
+
 
             // === Prepare Delete Student Form ===
-            window.prepareDelete = function(nis, nama) {
-                document.getElementById('delete_nis').textContent = nis;
-                document.getElementById('delete_nama').textContent = nama;
-                document.getElementById('deleteStudentForm').action = `/siswa/${nis}`;
-            };
+          window.prepareDelete = function(nis, nama) {
+    document.getElementById('delete_nis').textContent = nis;
+    document.getElementById('delete_nama').textContent = nama;
+
+    // Gunakan route helper via Blade
+    let url = "{{ route('admin.siswa.destroy', ':nis') }}";
+    url = url.replace(':nis', nis);
+    document.getElementById('deleteStudentForm').action = url;
+};
+
 
         });
     </script>

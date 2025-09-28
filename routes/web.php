@@ -82,7 +82,7 @@ Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function ()
     Route::get('/search-siswa', [ArtikelController::class, 'searchSiswa'])->name('search.siswa');
     Route::get('/artikel/status/{status}', [ArtikelController::class, 'status'])->name('artikel.status');
 
-
+    
     
 Route::get('/artikel/get/{id}', [ArtikelController::class, 'getArtikelById'])
      ->name('artikel.getById');
@@ -123,4 +123,5 @@ Route::get('/artikel/get/{id}', [ArtikelController::class, 'getArtikelById'])
         Route::get('/', [BackupController::class, 'index'])->name('index');
         Route::get('/all', [BackupController::class, 'backupAll'])->name('all');
     });
+    
 });

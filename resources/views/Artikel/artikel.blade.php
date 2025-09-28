@@ -16,10 +16,6 @@
                 <i class="fas fa-plus"></i>
                 Tambah Artikel Baru
             </a>
-            <a href="{{ route('admin.artikel.export') }}" class="btn-outline-custom">
-                <i class="fas fa-download"></i>
-                Export Data
-            </a>
               <a href="{{ route('admin.artikel.status', ['status' => 'menunggu']) }}" class="btn-warning-custom">
         <i class="fas fa-clock"></i>
         Status Menunggu

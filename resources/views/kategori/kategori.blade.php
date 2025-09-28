@@ -4,7 +4,8 @@
 @section('page-title', 'Kelola Kategori Artikel')
 
 @section('content')
-    <link rel="stylesheet" href="css/kategori.css">
+   <link rel="stylesheet" href="{{ asset('css/kategori.css') }}">
+
 
     <!-- Custom Notification Modal -->
     <div class="modal fade" id="customNotificationModal" tabindex="-1" aria-labelledby="customNotificationModalLabel"

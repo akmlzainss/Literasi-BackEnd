@@ -1,6 +1,255 @@
 @extends('layouts.app')
 
 @section('title', 'Persetujuan Video - SMKN 11 Bandung')
+<style>
+:root {
+    --primary-blue: #2563eb;
+    --light-blue: #3b82f6;
+    --dark-blue: #1e40af;
+    --accent-blue: #60a5fa;
+    --bg-light: #f8fafc;
+    --bg-white: #ffffff;
+    --text-dark: #1e293b;
+    --text-light: #64748b;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --border-light: #e2e8f0;
+}
+
+/* ======== GLOBAL THEME (BIRU) ======== */
+body {
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    font-family: 'Inter', sans-serif;
+}
+
+/* Header */
+.page-header {
+    background: var(--primary-blue);
+    color: var(--bg-white);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+}
+.page-title {
+    margin: 0;
+    font-weight: 600;
+}
+.page-subtitle {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--accent-blue);
+}
+
+/* Filter Section */
+.search-filter-section {
+    background: var(--bg-white);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+}
+.search-input, 
+.filter-select {
+    border: 1px solid var(--border-light);
+    border-radius: 0.5rem;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+.search-input:focus, 
+.filter-select:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px var(--accent-blue);
+}
+
+/* Button */
+.btn-primary-custom {
+    background: var(--primary-blue);
+    color: var(--bg-white);
+    border-radius: 0.5rem;
+    border: none;
+    padding: 0.6rem 1rem;
+    font-weight: 500;
+    transition: background 0.3s;
+}
+.btn-primary-custom:hover {
+    background: var(--dark-blue);
+}
+.btn-outline-custom {
+    border: 1px solid var(--primary-blue);
+    color: var(--primary-blue);
+    border-radius: 0.5rem;
+    padding: 0.6rem 1rem;
+    transition: all 0.3s;
+}
+.btn-outline-custom:hover {
+    background: var(--primary-blue);
+    color: var(--bg-white);
+}
+
+/* Card */
+.main-card {
+    background: var(--bg-white);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-lg);
+    padding: 0;
+}
+.card-header-custom {
+    background: var(--primary-blue);
+    color: var(--bg-white);
+    padding: 1rem;
+    border-radius: 0.75rem 0.75rem 0 0;
+    font-weight: 600;
+}
+.card-body-custom {
+    padding: 1.5rem;
+}
+
+/* Article Cards */
+.articles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+.article-card {
+    background: var(--bg-white);
+    border: 1px solid var(--border-light);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s;
+}
+.article-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+.article-image {
+    position: relative;
+}
+.article-image img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+.article-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(37, 99, 235, 0.6);
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: opacity 0.3s;
+}
+.article-card:hover .article-overlay {
+    opacity: 1;
+}
+.btn-action-card {
+    background: var(--bg-white);
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-blue);
+    font-size: 1.2rem;
+    transition: background 0.3s, color 0.3s;
+}
+.btn-action-card:hover {
+    background: var(--primary-blue);
+    color: var(--bg-white);
+}
+.article-status .status-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--warning);
+    color: var(--bg-white);
+    padding: 0.3rem 0.7rem;
+    font-size: 0.75rem;
+    border-radius: 0.5rem;
+}
+
+/* Category & Text */
+.category-tag {
+    background: var(--accent-blue);
+    color: var(--bg-white);
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+.article-title-card {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0.5rem 0;
+}
+.article-excerpt-card {
+    font-size: 0.875rem;
+    color: var(--text-light);
+}
+.article-author-card {
+    display: flex;
+    align-items: center;
+    margin-top: 0.8rem;
+}
+.author-avatar {
+    background: var(--primary-blue);
+    color: var(--bg-white);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    font-weight: 600;
+}
+.author-name {
+    font-weight: 500;
+}
+.author-role {
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+/* Meta */
+.article-meta-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-light);
+}
+
+/* Pagination */
+.pagination-custom {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+.pagination-custom .page-link {
+    color: var(--primary-blue);
+    border-radius: 0.5rem;
+    margin: 0 0.2rem;
+}
+.pagination-custom .page-link:hover {
+    background: var(--accent-blue);
+    color: var(--bg-white);
+}
+.pagination-custom .active .page-link {
+    background: var(--primary-blue);
+    color: var(--bg-white);
+    border: none;
+}
+</style>
+
 
 @section('content')
 <div class="page-header">

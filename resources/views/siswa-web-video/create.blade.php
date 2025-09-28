@@ -10,7 +10,7 @@
             <i class="fas fa-arrow-left me-2"></i>Kembali
         </a>
         <h2 class="section-title">Form Upload Video</h2>
-        
+        \
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul class="mb-0">
@@ -58,64 +58,4 @@
     </section>
 </div>
 @endsection
-```
-
-### 6. Perbarui Navigasi dan Halaman Pilihan Upload
-
-**`layouts/layouts.blade.php`:**
-Tambahkan link "Video" di navbar.
-
-```php
-<ul class="navbar-nav ms-auto align-items-lg-center">
-    <li class="nav-item">
-        <a href="{{ route('dashboard-siswa') }}" class="nav-link ...">Beranda</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link ..." href="{{ route('artikel-siswa.index') }}">Artikel</a>
-    </li>
-    <!-- TAMBAHKAN INI -->
-    <li class="nav-item">
-        <a class="nav-link {{ request()->routeIs('video.index') ? 'active' : '' }}" href="{{ route('video.index') }}">
-            <i class="fas fa-play-circle me-1 d-lg-none"></i>Video
-        </a>
-    </li>
-    <li class="nav-item">
-        <a href="{{ route('artikel-siswa.upload') }}" class="nav-link ...">Upload</a>
-    </li>
-    ...
-</ul>
-```
-
-**`upload-choice.blade.php`:**
-Aktifkan kartu upload video.
-
-```php
 <!-- Ganti bagian Video Card (Coming Soon) -->
-<div class="col-md-6 col-lg-5">
-    <div class="choice-card animate-ready">
-        <div class="card-body text-center">
-            <div class="choice-icon mb-4">
-                <i class="fas fa-video fa-4x text-primary"></i>
-                <div class="icon-glow"></div>
-            </div>
-            <h4 class="card-title fw-bold mb-3">Upload Video Baru</h4>
-            <p class="card-text text-muted mb-4">
-                Punya karya dalam bentuk video? Bagikan di sini dan tunjukkan kreativitasmu kepada semua orang!
-            </p>
-            <div class="choice-features mb-4">
-                <div class="feature-item">
-                    <i class="fas fa-check-circle text-success me-2"></i><span>Video HD</span>
-                </div>
-                <div class="feature-item">
-                    <i class="fas fa-check-circle text-success me-2"></i><span>Komentar & Suka</span>
-                </div>
-                <div class="feature-item">
-                    <i class="fas fa-check-circle text-success me-2"></i><span>Mode Scroll</span>
-                </div>
-            </div>
-            <a href="{{ route('video.create') }}" class="btn btn-primary btn-lg w-100 fw-bold stretched-link">
-                <i class="fas fa-video me-2"></i>Mulai Upload
-            </a>
-        </div>
-    </div>
-</div>
