@@ -905,3 +905,137 @@
     background: blue;
     color: #fff;
 }
+
+.detail-card {
+    max-width: 100%;
+}
+.article-detail-image img {
+    max-height: 400px;
+    object-fit: cover;
+}
+.article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.meta-item {
+    font-size: 0.9em;
+    color: #555;
+}
+.article-content {
+    line-height: 1.6;
+}
+.stats-item {
+    display: inline-block;
+    margin-right: 15px;
+    font-size: 0.9em;
+}
+.comment-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+}
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #007bff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9em;
+    margin-right: 10px;
+}
+.comment-author {
+    display: flex;
+    align-items: center;
+}
+.comment-date {
+    font-size: 0.8em;
+    color: #777;
+}
+.comment-actions {
+    display: flex;
+    gap: 5px;
+}
+.comment-body {
+    margin-top: 10px;
+    font-size: 0.95em;
+}
+.comment-edit-form {
+    margin-top: 10px;
+}
+
+.detail-card {
+    max-width: 100%;
+}
+.article-detail-image img {
+    max-height: 400px;
+    object-fit: cover;
+}
+.article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.meta-item {
+    font-size: 0.9em;
+    color: #555;
+}
+.article-content {
+    line-height: 1.6;
+}
+.stats-item {
+    display: inline-block;
+    margin-right: 15px;
+    font-size: 0.9em;
+}
+.comment-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+}
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #007bff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9em;
+    margin-right: 10px;
+}
+.comment-author {
+    display: flex;
+    align-items: center;
+}
+.comment-date {
+    font-size: 0.8em;
+    color: #777;
+}
+.comment-actions {
+    display: flex;
+    gap: 5px;
+}
+.comment-body {
+    margin-top: 10px;
+    font-size: 0.95em;
+}
+.comment-edit-form, .comment-reply-form {
+    margin-top: 10px;
+}

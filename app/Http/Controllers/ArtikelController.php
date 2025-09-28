@@ -2,64 +2,69 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\BackupAllExport;
 use App\Models\Siswa;
 use App\Models\Artikel;
 use App\Models\Kategori;
 use App\Models\LogAdmin;
-use Illuminate\Http\Request;
 use App\Models\RatingArtikel;
+use App\Models\KomentarArtikel;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 
-
 class ArtikelController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(function ($request, $next) {
-            if (Auth::guard('admin')->check() || Auth::guard('siswa')->check()) {
-                return $next($request);
-            }
-            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
-        });
+        $this->middleware('auth:admin,siswa')->only(['index', 'show', 'rate']);
+        $this->middleware('auth:admin')->only(['create', 'store', 'edit', 'update', 'destroy', 'status']);
     }
 
-    /**
-     * Display a listing of articles.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        $artikels = Artikel::with(['kategori', 'siswa'])->latest()->paginate(10);
-        return view('artikel.artikel', compact('artikels'));
+        $query = Artikel::with(['kategori', 'siswa'])->latest();
+
+        if ($search = $request->query('search')) {
+            $query->where('judul', 'LIKE', "%{$search}%")
+                ->orWhere('isi', 'LIKE', "%{$search}%");
+        }
+        if ($kategori = $request->query('kategori')) {
+            $query->whereHas('kategori', function ($q) use ($kategori) {
+                $q->where('nama', $kategori);
+            });
+        }
+        if ($status = $request->query('status')) {
+            $query->where('status', $status);
+        }
+
+        $artikels = $query->paginate(10)->appends($request->query());
+
+        return view('artikel.artikel', compact('artikels', 'status'));
     }
 
-    /**
-     * Show the form for creating a new article.
-     */
     public function create()
     {
         $kategoris = Kategori::all();
         return view('artikel.create', compact('kategoris'));
     }
 
-    /**
-     * Store a newly created article in storage.
-     */
     public function store(Request $request)
     {
         try {
             $validated = $request->validate([
                 'judul'        => 'required|string|max:255',
-                'isi'          => 'required|string',
+                'isi'          => 'required|string|max:3000',
                 'gambar'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'id_kategori'  => 'required|exists:kategori,id',
                 'penulis_type' => 'required|in:admin,siswa',
                 'id_siswa'     => 'required_if:penulis_type,siswa|exists:siswa,id',
                 'jenis'        => 'required|in:bebas,resensi_buku,resensi_film,video',
                 'status'       => 'required|in:draf,menunggu,disetujui,ditolak',
+                'alasan_penolakan' => 'nullable|string|required_if:status,ditolak',
                 'rating'       => 'nullable|integer|min:1|max:5',
             ]);
 
@@ -75,74 +80,147 @@ class ArtikelController extends Controller
                 'penulis_type'    => $validated['penulis_type'],
                 'jenis'           => $validated['jenis'],
                 'status'          => $validated['status'],
+                'alasan_penolakan' => $validated['status'] === 'ditolak' ? $validated['alasan_penolakan'] : null,
                 'nilai_rata_rata' => $validated['rating'] ?? 0,
             ]);
 
-            // Save initial rating if provided
             if ($request->filled('rating') && $idSiswa) {
                 $this->saveRating($artikel->id, $idSiswa, $validated['rating']);
             }
 
             $this->logAction('create', 'Menambahkan artikel baru', 'artikel', $artikel->id);
 
-            return redirect()->route('admin.artikel.index')->with('success', 'Artikel berhasil dibuat!');
+            return response()->json(['message' => 'Artikel berhasil dibuat!', 'redirect' => route('admin.artikel.index')], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return back()->withErrors($e->errors())->withInput();
+            $this->logAction('gagal_create', 'Gagal menambahkan artikel', 'artikel', null, ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Validasi gagal.', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             Log::error('Error creating article: ' . $e->getMessage());
-            return back()->with('error', 'Gagal menambahkan artikel. ' . $e->getMessage());
+            $this->logAction('gagal_create', 'Gagal menambahkan artikel', 'artikel', null, ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Gagal menambahkan artikel: ' . $e->getMessage()], 500);
         }
     }
-    public function getArtikelById($id)
+
+    public function show($id)
     {
-        // Panggil stored procedure
-        $artikel = DB::select('CALL getArtikelById(?)', [$id]);
+        $artikel = Artikel::with([
+            'siswa',
+            'kategori',
+            'ratingArtikel',
+            'komentarArtikel.siswa',
+            'komentarArtikel.admin',
+            'komentarArtikel.replies',
+        ])->findOrFail($id);
 
-        // Karena hasil DB::select array, ambil index 0
-        $artikel = $artikel[0] ?? null;
+        $artikel->diterbitkan_pada = $artikel->diterbitkan_pada
+            ? \Carbon\Carbon::parse($artikel->diterbitkan_pada)
+            : null;
 
-        // Kirim ke view
-        return view('artikel.detail', compact('artikel'));
+        $avgRating = $artikel->ratingArtikel->avg('rating') ?? 0;
+
+        return view('artikel.show', compact('artikel', 'avgRating'));
     }
 
-    /**
-     * Display the specified article.
-     */
-   public function show($id)
-{
-    $artikel = Artikel::with([
-        'siswa',
-        'kategori',
-        'ratingArtikel',
-        'komentarArtikel.siswa',
-        'komentarArtikel.admin',
-    ])->findOrFail($id);
+    public function storeComment(Request $request, $artikelId)
+    {
+        try {
+            $validated = $request->validate([
+                'komentar' => 'required|string|max:1000',
+                'id_komentar_parent' => 'nullable|exists:komentar_artikel,id',
+                'depth' => 'nullable|integer|min:0|max:2',
+            ]);
 
-    // pastikan diterbitkan_pada berupa Carbon, atau null jika kosong
-    $artikel->diterbitkan_pada = $artikel->diterbitkan_pada
-        ? \Carbon\Carbon::parse($artikel->diterbitkan_pada)
-        : null;
+            $userId = Auth::guard('admin')->id() ?: Auth::guard('siswa')->id();
+            $guard = Auth::guard('admin')->check() ? 'admin' : 'siswa';
 
-    // hitung rata-rata rating
-    $avgRating = $artikel->ratingArtikel->avg('nilai') ?? 0;
+            if (!$userId) {
+                return redirect()->back()->with('error', 'Hanya admin atau siswa yang dapat berkomentar.');
+            }
 
-    return view('artikel.show', compact('artikel', 'avgRating'));
-}
+            $depth = $validated['id_komentar_parent'] ? ($validated['depth'] ?? 0) : 0;
+            if ($depth > 2) {
+                return redirect()->back()->with('error', 'Kedalaman komentar maksimum adalah 2 level.');
+            }
 
-public function status($status)
-{
-    $artikels = Artikel::where('status', $status)->paginate(10);
+            $komentar = KomentarArtikel::create([
+                'id_artikel' => $artikelId,
+                'id_siswa' => $guard === 'siswa' ? $userId : null,
+                'id_admin' => $guard === 'admin' ? $userId : null,
+                'id_komentar_parent' => $validated['id_komentar_parent'],
+                'depth' => $depth,
+                'komentar' => $validated['komentar'],
+                'dibuat_pada' => now(),
+            ]);
 
-    return view('artikel.artikel', [
-        'artikels' => $artikels,
-        'status'   => $status
-    ]);
-}
+            // Logging
+            $this->logAdminAction('create_comment', 'Menambahkan komentar', 'komentar_artikel', $komentar->id, ['artikel_id' => $artikelId]);
 
+            return redirect()->route($guard === 'admin' ? 'admin.artikel.show' : 'artikel-siswa.show', $artikelId)
+                ->with('success', 'Komentar berhasil ditambahkan!');
+        } catch (\Exception $e) {
+            \Log::error('Error saving comment: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menambahkan komentar: ' . $e->getMessage());
+        }
+    }
 
-    /**
-     * Show the form for editing the specified article.
-     */
+    private function logAdminAction($actionType, $action, $refType, $refId, $details = [])
+    {
+        $userId = Auth::guard('admin')->id() ?: Auth::guard('siswa')->id();
+        $guard = Auth::guard('admin')->check() ? 'admin' : 'siswa';
+        if ($userId) {
+            try {
+                \App\Models\LogAdmin::create([
+                    'id_admin' => $guard === 'admin' ? $userId : null,
+                    'id_siswa' => $guard === 'siswa' ? $userId : null,
+                    'jenis_aksi' => $actionType,
+                    'aksi' => $action,
+                    'referensi_tipe' => $refType,
+                    'referensi_id' => $refId,
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->header('User-Agent'),
+                    'detail' => !empty($details) ? json_encode($details) : null,
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to save log: ' . $e->getMessage());
+            }
+        }
+    }
+
+    public function updateComment(Request $request, $komentarId)
+    {
+        try {
+            $validated = $request->validate([
+                'komentar' => 'required|string|max:1000',
+            ]);
+
+            $komentar = KomentarArtikel::findOrFail($komentarId);
+
+            if (!Auth::guard('admin')->check()) {
+                return redirect()->back()->with('error', 'Hanya admin yang dapat mengedit komentar.');
+            }
+
+            $komentar->update([
+                'komentar' => $validated['komentar'],
+                'updated_at' => now(),
+            ]);
+
+            // Logging
+            $this->logAdminAction('update_comment', 'Mengedit komentar', 'komentar_artikel', $komentar->id, ['artikel_id' => $komentar->id_artikel]);
+
+            return redirect()->route('admin.artikel.show', $komentar->id_artikel)
+                ->with('success', 'Komentar berhasil diperbarui!');
+        } catch (\Exception $e) {
+            \Log::error('Error updating comment: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memperbarui komentar: ' . $e->getMessage());
+        }
+    }
+
+    public function status($status)
+    {
+        $artikels = Artikel::where('status', $status)->with(['kategori', 'siswa'])->paginate(10);
+        return view('artikel.artikel', compact('artikels', 'status'));
+    }
+
     public function edit($id)
     {
         $artikel = Artikel::findOrFail($id);
@@ -150,15 +228,12 @@ public function status($status)
         return view('artikel.edit', compact('artikel', 'kategoris'));
     }
 
-    /**
-     * Update the specified article in storage.
-     */
     public function update(Request $request, $id)
     {
         try {
             $validated = $request->validate([
                 'judul'        => 'required|string|max:255',
-                'isi'          => 'required|string',
+                'isi'          => 'required|string|max:3000',
                 'gambar'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'id_kategori'  => 'required|exists:kategori,id',
                 'penulis_type' => 'required|in:admin,siswa',
@@ -171,7 +246,6 @@ public function status($status)
 
             $artikel = Artikel::findOrFail($id);
 
-            // === Handle image upload ===
             if ($request->hasFile('gambar')) {
                 if ($artikel->gambar) {
                     Storage::disk('public')->delete($artikel->gambar);
@@ -179,7 +253,6 @@ public function status($status)
                 $artikel->gambar = $request->file('gambar')->store('artikel', 'public');
             }
 
-            // === Update artikel ===
             $artikel->update([
                 'id_siswa'         => $validated['penulis_type'] === 'admin' ? null : $validated['id_siswa'],
                 'id_kategori'      => $validated['id_kategori'],
@@ -191,11 +264,9 @@ public function status($status)
                 'alasan_penolakan' => $validated['status'] === 'ditolak' ? $validated['alasan_penolakan'] : null,
             ]);
 
-            // === Update rating kalau ada input ===
             if ($request->filled('rating')) {
                 $idSiswa = $this->getAuthorId($request);
                 if ($idSiswa) {
-                    // Cek apakah siswa ini sudah punya rating
                     $rating = RatingArtikel::where('id_artikel', $artikel->id)
                         ->where('id_siswa', $idSiswa)
                         ->first();
@@ -210,13 +281,12 @@ public function status($status)
                         $rating->update([
                             'rating'         => $validated['rating'],
                             'riwayat_rating' => $riwayat,
-                            'dibuat_pada'    => now(),
+                            'updated_at'     => now(),
                         ]);
                     } else {
                         $this->saveRating($artikel->id, $idSiswa, $validated['rating']);
                     }
 
-                    // Update rata-rata di artikel
                     $artikel->nilai_rata_rata = round(RatingArtikel::where('id_artikel', $artikel->id)->avg('rating'), 2);
                     $artikel->save();
                 }
@@ -224,18 +294,17 @@ public function status($status)
 
             $this->logAction('update', 'Mengedit artikel', 'artikel', $artikel->id);
 
-            return redirect()->route('artikel')->with('success', 'Artikel berhasil diperbarui!');
+            return response()->json(['message' => 'Artikel berhasil diperbarui!', 'redirect' => route('admin.artikel.index')], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return back()->withErrors($e->errors())->withInput();
+            $this->logAction('gagal_update', 'Gagal mengedit artikel', 'artikel', $id, ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Validasi gagal.', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             Log::error('Error updating article: ' . $e->getMessage());
-            return back()->with('error', 'Gagal memperbarui artikel.');
+            $this->logAction('gagal_update', 'Gagal mengedit artikel', 'artikel', $id, ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Gagal memperbarui artikel: ' . $e->getMessage()], 500);
         }
     }
 
-    /**
-     * Remove the specified article from storage.
-     */
     public function destroy($id)
     {
         try {
@@ -248,17 +317,26 @@ public function status($status)
             $this->logAction('delete', 'Menghapus artikel', 'artikel', $artikel->id);
             $artikel->delete();
 
-            return redirect()->route('artikel')->with('success', 'Artikel berhasil dihapus!');
+            return response()->json(['message' => 'Artikel berhasil dihapus!', 'redirect' => route('admin.artikel.index')], 200);
         } catch (\Exception $e) {
             Log::error('Error deleting article: ' . $e->getMessage());
             $this->logAction('gagal_delete', 'Gagal menghapus artikel', 'artikel', $id, ['error' => $e->getMessage()]);
-            return back()->with('error', 'Gagal menghapus artikel.');
+            return response()->json(['message' => 'Gagal menghapus artikel: ' . $e->getMessage()], 500);
         }
     }
 
-    /**
-     * Search students for Select2.
-     */
+    public function export()
+    {
+        try {
+            $this->logAction('export', 'Mengekspor artikel ke Excel', 'artikel', null);
+            return Excel::download(new BackupAllExport, 'artikel_' . now()->format('Ymd_His') . '.xlsx');
+        } catch (\Exception $e) {
+            Log::error('Error exporting articles: ' . $e->getMessage());
+            $this->logAction('gagal_export', 'Gagal mengekspor artikel', 'artikel', null, ['error' => $e->getMessage()]);
+            return back()->with('error', 'Gagal mengekspor artikel: ' . $e->getMessage());
+        }
+    }
+
     public function searchSiswa(Request $request)
     {
         $term = $request->input('term', '');
@@ -277,9 +355,6 @@ public function status($status)
         return response()->json($siswas);
     }
 
-    /**
-     * Store or update article rating.
-     */
     public function rate(Request $request, $idArtikel)
     {
         try {
@@ -287,9 +362,9 @@ public function status($status)
                 'rating' => 'required|integer|min:1|max:5',
             ]);
 
-            $siswaId = Auth::guard('siswa')->id();
+            $siswaId = Auth::guard('siswa')->id() ?? Auth::guard('admin')->id();
             if (!$siswaId) {
-                return back()->with('error', 'Hanya siswa yang dapat memberi rating.');
+                return response()->json(['message' => 'Hanya admin atau siswa yang dapat memberi rating.'], 403);
             }
 
             $rating = RatingArtikel::where('id_artikel', $idArtikel)
@@ -306,74 +381,75 @@ public function status($status)
                 $rating->update([
                     'rating'         => $validated['rating'],
                     'riwayat_rating' => $riwayat,
-                    'dibuat_pada'    => now(),
+                    'updated_at'     => now(),
                 ]);
             } else {
                 $this->saveRating($idArtikel, $siswaId, $validated['rating']);
             }
 
-            // Update average rating
-            $artikel = Artikel::find($idArtikel);
-            if ($artikel) {
-                $artikel->nilai_rata_rata = round(RatingArtikel::where('id_artikel', $idArtikel)->avg('rating'), 2);
-                $artikel->save();
-            }
+            $artikel = Artikel::findOrFail($idArtikel);
+            $artikel->nilai_rata_rata = round(RatingArtikel::where('id_artikel', $idArtikel)->avg('rating'), 2);
+            $artikel->save();
 
-            return back()->with('success', 'Rating berhasil disimpan!');
+            $this->logAction('rate', 'Memberi rating pada artikel', 'artikel', $idArtikel, [
+                'rating' => $validated['rating'],
+                'user_id' => $siswaId,
+            ]);
+
+            return response()->json(['message' => 'Rating berhasil disimpan!'], 200);
         } catch (\Exception $e) {
             Log::error('Error saving rating: ' . $e->getMessage());
-            return back()->with('error', 'Gagal menyimpan rating. ' . $e->getMessage());
+            $this->logAction('gagal_rate', 'Gagal memberi rating', 'artikel', $idArtikel, ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Gagal menyimpan rating: ' . $e->getMessage()], 500);
         }
     }
 
-    /**
-     * Helper: Get authenticated user ID based on guard.
-     */
     private function getUserId()
     {
         return Auth::guard('admin')->check() ? Auth::guard('admin')->id() : Auth::guard('siswa')->id();
     }
 
-    /**
-     * Helper: Get author ID based on penulis_type.
-     */
     private function getAuthorId(Request $request)
     {
         return $request->penulis_type === 'siswa'
             ? $request->id_siswa
-            : (Auth::guard('siswa')->check() ? Auth::guard('siswa')->id() : null);
+            : (Auth::guard('admin')->check() ? Auth::guard('admin')->id() : null);
     }
 
-    /**
-     * Helper: Save rating for an article.
-     */
     private function saveRating($artikelId, $siswaId, $rating)
     {
         RatingArtikel::create([
             'id_artikel'     => $artikelId,
             'id_siswa'       => $siswaId,
             'rating'         => $rating,
-            'riwayat_rating' => [], // array -> otomatis jadi JSON (karena casts di model)
-            'dibuat_pada'    => now(),
+            'riwayat_rating' => [],
+            'created_at'     => now(),
+            'updated_at'     => now(),
         ]);
     }
 
-    /**
-     * Helper: Log admin actions.
-     */
     private function logAction($actionType, $action, $refType, $refId, $details = [])
     {
         $userId = $this->getUserId();
         if ($userId) {
-            LogAdmin::create([
-                'id_admin'       => $userId,
-                'jenis_aksi'     => $actionType,
-                'aksi'           => $action,
-                'referensi_tipe' => $refType,
-                'referensi_id'   => $refId,
-                'detail'         => !empty($details) ? json_encode($details) : null,
-                'dibuat_pada'    => now(),
-            ]);
+            try {
+                LogAdmin::create([
+                    'id_admin'       => $userId,
+                    'jenis_aksi'     => $actionType,
+                    'aksi'           => $action,
+                    'referensi_tipe' => $refType,
+                    'referensi_id'   => $refId,
+                    'ip_address'     => request()->ip(),
+                    'user_agent'     => request()->header('User-Agent'),
+                    'detail'         => !empty($details) ? json_encode($details) : null,
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to save LogAdmin: ' . $e->getMessage(), [
+                    'action' => $actionType,
+                    'ref_type' => $refType,
+                    'ref_id' => $refId,
+                ]);
+            }
         }
     }
 }
