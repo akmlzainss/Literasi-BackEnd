@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class LogAdmin extends Model
 {
     protected $table = 'log_admin';
-    public $timestamps = true; // Aktifkan timestamps
+    protected $primaryKey = 'id';
 
     protected $fillable = [
         'id_admin',
@@ -16,16 +16,18 @@ class LogAdmin extends Model
         'referensi_tipe',
         'referensi_id',
         'detail',
+        'created_at',
+        'updated_at',
     ];
 
-   protected $casts = [
-    'dibuat_pada' => 'datetime',
-];
-
+    protected $casts = [
+        'detail' => 'array',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 
     public function admin()
     {
-        return $this->belongsTo(Admin::class, 'id_admin');
+        return $this->belongsTo(Admin::class, 'id_admin', 'id');
     }
 }
-

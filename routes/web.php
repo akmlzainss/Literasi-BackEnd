@@ -82,14 +82,15 @@ Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function ()
     Route::get('/search-siswa', [ArtikelController::class, 'searchSiswa'])->name('search.siswa');
     Route::get('/artikel/status/{status}', [ArtikelController::class, 'status'])->name('artikel.status');
 
-    
-    
-Route::get('/artikel/get/{id}', [ArtikelController::class, 'getArtikelById'])
-     ->name('artikel.getById');
 
 
-    Route::post('/komentar/{artikel}', [KomentarController::class, 'store'])->name('komentar.store');
-    Route::delete('/komentar/{id}', [KomentarController::class, 'destroy'])->name('komentar.destroy');
+    Route::get('/artikel/get/{id}', [ArtikelController::class, 'getArtikelById'])
+        ->name('artikel.getById');
+
+
+    Route::post('komentar/{artikel}', [ArtikelController::class, 'storeComment'])->name('komentar.store');
+    Route::put('komentar/{komentar}', [ArtikelController::class, 'updateComment'])->name('komentar.update');
+    Route::delete('komentar/{komentar}', [ArtikelController::class, 'destroyComment'])->name('komentar.destroy');
 
     Route::get('/video/persetujuan', [App\Http\Controllers\VideoPersetujuanController::class, 'index'])->name('video.persetujuan');
     Route::put('/video/{id}/persetujuan', [App\Http\Controllers\VideoPersetujuanController::class, 'update'])->name('video.update');
@@ -123,5 +124,4 @@ Route::get('/artikel/get/{id}', [ArtikelController::class, 'getArtikelById'])
         Route::get('/', [BackupController::class, 'index'])->name('index');
         Route::get('/all', [BackupController::class, 'backupAll'])->name('all');
     });
-    
 });

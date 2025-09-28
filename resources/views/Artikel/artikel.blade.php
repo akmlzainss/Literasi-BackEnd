@@ -12,14 +12,20 @@
         <p class="page-subtitle">Kelola dan atur semua artikel literasi akhlak untuk sistem pembelajaran</p>
 
         <div class="action-buttons">
-            <a href="{{ route('admin.artikel.create') }}" class="btn-primary-custom">
-                <i class="fas fa-plus"></i>
-                Tambah Artikel Baru
+            <a href="{{ route('admin.artikel.create') }}" class="btn btn-primary-custom">
+                <i class="fas fa-plus me-2"></i>Tambah Artikel Baru
             </a>
-              <a href="{{ route('admin.artikel.status', ['status' => 'menunggu']) }}" class="btn-warning-custom">
-        <i class="fas fa-clock"></i>
-        Status Menunggu
-    </a>
+            <a href="{{ route('admin.artikel.status', ['status' => 'menunggu']) }}" class="btn btn-warning-custom">
+                <i class="fas fa-clock me-2"></i>Status Menunggu
+            </a>
+            @if (isset($status) && $status)
+                <a href="{{ route('admin.artikel.index') }}" class="btn btn-secondary-custom">
+                    <i class="fas fa-arrow-left me-2"></i>Kembali ke Semua Artikel
+                </a>
+            @endif
+            <a href="{{ route('admin.artikel.export') }}" class="btn btn-success-custom">
+                <i class="fas fa-download me-2"></i>Export Excel
+            </a>
         </div>
     </div>
 
@@ -36,7 +42,7 @@
 
         <div class="card-body-custom">
             <div class="search-filter-section">
-                <form method="GET" action="{{ route('admin.artikel.index') }}">
+                <form id="filterForm" method="GET" action="{{ route('admin.artikel.index') }}">
                     <div class="row g-3">
                         <div class="col-md-3">
                             <div class="input-group">
@@ -90,33 +96,34 @@
                 </form>
             </div>
 
-            <div class="articles-grid">
+            <div class="articles-grid" id="articlesGrid">
                 @forelse ($artikels as $artikel)
                     <div class="article-card">
                         <div class="article-image">
                             <img src="{{ $artikel->gambar ? asset('storage/' . $artikel->gambar) : asset('images/no-image.jpg') }}"
                                 alt="{{ $artikel->judul }}"
                                 onerror="this.onerror=null; this.src='{{ asset('images/no-image.jpg') }}';">
-
                             <div class="article-overlay">
                                 <div class="article-actions">
                                     <a href="{{ route('admin.artikel.show', $artikel->id) }}"
                                         class="btn-action-card btn-view-card">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('admin.artikel.edit', $artikel->id) }}"
-                                        class="btn-action-card btn-edit-card">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form action="{{ route('admin.artikel.destroy', $artikel->id) }}" method="POST"
-                                        style="display:inline;" id="deleteForm_{{ $artikel->id }}">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" class="btn-action-card btn-delete-card"
-                                            data-id="{{ $artikel->id }}" onclick="confirmDelete({{ $artikel->id }})">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
+                                    @if (Auth::guard('admin')->check())
+                                        <a href="{{ route('admin.artikel.edit', $artikel->id) }}"
+                                            class="btn-action-card btn-edit-card">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form action="{{ route('admin.artikel.destroy', $artikel->id) }}" method="POST"
+                                            style="display:inline;" id="deleteForm_{{ $artikel->id }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" class="btn-action-card btn-delete-card"
+                                                data-id="{{ $artikel->id }}" onclick="confirmDelete({{ $artikel->id }})">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </div>
                             </div>
                             <div class="article-status">
@@ -130,46 +137,33 @@
                                 <span class="category-tag">{{ $artikel->kategori->nama ?? 'Tanpa Kategori' }}</span>
                             </div>
                             <h5 class="article-title-card">{{ $artikel->judul }}</h5>
-
                             <p class="article-excerpt-card">{{ Str::limit(strip_tags($artikel->isi), 100) }}</p>
-                            <!-- Rating section -->
                             <div class="article-rating">
                                 <div class="rating-display">
-
                                     @php
-                                        // ambil rata-rata dari relasi ratingArtikel
-                                        $rating =
-                                            $artikel->ratingArtikel->avg('rating') ?? ($artikel->nilai_rata_rata ?? 0);
+                                        $rating = $artikel->ratingArtikel->avg('rating') ?? ($artikel->nilai_rata_rata ?? 0);
                                         $totalReviews = $artikel->ratingArtikel->count();
-
                                         $fullStars = floor($rating);
                                         $hasHalfStar = $rating - $fullStars >= 0.5;
                                         $emptyStars = 5 - $fullStars - ($hasHalfStar ? 1 : 0);
                                     @endphp
-
-
                                     <div class="stars">
                                         @for ($i = 0; $i < $fullStars; $i++)
                                             <i class="fas fa-star star-filled text-warning"></i>
                                         @endfor
-
                                         @if ($hasHalfStar)
                                             <i class="fas fa-star-half-alt star-half text-warning"></i>
                                         @endif
-
                                         @for ($i = 0; $i < $emptyStars; $i++)
                                             <i class="far fa-star star-empty text-warning"></i>
                                         @endfor
                                     </div>
-
                                     <div class="rating-info">
                                         <span class="rating-value">{{ number_format($rating, 1) }}</span>
                                         <span class="rating-count">({{ $totalReviews }} ulasan)</span>
                                     </div>
                                 </div>
                             </div>
-
-
                             <div class="article-author-card">
                                 <div class="author-avatar">
                                     {{ $artikel->siswa ? strtoupper(substr($artikel->siswa->nama, 0, 2)) : 'AD' }}
@@ -179,13 +173,11 @@
                                     <div class="author-role">{{ $artikel->siswa->kelas ?? 'Administrator' }}</div>
                                 </div>
                             </div>
-
                             <div class="article-meta-card">
                                 <div class="meta-stats">
                                     <span><i class="fas fa-eye"></i> {{ $artikel->jumlah_dilihat }}</span>
                                     <span><i class="fas fa-heart"></i> {{ $artikel->jumlah_suka }}</span>
-                                    <span><i class="fas fa-comment"></i>
-                                        {{ $artikel->komentarArtikel->count() }}</span>
+                                    <span><i class="fas fa-comment"></i> {{ $artikel->komentarArtikel->count() }}</span>
                                     <div class="article-date">
                                         <small>Dibuat: {{ $artikel->created_at?->format('d M Y') }}</small>
                                         @if ($artikel->deleted_at)
@@ -208,32 +200,112 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteConfirmModalLabel">Konfirmasi Hapus</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Apakah Anda yakin ingin menghapus artikel ini? Tindakan ini tidak dapat dibatalkan.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Hapus</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var successAlert = document.getElementById('successAlert');
-            var errorAlert = document.getElementById('errorAlert');
-            if (successAlert) {
-                setTimeout(() => successAlert.style.display = 'none', 5000);
-            }
-            if (errorAlert) {
-                setTimeout(() => errorAlert.style.display = 'none', 5000);
-            }
-
+        $(document).ready(function() {
+            // Initialize Select2
             $('#filterCategory').select2({
                 placeholder: 'Pilih Kategori',
                 allowClear: true
             });
-        });
+            $('#filterStatus').select2({
+                placeholder: 'Semua Status',
+                allowClear: true
+            });
 
-        function confirmDelete(id) {
-            if (confirm('Yakin ingin menghapus artikel ini? Tindakan ini tidak dapat dibatalkan.')) {
-                document.getElementById('deleteForm_' + id).submit();
+            // AJAX Filter
+            $('#filterForm').on('submit', function(e) {
+                e.preventDefault();
+                const formData = $(this).serialize();
+                $.ajax({
+                    url: '{{ route('admin.artikel.index') }}',
+                    method: 'GET',
+                    data: formData,
+                    beforeSend: function() {
+                        $('#articlesGrid').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin"></i> Memuat...</div>');
+                    },
+                    success: function(response) {
+                        $('#articlesGrid').html($(response).find('#articlesGrid').html());
+                        $('.pagination-custom').html($(response).find('.pagination-custom').html());
+                    },
+                    error: function(xhr) {
+                        showAlert('error', 'Gagal memuat artikel: ' + (xhr.responseJSON?.message || 'Terjadi kesalahan.'));
+                    }
+                });
+            });
+
+            // Delete Confirmation
+            window.confirmDelete = function(id) {
+                $('#deleteConfirmModal').modal('show');
+                $('#confirmDeleteBtn').off('click').on('click', function() {
+                    const form = $('#deleteForm_' + id);
+                    $.ajax({
+                        url: form.attr('action'),
+                        method: 'POST',
+                        data: form.serialize(),
+                        beforeSend: function() {
+                            $('#confirmDeleteBtn').html('<i class="fas fa-spinner fa-spin"></i> Menghapus...');
+                        },
+                        success: function(response) {
+                            $('#deleteConfirmModal').modal('hide');
+                            showAlert('success', response.message);
+                            setTimeout(() => location.reload(), 1500);
+                        },
+                        error: function(xhr) {
+                            $('#deleteConfirmModal').modal('hide');
+                            showAlert('error', xhr.responseJSON?.message || 'Gagal menghapus artikel.');
+                        },
+                        complete: function() {
+                            $('#confirmDeleteBtn').html('Hapus');
+                        }
+                    });
+                });
+            };
+
+            // Alert Function
+            function showAlert(type, message) {
+                const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+                const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+                const alertHtml = `
+                    <div class="alert ${alertClass} alert-dismissible fade show custom-alert" role="alert">
+                        <i class="fas ${iconClass} me-2"></i>${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+                $('.custom-alert').remove();
+                $('body').append(alertHtml);
+                setTimeout(() => $('.custom-alert').fadeOut(() => $('.custom-alert').remove()), 5000);
             }
-        }
+
+            // Handle session alerts
+            @if (session('success'))
+                showAlert('success', '{{ session('success') }}');
+            @endif
+            @if (session('error'))
+                showAlert('error', '{{ session('error') }}');
+            @endif
+        });
     </script>
 @endsection
