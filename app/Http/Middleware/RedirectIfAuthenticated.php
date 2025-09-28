@@ -17,14 +17,17 @@ class RedirectIfAuthenticated
      */
     public function handle(Request $request, Closure $next, string ...$guards): Response
     {
-        // Ganti array $guards yang kosong dengan guard spesifik yang ingin dicek
-        $guards = empty($guards) ? ['admin'] : $guards;
+        $guards = empty($guards) ? ['admin', 'siswa'] : $guards;
 
         foreach ($guards as $guard) {
-            // Cek secara eksplisit guard 'admin'
             if (Auth::guard($guard)->check()) {
-                // Jika admin sudah login, alihkan ke dashboard admin (HOME)
-                return redirect(RouteServiceProvider::HOME);
+                if ($guard === 'admin') {
+                    return redirect()->route('admin.dashboard');
+                }
+
+                if ($guard === 'siswa') {
+                    return redirect()->route('dashboard-siswa');
+                }
             }
         }
 

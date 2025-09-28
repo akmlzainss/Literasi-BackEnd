@@ -12,15 +12,15 @@
         <p class="page-subtitle">Kelola dan atur semua artikel literasi akhlak untuk sistem pembelajaran</p>
 
         <div class="action-buttons">
-            <a href="{{ route('artikel.create') }}" class="btn-primary-custom">
+            <a href="{{ route('admin.artikel.create') }}" class="btn-primary-custom">
                 <i class="fas fa-plus"></i>
                 Tambah Artikel Baru
             </a>
-            <a href="{{ route('artikel.export') }}" class="btn-outline-custom">
+            <a href="{{ route('admin.artikel.export') }}" class="btn-outline-custom">
                 <i class="fas fa-download"></i>
                 Export Data
             </a>
-              <a href="{{ route('artikel.status', ['status' => 'menunggu']) }}" class="btn-warning-custom">
+              <a href="{{ route('admin.artikel.status', ['status' => 'menunggu']) }}" class="btn-warning-custom">
         <i class="fas fa-clock"></i>
         Status Menunggu
     </a>
@@ -40,7 +40,7 @@
 
         <div class="card-body-custom">
             <div class="search-filter-section">
-                <form method="GET" action="{{ route('artikel') }}">
+                <form method="GET" action="{{ route('admin.artikel.index') }}">
                     <div class="row g-3">
                         <div class="col-md-3">
                             <div class="input-group">
@@ -104,15 +104,15 @@
 
                             <div class="article-overlay">
                                 <div class="article-actions">
-                                    <a href="{{ route('artikel.show', $artikel->id) }}"
+                                    <a href="{{ route('admin.artikel.show', $artikel->id) }}"
                                         class="btn-action-card btn-view-card">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('artikel.edit', $artikel->id) }}"
+                                    <a href="{{ route('admin.artikel.edit', $artikel->id) }}"
                                         class="btn-action-card btn-edit-card">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('artikel.destroy', $artikel->id) }}" method="POST"
+                                    <form action="{{ route('admin.artikel.destroy', $artikel->id) }}" method="POST"
                                         style="display:inline;" id="deleteForm_{{ $artikel->id }}">
                                         @csrf
                                         @method('DELETE')

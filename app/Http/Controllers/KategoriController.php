@@ -28,7 +28,7 @@ class KategoriController extends Controller
             return view('kategori.kategori', compact('kategoris'));
         } catch (\Exception $e) {
             Log::error('Error fetching categories: ' . $e->getMessage());
-            return redirect()->route('kategori')->with('error', 'Gagal memuat kategori.');
+            return redirect()->route('admin.kategori.index')->with('error', 'Gagal memuat kategori.');
         }
     }
 
@@ -38,7 +38,7 @@ class KategoriController extends Controller
             return view('kategori.create');
         } catch (\Exception $e) {
             Log::error('Error loading create form: ' . $e->getMessage());
-            return redirect()->route('kategori')->with('error', 'Gagal memuat form tambah kategori.');
+            return redirect()->route('admin.kategori.index')->with('error', 'Gagal memuat form tambah kategori.');
         }
     }
 
@@ -73,7 +73,7 @@ class KategoriController extends Controller
 
             $total = Kategori::count();
             $lastPage = ceil($total / 6);
-            return redirect()->route('kategori', ['page' => $lastPage])->with('success', 'Kategori berhasil ditambahkan.');
+            return redirect()->route('admin.kategori.index', ['page' => $lastPage])->with('success', 'Kategori berhasil ditambahkan.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             $adminId = Auth::guard('admin')->id();
             if ($adminId) {
@@ -113,7 +113,7 @@ class KategoriController extends Controller
             return view('kategori.edit', compact('kategori')); // Ganti dengan view biasa, hapus JSON
         } catch (\Exception $e) {
             Log::error('Error loading edit form: ' . $e->getMessage());
-            return redirect()->route('kategori')->with('error', 'Gagal memuat data kategori.');
+            return redirect()->route('admin.kategori.index')->with('error', 'Gagal memuat data kategori.');
         }
     }
 
@@ -146,7 +146,7 @@ class KategoriController extends Controller
                 ]);
             }
 
-            return redirect()->route('kategori')->with('success', 'Data berhasil diedit.');
+            return redirect()->route('admin.kategori.index')->with('success', 'Data berhasil diedit.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             $adminId = Auth::guard('admin')->id();
             if ($adminId) {
@@ -175,7 +175,7 @@ class KategoriController extends Controller
                     'dibuat_pada' => now(),
                 ]);
             }
-            return redirect()->route('kategori')->with('error', 'Gagal memperbarui kategori.');
+            return redirect()->route('admin.kategori.index')->with('error', 'Gagal memperbarui kategori.');
         }
     }
 
@@ -199,7 +199,7 @@ class KategoriController extends Controller
 
             $kategori->delete();
 
-            return redirect()->route('kategori')->with('success', 'Data berhasil dihapus.');
+            return redirect()->route('admin.kategori.index')->with('success', 'Data berhasil dihapus.');
         } catch (\Exception $e) {
             Log::error('Error deleting category: ' . $e->getMessage());
             $adminId = Auth::guard('admin')->id();
@@ -214,7 +214,7 @@ class KategoriController extends Controller
                     'dibuat_pada' => now(),
                 ]);
             }
-            return redirect()->route('kategori')->with('error', 'Gagal menghapus kategori.');
+            return redirect()->route('admin.kategori.index')->with('error', 'Gagal menghapus kategori.');
         }
     }
 
@@ -225,7 +225,7 @@ class KategoriController extends Controller
             return view('kategori.detail', compact('kategori'));
         } catch (\Exception $e) {
             Log::error('Error loading category detail: ' . $e->getMessage());
-            return redirect()->route('kategori.index')->with('error', 'Gagal memuat detail kategori.');
+            return redirect()->route('admin.kategori.index')->with('error', 'Gagal memuat detail kategori.');
         }
     }
 
@@ -284,7 +284,7 @@ class KategoriController extends Controller
                     'dibuat_pada' => now(),
                 ]);
             }
-            return redirect()->route('kategori')->with('error', 'Gagal menekspor data.');
+            return redirect()->route('admin.kategori.index')->with('error', 'Gagal menekspor data.');
         }
     }
 }

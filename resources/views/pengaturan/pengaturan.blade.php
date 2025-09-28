@@ -10,7 +10,7 @@
         <div class="header-content">
             <div class="profile-section">
                 <div class="avatar-container">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->guard('admin')->user()->nama_pengguna ?? 'Admin') }}&background=2563eb&color=fff&size=80"
+                    <img src="{{ auth()->guard('admin')->user()->profile_photo_url ?? 'https://ui-avatars.com/api/?name=' . urlencode(auth()->guard('admin')->user()->nama_pengguna ?? 'Admin') . '&background=2563eb&color=fff&size=80' }}"
                          alt="Profile" class="profile-avatar">
                     <div class="avatar-overlay">
                         <i class="fas fa-camera"></i>
@@ -29,10 +29,10 @@
                 <button type="button" class="btn btn-sm btn-primary-custom" data-bs-toggle="modal" data-bs-target="#modalEditProfile">
                     <i class="fas fa-edit me-2"></i> Edit Profil
                 </button>
-                <a href="{{ route('pengaturan.trash') }}" class="btn btn-sm btn-primary-custom">
+                <a href="{{ route('admin.pengaturan.trash') }}" class="btn btn-sm btn-primary-custom">
                     <i class="bi bi-trash me-2"></i> Trash
                 </a>
-                <a href="{{ route('backup.all') }}" class="btn btn-sm btn-primary-custom">
+                <a href="{{ route('admin.backup.all') }}" class="btn btn-sm btn-primary-custom">
                     <i class="fas fa-download me-2"></i> Backup Data
                 </a>
             </div>
@@ -152,7 +152,7 @@
                         <div class="info-item">
                             <span class="label">Bergabung:</span>
                             <span class="value">
-                                {{ auth()->guard('admin')->user()->dibuat_pada ? \Carbon\Carbon::parse(auth()->guard('admin')->user()->dibuat_pada)->translatedFormat('d F Y') : 'Tidak ada data' }}
+                                {{ auth()->guard('admin')->user()->created_at ? \Carbon\Carbon::parse(auth()->guard('admin')->user()->created_at)->translatedFormat('d F Y') : 'Tidak ada data' }}
                             </span>
                         </div>
                     </div>
@@ -224,7 +224,7 @@
     <div class="modal fade" id="modalEditProfile" tabindex="-1" aria-labelledby="modalEditProfileLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <form id="editProfileForm" action="{{ route('pengaturan.update') }}" method="POST" enctype="multipart/form-data">
+                <form id="editProfileForm" action="{{ route('admin.pengaturan.update') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PATCH')
                     <div class="modal-header">
@@ -234,6 +234,16 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                     </div>
                     <div class="modal-body">
+                        @if ($errors->any())
+                            <div class="alert alert-danger alert-dismissible fade show">
+                                <ul class="mb-0">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        @endif
                         <div class="text-center mb-4">
                             <div class="avatar-upload">
                                 <img src="{{ auth()->guard('admin')->user()->profile_photo_url ?? 'https://ui-avatars.com/api/?name=' . urlencode(auth()->guard('admin')->user()->nama_pengguna ?? 'Admin') . '&background=2563eb&color=fff&size=120' }}"
@@ -244,16 +254,25 @@
                                 </label>
                                 <input type="file" id="profile_photo" name="profile_photo" accept="image/*" style="display: none;">
                             </div>
+                            @error('profile_photo')
+                                <div class="alert alert-danger mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="mb-3">
                             <label for="nama_pengguna" class="form-label"><i class="fas fa-user me-2"></i> Nama Pengguna</label>
                             <input type="text" name="nama_pengguna" id="nama_pengguna" class="form-control"
-                                   value="{{ auth()->guard('admin')->user()->nama_pengguna ?? '' }}" required>
+                                   value="{{ old('nama_pengguna', auth()->guard('admin')->user()->nama_pengguna ?? '') }}" required>
+                            @error('nama_pengguna')
+                                <div class="alert alert-danger mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label"><i class="fas fa-envelope me-2"></i> Email</label>
                             <input type="email" name="email" id="email" class="form-control"
-                                   value="{{ auth()->guard('admin')->user()->email ?? '' }}" required>
+                                   value="{{ old('email', auth()->guard('admin')->user()->email ?? '') }}" required>
+                            @error('email')
+                                <div class="alert alert-danger mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
                         <hr class="my-4">
                         <div class="mb-3">
@@ -266,6 +285,9 @@
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
+                            @error('current_password')
+                                <div class="alert alert-danger mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="mb-3">
                             <label for="new_password" class="form-label">
@@ -283,6 +305,9 @@
                                 </div>
                                 <div class="strength-text"></div>
                             </div>
+                            @error('new_password')
+                                <div class="alert alert-danger mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="mb-3">
                             <label for="new_password_confirmation" class="form-label">
@@ -294,6 +319,9 @@
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
+                            @error('new_password_confirmation')
+                                <div class="alert alert-danger mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="password-requirements">
                             <h6>Persyaratan Password:</h6>
@@ -399,6 +427,17 @@
             background-color: var(--light-blue, #60a5fa);
             border-color: var(--light-blue, #60a5fa);
         }
+
+        .strength-progress {
+            height: 5px;
+            background-color: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .strength-progress.weak { background-color: #ff4d4d; }
+        .strength-progress.medium { background-color: #ffcc00; }
+        .strength-progress.good { background-color: #00cc00; }
+        .strength-progress.strong { background-color: #0066cc; }
     </style>
 @endpush
 
@@ -468,7 +507,7 @@
                     if (password.length >= 8) strength++; else feedback.push('minimal 8 karakter');
                     if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++; else feedback.push('huruf besar dan kecil');
                     if (/\d/.test(password)) strength++; else feedback.push('angka');
-                    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++; else feedback.push('karakter khusus');
+                    if (/[!@#$%^&*]/.test(password)) strength++; else feedback.push('karakter khusus');
 
                     const strengthPercentage = (strength / 4) * 100;
                     strengthBar.style.width = `${strengthPercentage}%`;

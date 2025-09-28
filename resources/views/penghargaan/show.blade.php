@@ -32,7 +32,7 @@
                     <button class="btn-action-card btn-edit-card" data-id="{{ $penghargaan->id }}" data-bs-toggle="modal" data-bs-target="#modalEditPenghargaan">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <form action="{{ route('penghargaan.destroy', $penghargaan->id) }}" method="POST" style="display:inline;">
+                    <form action="{{ route('admin.penghargaan.destroy', $penghargaan->id) }}" method="POST" style="display:inline;">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn-action-card btn-delete-card" onclick="return confirm('Apakah Anda yakin ingin menghapus penghargaan ini?')">

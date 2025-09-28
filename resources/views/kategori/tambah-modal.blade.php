@@ -1,7 +1,7 @@
 <div class="modal fade" id="modalTambahKategori" tabindex="-1" aria-labelledby="modalTambahKategoriLabel" aria-hidden="true">
     <div class="modal-dialog modal-md">
         <div class="modal-content">
-            <form action="{{ route('kategori.store') }}" method="POST">
+            <form action="{{ route('admin.kategori.store') }}" method="POST">
                 @csrf
                 @if ($errors->any())
                     <div class="alert alert-danger">

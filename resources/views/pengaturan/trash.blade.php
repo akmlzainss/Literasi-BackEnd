@@ -9,7 +9,7 @@
             <i class="bi bi-trash3-fill me-2"></i> Trash (Soft Delete)
         </h1>
 
-        <a href="{{ route('pengaturan') }}" class="btn btn-outline-primary mb-4">
+        <a href="{{ route('admin.pengaturan.index') }}" class="btn btn-outline-primary mb-4">
             <i class="bi bi-arrow-left me-2"></i> Kembali ke Pengaturan
         </a>
 

@@ -10,7 +10,7 @@
         <h1 class="page-title">Kelola Penghargaan</h1>
         <p class="page-subtitle">Atur dan kelola semua penghargaan untuk artikel literasi akhlak</p>
         <div class="action-buttons">
-            <a href="{{ route('penghargaan.create') }}" class="btn-primary-custom">
+            <a href="{{ route('admin.penghargaan.create') }}" class="btn-primary-custom">
                 <i class="fas fa-plus"></i> Tambah Penghargaan Baru
             </a>
             <a href="#" class="btn-outline-custom">
@@ -39,7 +39,7 @@
 
         <div class="card-body-custom">
             <div class="search-filter-section">
-                <form method="GET" action="{{ route('penghargaan') }}">
+                <form method="GET" action="{{ route('admin.penghargaan.index') }}">
                     <div class="row g-3">
                         <div class="col-md-4">
                             <div class="input-group">
@@ -132,7 +132,7 @@
                                                 data-bs-target="#modalEditPenghargaan" data-id="{{ $item->id }}">
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <form action="{{ route('penghargaan.destroy', $item->id) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('admin.penghargaan.destroy', $item->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn-action-card btn-delete-card"
@@ -210,7 +210,7 @@
                                                      onerror="this.src='https://via.placeholder.com/400x200';">
                                                 <div class="article-overlay">
                                                     <div class="article-actions">
-                                                        <a href="{{ route('artikel.show', $artikelItem->id) }}"
+                                                        <a href="{{ route('admin.artikel.show', $artikelItem->id) }}"
                                                            class="btn-action-card btn-view-card">
                                                             <i class="fas fa-eye"></i>
                                                         </a>
@@ -401,7 +401,7 @@
             window.selectArtikel = button => {
                 const artikelId = button.getAttribute('data-id');
                 if (artikelId) {
-                    window.location.href = `{{ route('penghargaan.create') }}?artikel_id=${artikelId}`;
+                    window.location.href = `{{ route('admin.penghargaan.create') }}?artikel_id=${artikelId}`;
                 }
             };
 

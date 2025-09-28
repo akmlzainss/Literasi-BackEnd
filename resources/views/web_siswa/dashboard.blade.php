@@ -170,7 +170,7 @@
                     @if (isset($kategoris))
                         @foreach ($kategoris as $kategori)
                             <div class="swiper-slide">
-                                <a href="{{ route('artikel-siswa', ['kategori' => $kategori->nama]) }}"
+                                <a href="{{ route('artikel-siswa.index', ['kategori' => $kategori->nama]) }}"
                                     class="kategori-item">
                                     <div class="kategori-icon"><i
                                             class="fas fa-{{ $kategori->icon ?? 'book-open' }}"></i>

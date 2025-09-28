@@ -33,7 +33,7 @@
                 </tr>
             </table>
 
-            <a href="{{ route('siswa') }}" class="btn btn-secondary">← Kembali</a>
+            <a href="{{ route('admin.siswa.index') }}" class="btn btn-secondary">← Kembali</a>
         </div>
     </div>
 </div>

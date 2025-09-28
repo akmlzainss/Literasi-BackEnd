@@ -10,7 +10,7 @@
     <h1 class="page-title">Detail Artikel</h1>
     <p class="page-subtitle">Lihat informasi lengkap artikel literasi akhlak</p>
     <div class="action-buttons">
-        <a href="{{ route('artikel') }}" class="btn-outline-custom">
+        <a href="{{ route('admin.artikel.index') }}" class="btn-outline-custom">
             <i class="fas fa-arrow-left"></i> Kembali ke Daftar
         </a>
     </div>

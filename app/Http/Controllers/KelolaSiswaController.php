@@ -9,7 +9,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Imports\Siswa_Import;
+use App\Imports\SiswaImport;
 use App\Models\LogAdmin;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -85,7 +85,7 @@ class KelolaSiswaController extends Controller
                 'kelas' => $validated['kelas'],
             ]);
 
-            return redirect()->route('siswa')->with('success', 'Siswa berhasil ditambahkan.');
+            return redirect()->route('admin.siswa.index')->with('success', 'Siswa berhasil ditambahkan.');
         } catch (QueryException $e) {
             Log::error('Error creating siswa: ' . $e->getMessage());
             $this->logAdmin('gagal_create', 'Gagal menambahkan siswa baru', null, [
@@ -108,7 +108,7 @@ class KelolaSiswaController extends Controller
             return view('siswa.detail', compact('siswa'));
         } catch (\Exception $e) {
             Log::error('Error loading siswa detail: ' . $e->getMessage());
-            return redirect()->route('siswa')->with('error', 'Gagal memuat detail siswa.');
+            return redirect()->route('admin.siswa.index')->with('error', 'Gagal memuat detail siswa.');
         }
     }
 
@@ -166,7 +166,7 @@ class KelolaSiswaController extends Controller
 
             $this->logAdmin('update', 'Mengedit data siswa', $student->id, $validated);
 
-            return redirect()->route('siswa')->with('success', 'Siswa berhasil diperbarui.');
+            return redirect()->route('admin.siswa.index')->with('success', 'Siswa berhasil diperbarui.');
         } catch (QueryException $e) {
             Log::error('Error updating siswa: ' . $e->getMessage());
             $this->logAdmin('gagal_update', 'Gagal mengedit data siswa', $student->id ?? null, [
@@ -194,7 +194,7 @@ class KelolaSiswaController extends Controller
             ]);
 
             $student->delete();
-            return redirect()->route('siswa')->with('success', 'Siswa berhasil dihapus.');
+            return redirect()->route('admin.siswa.index')->with('success', 'Siswa berhasil dihapus.');
         } catch (QueryException $e) {
             Log::error('Error deleting siswa ' . $nis . ': ' . $e->getMessage());
             $this->logAdmin('gagal_delete', 'Gagal menghapus siswa', $student->id ?? null, [
@@ -237,7 +237,7 @@ class KelolaSiswaController extends Controller
         } catch (\Exception $e) {
             Log::error('Error exporting siswa: ' . $e->getMessage());
             $this->logAdmin('gagal_export', 'Gagal mengekspor data siswa', null, ['error' => $e->getMessage()]);
-            return redirect()->route('siswa')->with('error', 'Gagal mengekspor data siswa.');
+            return redirect()->route('admin.siswa.index')->with('error', 'Gagal mengekspor data siswa.');
         }
     }
 
@@ -249,7 +249,7 @@ class KelolaSiswaController extends Controller
                 'file' => 'required|mimes:xlsx,xls,csv|max:10240',
             ]);
 
-            Excel::import(new Siswa_Import, $request->file('file'));
+            Excel::import(new SiswaImport, $request->file('file'));
 
             $this->logAdmin('import', 'Mengimpor data siswa', null, ['file' => $request->file('file')->getClientOriginalName()]);
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -268,6 +269,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Sidebar Toggle for Mobile -->
     <button class="sidebar-toggle" onclick="toggleSidebar()">
@@ -285,52 +287,67 @@
         </div>
         <nav class="sidebar-nav">
             <div class="nav-item">
-                <a href="{{ route('dashboard') }}" class="nav-link {{ Request::routeIs('admin.dashboard') ? 'active' : '' }}">
+                <a href="{{ route('admin.dashboard') }}"
+                    class="nav-link {{ Request::routeIs('admin.dashboard') ? 'active' : '' }}">
                     <i class="fas fa-tachometer-alt nav-icon"></i>
                     <span class="nav-text">Dashboard</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{ route('artikel') }}" class="nav-link {{ Request::routeIs('artikel') ? 'active' : '' }}">
+                <a href="{{ route('admin.artikel.index') }}"
+                    class="nav-link {{ Request::routeIs('admin.artikel.index') ? 'active' : '' }}">
                     <i class="fas fa-newspaper nav-icon"></i>
                     <span class="nav-text">Artikel</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{ route('kategori') }}" class="nav-link {{ Request::routeIs('kategori.kategori') ? 'active' : '' }}">
+                <a href="{{ route('admin.video.persetujuan') }}"
+                    class="nav-link {{ Request::routeIs('admin.video.persetujuan') ? 'active' : '' }}">
+                    <i class="fas fa-video nav-icon"></i>
+                    <span class="nav-text">Persetujuan Video</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{{ route('admin.kategori.index') }}"
+                    class="nav-link {{ Request::routeIs('admin.kategori.index') ? 'active' : '' }}">
                     <i class="fas fa-tags nav-icon"></i>
                     <span class="nav-text">Kategori</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{ route('penghargaan') }}" class="nav-link {{ Request::routeIs('penghargaan.penghargaan') ? 'active' : '' }}">
+                <a href="{{ route('admin.penghargaan.index') }}"
+                    class="nav-link {{ Request::routeIs('admin.penghargaan.index') ? 'active' : '' }}">
                     <i class="fas fa-trophy nav-icon"></i>
                     <span class="nav-text">Penghargaan</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{ route('siswa') }}" class="nav-link {{ Request::routeIs('siswa.siswa') ? 'active' : '' }}">
+                <a href="{{ route('admin.siswa.index') }}"
+                    class="nav-link {{ Request::routeIs('admin.siswa.index') ? 'active' : '' }}">
                     <i class="fas fa-user-graduate nav-icon"></i>
                     <span class="nav-text">Siswa</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{ route('laporan.aktivitas') }}" class="nav-link {{ Request::routeIs('laporan') ? 'active' : '' }}">
+                <a href="{{ route('admin.laporan.aktivitas') }}"
+                    class="nav-link {{ Request::routeIs('admin.laporan.aktivitas') ? 'active' : '' }}">
                     <i class="fas fa-chart-line nav-icon"></i>
                     <span class="nav-text">Laporan</span>
                 </a>
             </div>
             <div class="nav-item">
-                <a href="{{ route('pengaturan') }}" class="nav-link {{ Request::routeIs('pengaturan.pengaturan') ? 'active' : '' }}">
+                <a href="{{ route('admin.pengaturan.index') }}"
+                    class="nav-link {{ Request::routeIs('admin.pengaturan.index') ? 'active' : '' }}">
                     <i class="fas fa-cog nav-icon"></i>
                     <span class="nav-text">Pengaturan</span>
                 </a>
             </div>
             <div class="nav-item">
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" style="display: none;">
                     @csrf
                 </form>
-                <a href="#" class="nav-link" onclick="event.preventDefault(); if(confirm('Apakah Anda yakin ingin logout?')) document.getElementById('logout-form').submit();">
+                <a href="#" class="nav-link"
+                    onclick="event.preventDefault(); if(confirm('Apakah Anda yakin ingin logout?')) document.getElementById('logout-form').submit();">
                     <i class="fas fa-sign-out-alt nav-icon"></i>
                     <span class="nav-text">Logout</span>
                 </a>
@@ -352,10 +369,12 @@
                     <i class="fas fa-chevron-down ms-1"></i>
                 </div>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="{{ route('pengaturan') }}">Pengaturan</a></li>
-                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ route('admin.pengaturan.index') }}">Pengaturan</a></li>
                     <li>
-                        <form action="{{ route('logout') }}" method="POST">
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li>
+                        <form action="{{ route('admin.logout') }}" method="POST">
                             @csrf
                             <button type="submit" class="dropdown-item text-danger">Logout</button>
                         </form>
@@ -396,4 +415,5 @@
     </script>
     @yield('scripts')
 </body>
+
 </html>

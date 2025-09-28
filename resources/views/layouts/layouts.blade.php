@@ -36,8 +36,15 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('artikel-siswa*') && !request()->routeIs('artikel-siswa.upload*') && !request()->routeIs('artikel-siswa.create*') ? 'active' : '' }}"
-                            href="{{ route('artikel-siswa') }}">
+                            href="{{ route('artikel-siswa.index') }}">
                             <i class="fas fa-newspaper me-1 d-lg-none"></i>Artikel
+                        </a>
+                    </li>
+                    <!-- Tambahkan link Video -->
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('video.index') || request()->routeIs('video.tiktok') ? 'active' : '' }}"
+                            href="{{ route('video.index') }}">
+                            <i class="fas fa-video me-1 d-lg-none"></i>Video
                         </a>
                     </li>
                     <li class="nav-item">
@@ -136,7 +143,7 @@
                     <ul class="footer-nav-list">
                         <li><a href="{{ route('dashboard-siswa') }}" class="footer-nav-link">
                                 <i class="fas fa-home me-2"></i>Beranda</a></li>
-                        <li><a href="{{ route('artikel-siswa') }}" class="footer-nav-link">
+                        <li><a href="{{ route('artikel-siswa.index') }}" class="footer-nav-link">
                                 <i class="fas fa-newspaper me-2"></i>Jelajahi Artikel</a></li>
                         <li><a href="{{ route('artikel-siswa.upload') }}" class="footer-nav-link">
                                 <i class="fas fa-plus-circle me-2"></i>Upload Karya</a></li>
