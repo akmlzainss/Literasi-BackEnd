@@ -37,7 +37,7 @@
                         @endif
 
                         <!-- Form -->
-                        <form action="{{ route('artikel.store') }}" method="POST" enctype="multipart/form-data" id="create-artikel-form" novalidate>
+                        <form action="{{ route('admin.artikel.store') }}" method="POST" enctype="multipart/form-data" id="create-artikel-form" novalidate>
                             @csrf
 
                             <!-- Article Title -->
@@ -143,7 +143,7 @@
                             <!-- Form Actions -->
                             <div class="mt-4">
                                 <button type="submit" class="btn btn-success">Simpan Artikel</button>
-                                <a href="{{ route('artikel') }}" class="btn btn-secondary">Batal</a>
+                                <a href="{{ route('admin.artikel.index') }}" class="btn btn-secondary">Batal</a>
                             </div>
                         </form>
                     </div>

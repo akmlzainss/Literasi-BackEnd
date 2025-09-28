@@ -39,7 +39,7 @@
                         @endif
 
                         <!-- Form -->
-                        <form action="{{ route('artikel.update', $artikel->id) }}" method="POST"
+                        <form action="{{ route('admin.artikel.update', $artikel->id) }}" method="POST"
                             enctype="multipart/form-data" id="edit-artikel-form">
                             @csrf
                             @method('PUT')
@@ -186,7 +186,7 @@
                             <!-- Form Actions -->
                             <div class="mt-4">
                                 <button type="submit" class="btn btn-success">Simpan Perubahan</button>
-                                <a href="{{ route('artikel') }}" class="btn btn-secondary">Batal</a>
+                                <a href="{{ route('admin.artikel.index') }}" class="btn btn-secondary">Batal</a>
                             </div>
                         </form>
                     </div>

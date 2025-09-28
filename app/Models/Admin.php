@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Facades\Storage;
 
 class Admin extends Authenticatable
 {
@@ -23,6 +24,14 @@ class Admin extends Authenticatable
     protected $hidden = ['password'];
 
     protected $guard = 'admin';
+
+
+    public function getProfilePhotoUrlAttribute()
+    {
+        return $this->profile_photo_path
+            ? Storage::url($this->profile_photo_path)
+            : 'https://ui-avatars.com/api/?name=' . urlencode($this->nama_pengguna ?? 'Admin') . '&background=2563eb&color=fff&size=120';
+    }
 
     public function getAuthPassword()
     {

@@ -6,7 +6,7 @@ use App\Models\Siswa;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class Siswa_Import implements ToModel, WithHeadingRow
+class SiswaImport implements ToModel, WithHeadingRow
 {
     public function model(array $row)
     {

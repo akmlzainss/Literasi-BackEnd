@@ -2,16 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Storage;
 
 class Video extends Model
 {
-    use HasFactory, SoftDeletes;
-
     protected $table = 'videos';
+    protected $primaryKey = 'id';
+    public $timestamps = true;
 
     protected $fillable = [
         'id_siswa',
@@ -21,29 +18,28 @@ class Video extends Model
         'video_path',
         'thumbnail_path',
         'status',
+        'alasan_penolakan',
         'jumlah_dilihat',
-        'jumlah_suka',
+        'diterbitkan_pada',
     ];
-    
-    // Relasi ke Siswa
+
     public function siswa()
     {
         return $this->belongsTo(Siswa::class, 'id_siswa');
     }
 
-    // Relasi ke Kategori
     public function kategori()
     {
         return $this->belongsTo(Kategori::class, 'id_kategori');
     }
-    
-    // Catatan: Untuk komentar, suka, dan bookmark,
-    // pendekatan terbaik adalah menggunakan Polymorphic Relationships.
-    // Namun, untuk kesederhanaan, kita akan buat tabel interaksi baru
-    // yang mirip dengan artikel untuk saat ini.
 
-    public function getVideoUrlAttribute()
+    public function interaksi()
     {
-        return $this->video_path ? Storage::url($this->video_path) : null;
+        return $this->hasMany(InteraksiVideo::class, 'id_video');
+    }
+
+    public function komentar()
+    {
+        return $this->hasMany(KomentarVideo::class, 'id_video');
     }
 }

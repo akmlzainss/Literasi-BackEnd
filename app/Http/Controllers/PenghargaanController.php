@@ -179,40 +179,39 @@ class PenghargaanController extends Controller
             'dibuat_pada' => now(),
         ]);
 
-        return redirect()->route('penghargaan')
-            ->with('');
+        return redirect()->route('admin.penghargaan.index')
+            ->with('success', 'Penghargaan berhasil disimpan.');
     }
 
     /**
      * Form edit penghargaan (AJAX modal)
      */
     public function edit($id)
-{
-    $penghargaan = Penghargaan::findOrFail($id);
+    {
+        $penghargaan = Penghargaan::findOrFail($id);
 
-    $bulan = Carbon::parse($penghargaan->bulan_tahun)->month;
-    $tahun = Carbon::parse($penghargaan->bulan_tahun)->year;
+        $bulan = Carbon::parse($penghargaan->bulan_tahun)->month;
+        $tahun = Carbon::parse($penghargaan->bulan_tahun)->year;
 
-    $artikel = Artikel::with('siswa')
-        ->where('status', 'disetujui')
-        ->whereNotNull('diterbitkan_pada')
-        ->whereMonth('diterbitkan_pada', $bulan)
-        ->whereYear('diterbitkan_pada', $tahun)
-        ->get()
-        ->map(function ($a) {
-            return [
-                'id' => $a->id,
-                'judul' => $a->judul,
-                'rating' => $a->nilai_rata_rata ?? null,
-                'gambar' => $a->gambar
-                    ? asset('storage/artikel/' . $a->gambar)
-                    : asset('images/default.jpg'),
-                'siswa_nama' => $a->siswa->nama ?? 'Unknown',
-                'siswa_kelas' => $a->siswa->kelas ?? '-',
-            ];
-        });
-
-}
+        $artikel = Artikel::with('siswa')
+            ->where('status', 'disetujui')
+            ->whereNotNull('diterbitkan_pada')
+            ->whereMonth('diterbitkan_pada', $bulan)
+            ->whereYear('diterbitkan_pada', $tahun)
+            ->get()
+            ->map(function ($a) {
+                return [
+                    'id' => $a->id,
+                    'judul' => $a->judul,
+                    'rating' => $a->nilai_rata_rata ?? null,
+                    'gambar' => $a->gambar
+                        ? asset('storage/artikel/' . $a->gambar)
+                        : asset('images/default.jpg'),
+                    'siswa_nama' => $a->siswa->nama ?? 'Unknown',
+                    'siswa_kelas' => $a->siswa->kelas ?? '-',
+                ];
+            });
+    }
 
 
     /**
@@ -260,7 +259,7 @@ class PenghargaanController extends Controller
             'dibuat_pada' => now(),
         ]);
 
-        return redirect()->route('penghargaan')
+        return redirect()->route('admin.penghargaan.index')
             ->with('success', 'Penghargaan berhasil diperbarui.');
     }
 
@@ -289,7 +288,7 @@ class PenghargaanController extends Controller
 
         $penghargaan->delete();
 
-        return redirect()->route('penghargaan')
+        return redirect()->route('admin.penghargaan.index')
             ->with('success', 'Penghargaan berhasil dihapus.');
     }
 

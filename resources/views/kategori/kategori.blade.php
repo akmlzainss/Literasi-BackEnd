@@ -36,7 +36,7 @@
                 <i class="fas fa-plus"></i>
                 Tambah Kategori Baru
             </button>
-            <a href="{{ route('kategori.export') }}" class="btn-outline-custom">
+            <a href="{{ route('admin.kategori.export') }}" class="btn-outline-custom">
                 <i class="fas fa-download"></i>
                 Export Data
             </a>
@@ -113,7 +113,7 @@
                                             <span><i class="fas fa-eye"></i> {{ $kategori->views ?? '0' }}</span>
                                         </div>
                                         <div class="category-actions">
-                                            <a href="{{ route('kategori.detail', $kategori->id) }}"
+                                            <a href="{{ route('admin.kategori.detail', $kategori->id) }}"
                                                 class="btn-action-card btn-detail-card" data-id="{{ $kategori->id }}">
                                                 <i class="fas fa-eye"></i>
                                             </a>
@@ -123,13 +123,13 @@
                                                 data-deskripsi="{{ $kategori->deskripsi }}">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <form action="{{ route('kategori.destroy', $kategori->id) }}" method="POST"
+                                            <form action="{{ route('admin.kategori.destroy', $kategori->id) }}" method="POST"
                                                 style="display:inline;" id="deleteForm_{{ $kategori->id }}">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="button" class="btn-action-card btn-delete-card"
                                                     data-id="{{ $kategori->id }}"
-                                                    data-action="{{ route('kategori.destroy', $kategori->id) }}">
+                                                    data-action="{{ route('admin.kategori.destroy', $kategori->id) }}">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
@@ -194,13 +194,13 @@
                 setTimeout(function() {
                     var bsAlert = new bootstrap.Alert(successAlert);
                     bsAlert.close();
-                }, 5000); // 5000 ms = 5 detik
+                }, 5000);
             }
             if (errorAlert) {
                 setTimeout(function() {
                     var bsAlert = new bootstrap.Alert(errorAlert);
                     bsAlert.close();
-                }, 5000); // 5000 ms = 5 detik
+                }, 5000);
             }
         });
 
@@ -209,7 +209,6 @@
         modalTambahKategori.addEventListener('shown.bs.modal', function() {
             document.getElementById('nama_kategori').focus();
         });
-
 
         // Search and Filter functionality
         document.getElementById('searchInput').addEventListener('keypress', function(e) {
@@ -225,7 +224,7 @@
         function applyFilters() {
             var search = document.getElementById('searchInput').value;
             var filter = document.getElementById('filterSelect').value;
-            var url = "{{ route('kategori') }}";
+            var url = "{{ route('admin.kategori.index') }}";
             var params = [];
             if (search) params.push('search=' + encodeURIComponent(search));
             if (filter) params.push('filter=' + encodeURIComponent(filter));
@@ -245,7 +244,7 @@
             $('#editId').val(id);
             $('#edit_nama_kategori').val(nama);
             $('#edit_deskripsi').val(deskripsi);
-            $('#editForm').attr('action', '{{ route('kategori.update', ['id' => ':id']) }}'.replace(':id', id));
+            $('#editForm').attr('action', '{{ route('admin.kategori.update', ['kategori' => ':id']) }}'.replace(':id', id));
             $('#modalEditKategori').modal('show');
         });
 

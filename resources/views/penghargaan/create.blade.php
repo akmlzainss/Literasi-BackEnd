@@ -9,14 +9,14 @@
 <div class="page-header">
     <h1 class="page-title">Tambah Penghargaan Baru</h1>
     <p class="page-subtitle">Isi formulir berikut untuk menambahkan penghargaan baru</p>
-    <a href="{{ route('penghargaan') }}" class="btn btn-secondary">
+    <a href="{{ route('admin.penghargaan.index') }}" class="btn btn-secondary">
         <i class="fas fa-arrow-left"></i> Kembali ke Daftar Penghargaan
     </a>
 </div>
 
 <div class="main-card">
     <div class="card-body-custom">
-        <form action="{{ route('penghargaan.store') }}" method="POST">
+        <form action="{{ route('admin.penghargaan.store') }}" method="POST">
             @csrf
 
             {{-- Pilih Artikel (Top 5 Rating Tertinggi) --}}
@@ -97,7 +97,7 @@
             {{-- Tombol Submit --}}
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-success">Simpan Penghargaan</button>
-                <a href="{{ route('penghargaan') }}" class="btn btn-secondary">Batal</a>
+                <a href="{{ route('admin.penghargaan.index') }}" class="btn btn-secondary">Batal</a>
             </div>
         </form>
     </div>

@@ -56,7 +56,7 @@ class AdminAuthController extends Controller
                 Log::error("Gagal mencatat log login admin: " . $e->getMessage());
             }
 
-            return redirect()->intended(route('dashboard'));
+            return redirect()->intended(route('admin.dashboard'));
         }
 
         // Prioritas 2: Coba login sebagai Siswa

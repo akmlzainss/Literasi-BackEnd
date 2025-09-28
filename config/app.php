@@ -161,7 +161,6 @@ return [
          */
         Mews\Purifier\PurifierServiceProvider::class,
         Laravel\Sanctum\SanctumServiceProvider::class, // <-- TAMBAHKAN BARIS INI
-
         /*
          * Application Service Providers...
          */

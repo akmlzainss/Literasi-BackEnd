@@ -84,7 +84,7 @@ class ArtikelController extends Controller
 
             $this->logAction('create', 'Menambahkan artikel baru', 'artikel', $artikel->id);
 
-            return redirect()->route('artikel')->with('success', 'Artikel berhasil dibuat!');
+            return redirect()->route('admin.artikel.index')->with('success', 'Artikel berhasil dibuat!');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {

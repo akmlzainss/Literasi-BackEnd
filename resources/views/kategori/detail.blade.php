@@ -25,7 +25,7 @@
                         @endforeach
                     </ul>
                 @endif
-                <a href="{{ route('kategori') }}" class="btn btn-primary mt-3">Kembali ke Daftar Kategori</a>
+                <a href="{{ route('admin.kategori.index') }}" class="btn btn-primary mt-3">Kembali ke Daftar Kategori</a>
             </div>
         </div>
     </div>

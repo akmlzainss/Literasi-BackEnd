@@ -14,6 +14,9 @@ use App\Http\Controllers\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Siswa\SiswaArtikelController;
 use App\Http\Controllers\Siswa\NotifikasiController;
 use App\Http\Controllers\Siswa\ProfilController;
+use App\Http\Controllers\Siswa\VideoController;
+use App\Http\Controllers\Siswa\VideoInteraksiController;
+use App\Http\Controllers\Siswa\VideoKomentarController;
 use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
 
 Route::get('/', fn() => redirect()->route('login'));
@@ -38,7 +41,7 @@ Route::name('artikel-siswa.')->group(function () {
 Route::middleware(['auth:siswa'])->group(function () {
     Route::post('/siswa/logout', [AdminAuthController::class, 'logoutSiswa'])->name('logout-siswa');
     Route::get('/dashboard-siswa', [SiswaDashboardController::class, 'indexSiswa'])->name('dashboard-siswa');
-    
+
     // Rute Interaksi & Komentar
     Route::post('/artikel-siswa/{id}/komentar', [SiswaArtikelController::class, 'storeKomentar'])->name('komentar.store');
     Route::post('/artikel-siswa/{id}/interaksi', [SiswaArtikelController::class, 'storeInteraksi'])->name('artikel-siswa.interaksi');
@@ -47,6 +50,15 @@ Route::middleware(['auth:siswa'])->group(function () {
     Route::get('/upload', [SiswaArtikelController::class, 'showUploadChoice'])->name('artikel-siswa.upload');
     Route::get('/upload/artikel/create', [SiswaArtikelController::class, 'createArtikel'])->name('artikel-siswa.create');
     Route::post('/upload/artikel', [SiswaArtikelController::class, 'storeArtikel'])->name('artikel-siswa.store');
+
+    // Rute Video
+    Route::get('/video', [VideoController::class, 'index'])->name('video.index');
+    Route::get('/video/tiktok', [VideoController::class, 'tiktokView'])->name('video.tiktok');
+    Route::get('/video/create', [VideoController::class, 'create'])->name('video.create');
+    Route::post('/video', [VideoController::class, 'store'])->name('video.store');
+    Route::post('/video/{id}/interaksi', [VideoInteraksiController::class, 'store'])->name('video.interaksi');
+    Route::post('/video/{id}/komentar', [VideoKomentarController::class, 'store'])->name('video.komentar.store');
+    Route::delete('/video/komentar/{id}', [VideoKomentarController::class, 'destroy'])->name('video.komentar.destroy');
 
     // Notifikasi & Profil Siswa
     Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
@@ -69,14 +81,16 @@ Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function ()
     Route::get('/artikel/export', [ArtikelController::class, 'export'])->name('artikel.export');
     Route::get('/search-siswa', [ArtikelController::class, 'searchSiswa'])->name('search.siswa');
     Route::get('/artikel/status/{status}', [ArtikelController::class, 'status'])->name('artikel.status');
-
     Route::post('/komentar/{artikel}', [KomentarController::class, 'store'])->name('komentar.store');
     Route::delete('/komentar/{id}', [KomentarController::class, 'destroy'])->name('komentar.destroy');
-    
+
+    Route::get('/video/persetujuan', [App\Http\Controllers\VideoPersetujuanController::class, 'index'])->name('video.persetujuan');
+    Route::put('/video/{id}/persetujuan', [App\Http\Controllers\VideoPersetujuanController::class, 'update'])->name('video.update');
+
     Route::resource('kategori', KategoriController::class)->except(['show']);
     Route::get('/kategori/export', [KategoriController::class, 'export'])->name('kategori.export');
     Route::get('/kategori/{id}/detail', [KategoriController::class, 'detail'])->name('kategori.detail');
-    
+
     Route::resource('penghargaan', PenghargaanController::class);
     Route::post('/send-award-notification', [PenghargaanController::class, 'sendAwardNotification'])->name('send.award.notification');
 

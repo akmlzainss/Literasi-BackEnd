@@ -16,7 +16,7 @@
             <button type="button" class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#addStudentModal">
                 <i class="fas fa-user-plus"></i> Tambah Siswa Baru
             </button>
-            <a href="{{ route('siswa.export') }}" class="btn-outline-custom">
+            <a href="{{ route('admin.siswa.export') }}" class="btn-outline-custom">
                 <i class="fas fa-file-export"></i> Export Data
             </a>
             <button type="button" class="btn-outline-custom" data-bs-toggle="modal" data-bs-target="#importModal">
@@ -37,7 +37,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="addStudentForm" action="{{ route('siswa.store') }}" method="POST" novalidate>
+                    <form id="addStudentForm" action="{{ route('admin.siswa.store') }}" method="POST" novalidate>
                         @csrf
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -211,7 +211,7 @@
         <div class="card-body-custom">
             {{-- Search and Filter Section --}}
            <div class="search-filter-section mb-4">
-    <form action="{{ route('siswa') }}" method="GET">
+    <form action="{{ route('admin.siswa.index') }}" method="GET">
         <div class="row g-3 align-items-end">
 
             <!-- Pencarian -->
@@ -255,7 +255,7 @@
                 <button type="submit" class="btn btn-primary flex-fill">
                     <i class="fas fa-search"></i> Cari
                 </button>
-                <a href="{{ route('siswa') }}" class="btn btn-outline-success flex-fill">
+                <a href="{{ route('admin.siswa.index') }}" class="btn btn-outline-success flex-fill">
                     <i class="fas fa-sync-alt"></i> Reset
                 </a>
             </div>
@@ -295,7 +295,7 @@
                                     </td>
                                     <td>
                                         <div class="action-buttons-table">
-                                            <a href="{{ route('siswa.detail', $student->nis) }}"
+                                            <a href="{{ route('admin.siswa.detail', $student->nis) }}"
                                                 class="btn-action-table btn-view-table" title="Lihat Detail">
                                                 <i class="fas fa-eye"></i>
                                             </a>
@@ -365,7 +365,7 @@
 
             // === Populate Edit Student Form via AJAX ===
             window.editStudent = function(nis) {
-                fetch(`/siswa/${nis}/edit`) // pastikan route edit mengembalikan JSON
+                fetch(`/admin/siswa/${nis}/edit`) // pastikan route edit mengembalikan JSON
                     .then(response => response.json())
                     .then(data => {
                         if (data.error) {

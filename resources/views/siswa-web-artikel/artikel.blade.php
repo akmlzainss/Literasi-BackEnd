@@ -29,7 +29,7 @@
                 <p class="text-muted small">Gunakan filter di bawah untuk menemukan artikel yang kamu cari</p>
             </div>
             
-            <form action="{{ route('artikel-siswa') }}" method="GET" class="search-form">
+            <form action="{{ route('artikel-siswa.index') }}" method="GET" class="search-form">
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-4 col-md-12">
                         <label class="form-label fw-semibold">
@@ -81,7 +81,7 @@
                             <span class="badge bg-primary">
                                 <i class="fas fa-search me-1"></i>
                                 "{{ request('search') }}"
-                                <a href="{{ route('artikel-siswa', request()->except('search')) }}" 
+                                <a href="{{ route('artikel-siswa.index', request()->except('search')) }}" 
                                    class="text-white ms-1">×</a>
                             </span>
                         @endif
@@ -89,7 +89,7 @@
                             <span class="badge bg-success">
                                 <i class="fas fa-tag me-1"></i>
                                 {{ request('kategori') }}
-                                <a href="{{ route('artikel-siswa', request()->except('kategori')) }}" 
+                                <a href="{{ route('artikel-siswa.index', request()->except('kategori')) }}" 
                                    class="text-white ms-1">×</a>
                             </span>
                         @endif
@@ -97,11 +97,11 @@
                             <span class="badge bg-info">
                                 <i class="fas fa-sort me-1"></i>
                                 {{ ucfirst(request('sort')) }}
-                                <a href="{{ route('artikel-siswa', request()->except('sort')) }}" 
+                                <a href="{{ route('artikel-siswa.index', request()->except('sort')) }}" 
                                    class="text-white ms-1">×</a>
                             </span>
                         @endif
-                        <a href="{{ route('artikel-siswa') }}" class="btn btn-link btn-sm text-danger p-0">
+                        <a href="{{ route('artikel-siswa.index') }}" class="btn btn-link btn-sm text-danger p-0">
                             <i class="fas fa-times me-1"></i>Reset semua
                         </a>
                     </div>
