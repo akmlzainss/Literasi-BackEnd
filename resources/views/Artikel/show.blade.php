@@ -6,7 +6,6 @@
 @section('content')
     <link rel="stylesheet" href="{{ asset('css/artikel.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    
     <!-- Enhanced Styles -->
     <style>
         :root {
@@ -537,7 +536,7 @@
                     id="deleteForm_{{ $artikel->id }}">
                     @csrf
                     @method('DELETE')
-                    <button type="button" class="btn btn-danger-custom" onclick="confirmDelete({{ $artikel->id }})">
+                    <button type="button" class="btn btn-danger-custom no-loading" onclick="confirmDelete({{ $artikel->id }})">
                         <i class="fas fa-trash me-2"></i>Hapus Artikel
                     </button>
                 </form>
@@ -635,8 +634,11 @@
                                         @for ($i = 1; $i <= 5; $i++)
                                             <option value="{{ $i }}">⭐ {{ $i }}</option>
                                         @endfor
-                                    </select>
+                                    </sele
+                                    <button type="submit" class="btn btn-primary-custom no-loading">
+
                                     <button type="submit" class="btn btn-primary-custom">
+
                                         <i class="fas fa-star me-1"></i>Simpan Rating
                                     </button>
                                 </div>
@@ -646,6 +648,9 @@
                 </div>
             </div>
             <div class="article-comments mt-5">
+
+                <h5><i class="fas fa-comments me-2" style="color: var(--primary-blue);"></i>Komentar ({{ $artikel->komentarArtikel->where('id_komentar_parent', null)->count() }})</h5>
+
                         <h5><i class="fas fa-comments me-2" style="color: var(--primary-blue);"></i>Komentar ({{ $artikel->komentarArtikel->where('id_komentar_parent', null)->count() }})</h5>
                 @php
                     $rootComments = $artikel->komentarArtikel->where('id_komentar_parent', null);
@@ -707,7 +712,11 @@
                     <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">
                         <i class="fas fa-times me-1"></i>Batal
                     </button>
+
+                    <button type="button" class="btn btn-danger-custom no-loading" id="confirmDeleteBtn">
+
                     <button type="button" class="btn btn-danger-custom" id="confirmDeleteBtn">
+
                         <i class="fas fa-trash me-1"></i>Hapus
                     </button>
                 </div>
@@ -735,7 +744,11 @@
                     <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">
                         <i class="fas fa-times me-1"></i>Batal
                     </button>
+
+                    <button type="button" class="btn btn-danger-custom no-loading" id="confirmDeleteCommentBtn">
+
                     <button type="button" class="btn btn-danger-custom" id="confirmDeleteCommentBtn">
+
                         <i class="fas fa-trash me-1"></i>Hapus
                     </button>
                 </div>
@@ -766,7 +779,7 @@
                 }
 
                 $.ajax({
-                    url: '{{ route('admin.artikel.rate', $artikel->id) }}',
+                    url: '{{ Auth::guard('siswa')->check() ? route('artikel-siswa.rate', $artikel->id) : route('admin.artikel.rate', $artikel->id) }}',
                     method: 'POST',
                     data: {
                         _token: '{{ csrf_token() }}',
@@ -774,21 +787,18 @@
                     },
                     beforeSend: function() {
                         $('#ratingForm button').html(
-                            '<i class="fas fa-spinner fa-spin me-1"></i>Menyimpan...').prop(
-                            'disabled', true);
+                            '<i class="fas fa-spinner fa-spin me-1"></i>Menyimpan...').prop('disabled', true);
                     },
                     success: function(response) {
                         showAlert('success', response.message);
                         setTimeout(() => location.reload(), 1500);
                     },
                     error: function(xhr) {
-                        showAlert('error', xhr.responseJSON?.message ||
-                            'Gagal menyimpan rating.');
+                        showAlert('error', xhr.responseJSON?.message || 'Gagal menyimpan rating.');
                     },
                     complete: function() {
                         $('#ratingForm button').html(
-                            '<i class="fas fa-star me-1"></i>Simpan Rating').prop(
-                            'disabled', false);
+                            '<i class="fas fa-star me-1"></i>Simpan Rating').prop('disabled', false);
                     }
                 });
             });
@@ -809,16 +819,14 @@
                         success: function(response) {
                             $('#deleteConfirmModal').modal('hide');
                             showAlert('success', response.message);
-                            setTimeout(() => window.location.href = response.redirect,
-                            1500);
+                            setTimeout(() => window.location.href = response.redirect, 1500);
                         },
                         error: function(xhr) {
                             $('#deleteConfirmModal').modal('hide');
-                            showAlert('error', xhr.responseJSON?.message ||
-                                'Gagal menghapus artikel.');
+                            showAlert('error', xhr.responseJSON?.message || 'Gagal menghapus artikel.');
                         },
                         complete: function() {
-                            $('#confirmDeleteBtn').html('Hapus');
+                            $('#confirmDeleteBtn').html('<i class="fas fa-trash me-1"></i>Hapus');
                         }
                     });
                 });
@@ -839,17 +847,15 @@
                         },
                         success: function(response) {
                             $('#deleteCommentConfirmModal').modal('hide');
-                            showAlert('success', response.message ||
-                                'Komentar berhasil dihapus!');
+                            showAlert('success', response.message || 'Komentar berhasil dihapus!');
                             $('#comment_' + id).fadeOut(() => $('#comment_' + id).remove());
                         },
                         error: function(xhr) {
                             $('#deleteCommentConfirmModal').modal('hide');
-                            showAlert('error', xhr.responseJSON?.message ||
-                                'Gagal menghapus komentar.');
+                            showAlert('error', xhr.responseJSON?.message || 'Gagal menghapus komentar.');
                         },
                         complete: function() {
-                            $('#confirmDeleteCommentBtn').html('Hapus');
+                            $('#confirmDeleteCommentBtn').html('<i class="fas fa-trash me-1"></i>Hapus');
                         }
                     });
                 });
@@ -945,6 +951,7 @@
                 }
             });
 
+
             // Enhanced hover effects for interactive elements
             $('.stats-item, .meta-item').hover(
                 function() {
@@ -962,6 +969,8 @@
                 $('body::before').css('transform', 'translateY(' + rate + 'px)');
             });
 
+            // Add ripple effect to buttons (exclude buttons with no-loading class)
+            $('.btn:not(.no-loading)').on('click', function(e) {
             // Add ripple effect to buttons
             $('.btn').on('click', function(e) {
                 const $btn = $(this);
@@ -1005,6 +1014,7 @@
                     }
                 `)
                 .appendTo('head');
+
         });
     </script>
 @endsection

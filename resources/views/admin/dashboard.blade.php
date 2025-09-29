@@ -3,7 +3,7 @@
 @section('title', 'Dashboard Admin')
 
 @section('content')
-   <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
 
     <!-- Content Area -->
     <div class="content-area fade-in">
@@ -101,7 +101,7 @@
             <div class="col-12">
                 <div class="card enhanced-card" data-aos="fade-up">
                     <div class="card-header glass-effect">
-                       
+
                         <span class="fw-bold">Trend Aktivitas 7 Hari Terakhir</span>
                         <div class="card-actions">
                         </div>
@@ -157,7 +157,8 @@
                                             </div>
                                             <div class="activity-details">
                                                 <div class="activity-name">{{ $log->aksi }}</div>
-                                                <div class="activity-desc">{{ $log->detail }}</div>
+                                                <div class="activity-desc">
+                                                    {{ $log->detail['nama'] ?? 'Tidak ada detail' }}</div>
                                             </div>
                                         </div>
                                     </div>
