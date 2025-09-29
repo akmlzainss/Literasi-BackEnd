@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register Admin - Sistem Literasi Akhlak</title>
+    <title>Register Siswa - Sistem Literasi Akhlak</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -11,21 +11,46 @@
     <div class="container d-flex justify-content-center align-items-center min-vh-100">
         <div class="auth-card fade-in">
             <div class="card-header-custom">
-                <h2 class="auth-title">Register Admin</h2>
+                <h2 class="auth-title">Register Siswa</h2>
                 <p class="auth-subtitle">Buat akun baru untuk Sistem Literasi Akhlak</p>
             </div>
             <div class="card-body-custom">
-                <form method="POST" action="{{ route('register') }}">
+                <form method="POST" action="{{ route('register.submit') }}">
                     @csrf
+                    <input type="hidden" name="role" value="siswa">
                     <div class="mb-3">
-                        <label for="nama_pengguna" class="form-label">Nama Pengguna</label>
+                        <label for="nama" class="form-label">Nama Lengkap</label>
                         <div class="input-group">
                             <span class="input-group-text bg-white border-end-0">
                                 <i class="fas fa-user text-muted"></i>
                             </span>
-                            <input type="text" name="nama_pengguna" id="nama_pengguna" class="form-control search-input border-start-0" placeholder="Masukkan nama pengguna" required value="{{ old('nama_pengguna') }}">
+                            <input type="text" name="nama" id="nama" class="form-control search-input border-start-0" placeholder="Masukkan nama lengkap" required value="{{ old('nama') }}">
                         </div>
-                        @error('nama_pengguna')
+                        @error('nama')
+                            <div class="text-danger mt-1" style="font-size: 0.85rem;">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="nis" class="form-label">NIS</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="fas fa-id-card text-muted"></i>
+                            </span>
+                            <input type="text" name="nis" id="nis" class="form-control search-input border-start-0" placeholder="Masukkan NIS" required value="{{ old('nis') }}">
+                        </div>
+                        @error('nis')
+                            <div class="text-danger mt-1" style="font-size: 0.85rem;">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label for="kelas" class="form-label">Kelas</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="fas fa-graduation-cap text-muted"></i>
+                            </span>
+                            <input type="text" name="kelas" id="kelas" class="form-control search-input border-start-0" placeholder="Masukkan kelas" required value="{{ old('kelas') }}">
+                        </div>
+                        @error('kelas')
                             <div class="text-danger mt-1" style="font-size: 0.85rem;">{{ $message }}</div>
                         @enderror
                     </div>
@@ -65,12 +90,19 @@
                             <div class="text-danger mt-1" style="font-size: 0.85rem;">{{ $message }}</div>
                         @enderror
                     </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="terms" id="terms" class="form-check-input" required>
+                        <label for="terms" class="form-check-label">Saya setuju dengan <a href="#">Syarat & Ketentuan</a></label>
+                        @error('terms')
+                            <div class="text-danger mt-1" style="font-size: 0.85rem;">{{ $message }}</div>
+                        @enderror
+                    </div>
                     <button type="submit" class="btn btn-primary-custom w-100">Register</button>
                 </form>
                 <div class="text-center mt-3">
                     <a href="{{ route('login') }}" class="btn btn-outline-custom">Kembali ke Login</a>
                 </div>
-                @if ($errors->any() && !$errors->has('nama_pengguna') && !$errors->has('email') && !$errors->has('password') && !$errors->has('password_confirmation'))
+                @if ($errors->any() && !$errors->has('nama') && !$errors->has('nis') && !$errors->has('kelas') && !$errors->has('email') && !$errors->has('password') && !$errors->has('password_confirmation') && !$errors->has('terms'))
                     <div class="alert alert-danger mt-3" role="alert">
                         {{ $errors->first() }}
                     </div>
@@ -243,7 +275,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.querySelector('form').addEventListener('submit', function(e) {
-            // Placeholder for form submission feedback
             if (!this.checkValidity()) {
                 e.preventDefault();
                 e.stopPropagation();

@@ -24,7 +24,8 @@ Route::get('/', fn() => redirect()->route('login'));
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AdminAuthController::class, 'login'])->name('login.submit');
-    Route::post('/register', [AdminAuthController::class, 'register'])->name('register.submit');
+    Route::get('/register', [AdminAuthController::class, 'showLoginForm'])->name('register'); // Menampilkan form register
+    Route::post('/register', [AdminAuthController::class, 'register'])->name('register.submit'); // Proses registrasi
 });
 
 // ==========================
@@ -45,6 +46,7 @@ Route::middleware(['auth:siswa'])->group(function () {
     // Rute Interaksi & Komentar
     Route::post('/artikel-siswa/{id}/komentar', [SiswaArtikelController::class, 'storeKomentar'])->name('komentar.store');
     Route::post('/artikel-siswa/{id}/interaksi', [SiswaArtikelController::class, 'storeInteraksi'])->name('artikel-siswa.interaksi');
+    Route::post('/artikel-siswa/{id}/komentar/{parentId}', [SiswaArtikelController::class, 'storeKomentar'])->name('komentar.reply');
 
     // Upload Artikel oleh Siswa
     Route::get('/upload', [SiswaArtikelController::class, 'showUploadChoice'])->name('artikel-siswa.upload');
@@ -82,11 +84,7 @@ Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function ()
     Route::get('/search-siswa', [ArtikelController::class, 'searchSiswa'])->name('search.siswa');
     Route::get('/artikel/status/{status}', [ArtikelController::class, 'status'])->name('artikel.status');
 
-
-
-    Route::get('/artikel/get/{id}', [ArtikelController::class, 'getArtikelById'])
-        ->name('artikel.getById');
-
+    Route::get('/artikel/get/{id}', [ArtikelController::class, 'getArtikelById'])->name('artikel.getById');
 
     Route::post('komentar/{artikel}', [ArtikelController::class, 'storeComment'])->name('komentar.store');
     Route::put('komentar/{komentar}', [ArtikelController::class, 'updateComment'])->name('komentar.update');

@@ -11,8 +11,9 @@ use App\Models\InteraksiArtikel;
 use App\Models\Notifikasi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\URL; // Import URL Facade
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 
 class SiswaArtikelController extends Controller
 {
@@ -24,7 +25,7 @@ class SiswaArtikelController extends Controller
             $query->where('judul', 'like', '%' . $request->search . '%');
         }
         if ($request->filled('kategori')) {
-            $query->whereHas('kategori', function($q) use ($request) {
+            $query->whereHas('kategori', function ($q) use ($request) {
                 $q->where('nama', $request->kategori);
             });
         }
@@ -44,35 +45,42 @@ class SiswaArtikelController extends Controller
 
     public function show($id)
     {
-        // === PERBAIKAN UNTUK TOMBOL KEMBALI ===
         $previousUrl = URL::previous();
-        // Simpan URL sebelumnya ke session HANYA JIKA BUKAN halaman detail itu sendiri
         if (!str_contains($previousUrl, '/artikel-siswa/' . $id)) {
             session(['previous_artikel_url' => $previousUrl]);
         }
-        // ======================================
 
         $siswaId = Auth::guard('siswa')->id();
         $konten = Artikel::with([
-            'siswa', 'kategori', 'ratingArtikel',
-            'komentarArtikel' => function($query) {
+            'siswa',
+            'kategori',
+            'ratingArtikel',
+            'komentarArtikel' => function ($query) {
                 $query->whereNull('id_komentar_parent')->with('siswa', 'admin', 'replies.siswa', 'replies.admin')->latest();
             }
         ])->findOrFail($id);
-        
+
+        if (Auth::guard('siswa')->check()) {
+            $sessionKey = 'viewed_article_' . $id;
+            if ($konten->id_siswa != $siswaId && !session()->has($sessionKey)) {
+                $konten->increment('jumlah_dilihat');
+                session([$sessionKey => true]);
+            }
+        } else {
+            $sessionKey = 'viewed_article_' . $id;
+            if (!session()->has($sessionKey)) {
+                $konten->increment('jumlah_dilihat');
+                session([$sessionKey => true]);
+            }
+        }
+
         $userRating = RatingArtikel::where('id_artikel', $id)->where('id_siswa', $siswaId)->first();
         $userHasLiked = InteraksiArtikel::where('id_artikel', $id)->where('id_siswa', $siswaId)->where('jenis', 'suka')->exists();
         $userHasBookmarked = InteraksiArtikel::where('id_artikel', $id)->where('id_siswa', $siswaId)->where('jenis', 'bookmark')->exists();
 
-        if (Auth::guard('siswa')->check() && $konten->id_siswa != $siswaId) {
-            $konten->increment('jumlah_dilihat');
-        } elseif (!Auth::guard('siswa')->check()){
-             $konten->increment('jumlah_dilihat');
-        }
-        
         return view('siswa-web-artikel.artikel-detail', compact('konten', 'userRating', 'userHasLiked', 'userHasBookmarked'));
     }
-    
+
     public function showUploadChoice()
     {
         return view('siswa-web-artikel.upload-choice');
@@ -86,129 +94,157 @@ class SiswaArtikelController extends Controller
 
     public function storeArtikel(Request $request)
     {
-        $request->validate([
-            'judul' => 'required|string|max:255',
-            'isi' => 'required|string|min:100',
-            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'id_kategori' => 'required_without:usulan_kategori|nullable|exists:kategori,id',
-            'usulan_kategori' => [
-                'required_without:id_kategori', 'nullable', 'string', 'max:50',
-                Rule::unique('kategori', 'nama'),
-            ],
-            'jenis' => 'required|in:bebas,resensi_buku,resensi_film',
-        ]);
-
-        $idSiswa = Auth::guard('siswa')->id();
-        $idKategori = $request->id_kategori;
-
-        if ($request->filled('usulan_kategori')) {
-            $kategoriBaru = Kategori::create([
-                'nama' => $request->usulan_kategori,
-                'deskripsi' => 'Kategori ini diusulkan oleh siswa.',
-                'status' => 'menunggu'
+        try {
+            $request->validate([
+                'judul' => 'required|string|max:255',
+                'isi' => 'required|string|min:100',
+                'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'id_kategori' => 'required_without:usulan_kategori|nullable|exists:kategori,id',
+                'usulan_kategori' => [
+                    'required_without:id_kategori',
+                    'nullable',
+                    'string',
+                    'max:50',
+                    Rule::unique('kategori', 'nama'),
+                ],
+                'jenis' => 'required|in:bebas,resensi_buku,resensi_film',
             ]);
-            $idKategori = $kategoriBaru->id;
-        }
 
-        $gambarPath = $request->hasFile('gambar') ? $request->file('gambar')->store('artikel', 'public') : null;
+            $idSiswa = Auth::guard('siswa')->id();
+            $idKategori = $request->id_kategori;
 
-        Artikel::create([
-            'id_siswa' => $idSiswa,
-            'id_kategori' => $idKategori,
-            'usulan_kategori' => $request->filled('usulan_kategori') ? $request->usulan_kategori : null,
-            'judul' => $request->judul,
-            'isi' => $request->isi,
-            'gambar' => $gambarPath,
-            'penulis_type' => 'siswa',
-            'jenis' => $request->jenis,
-            'status' => 'menunggu',
-        ]);
-        
-        return redirect()->route('artikel-siswa.index')->with('success', 'Artikel berhasil dikirim dan sedang menunggu persetujuan admin!');
-    }
-
-    public function storeKomentar(Request $request, $id)
-    {
-        $request->validate([
-            'komentar' => 'nullable|string|max:2000',
-            'rating' => 'nullable|integer|between:1,5',
-        ]);
-
-        $siswaId = Auth::guard('siswa')->id();
-        $artikel = Artikel::findOrFail($id);
-        $newKomentar = null;
-
-        if ($request->filled('rating')) {
-            RatingArtikel::updateOrCreate(
-                ['id_artikel' => $artikel->id, 'id_siswa' => $siswaId],
-                ['rating' => $request->rating]
-            );
-        }
-
-        if ($request->filled('komentar')) {
-            $newKomentar = KomentarArtikel::create([
-                'id_artikel' => $artikel->id,
-                'id_siswa'   => $siswaId,
-                'komentar'   => $request->komentar,
-            ]);
-            $newKomentar->load('siswa');
-        }
-        
-        $artikel->nilai_rata_rata = $artikel->ratingArtikel()->avg('rating');
-        $artikel->save();
-
-        if ($request->ajax()) {
-            $data = [
-                'success' => true,
-                'new_avg_rating' => round($artikel->nilai_rata_rata, 1),
-                'new_rating_count' => $artikel->ratingArtikel->count(),
-                'new_comment_count' => $artikel->komentarArtikel->count(),
-            ];
-
-            if ($newKomentar) {
-                $data['new_comment_html'] = view('partials.komentar', ['komentar' => $newKomentar])->render();
+            if ($request->filled('usulan_kategori')) {
+                $kategoriBaru = Kategori::create([
+                    'nama' => $request->usulan_kategori,
+                    'deskripsi' => 'Kategori ini diusulkan oleh siswa.',
+                    'status' => 'menunggu'
+                ]);
+                $idKategori = $kategoriBaru->id;
             }
-            return response()->json($data);
-        }
 
-        return back()->with('success', 'Terima kasih atas tanggapan Anda!');
+            $gambarPath = $request->hasFile('gambar') ? $request->file('gambar')->store('artikel', 'public') : null;
+
+            $artikel = Artikel::create([
+                'id_siswa' => $idSiswa,
+                'id_kategori' => $idKategori,
+                'usulan_kategori' => $request->filled('usulan_kategori') ? $request->usulan_kategori : null,
+                'judul' => $request->judul,
+                'isi' => strip_tags($request->isi, '<p><br><strong><em><ul><ol><li><h1><h2><h3><a>'),
+                'gambar' => $gambarPath,
+                'penulis_type' => 'siswa',
+                'jenis' => $request->jenis,
+                'status' => 'menunggu',
+            ]);
+
+            Notifikasi::create([
+                'id_siswa' => $idSiswa,
+                'judul' => 'Artikel Dikirim untuk Review',
+                'pesan' => 'Artikel "' . $request->judul . '" telah dikirim dan sedang menunggu persetujuan admin.',
+                'jenis' => 'artikel',
+                'referensi_tipe' => 'artikel',
+                'referensi_id' => $artikel->id,
+            ]);
+
+            return redirect()->route('artikel-siswa.index')->with('success', 'Artikel berhasil dikirim dan sedang menunggu persetujuan admin!');
+        } catch (\Exception $e) {
+            \Log::error('Error storing artikel: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menyimpan artikel. Silakan coba lagi.');
+        }
     }
-    
+
+    public function storeKomentar(Request $request, $id, $parentId = null)
+    {
+        try {
+            $request->validate([
+                'komentar' => 'required|string|max:2000',
+                'rating' => 'nullable|integer|between:1,5',
+            ]);
+
+            $siswaId = Auth::guard('siswa')->id();
+            $artikel = Artikel::findOrFail($id);
+            $newKomentar = null;
+
+            if ($request->filled('rating')) {
+                RatingArtikel::updateOrCreate(
+                    ['id_artikel' => $artikel->id, 'id_siswa' => $siswaId],
+                    ['rating' => $request->rating]
+                );
+            }
+
+            if ($request->filled('komentar')) {
+                $newKomentar = KomentarArtikel::create([
+                    'id_artikel' => $artikel->id,
+                    'id_siswa' => $siswaId,
+                    'id_komentar_parent' => $parentId,
+                    'komentar' => strip_tags($request->komentar, '<p><br><strong><em>'),
+                ]);
+                $newKomentar->load('siswa', 'replies');
+            }
+
+            $artikel->nilai_rata_rata = $artikel->ratingArtikel()->avg('rating') ?: 0;
+            $artikel->save();
+
+            if ($request->ajax()) {
+                $data = [
+                    'success' => true,
+                    'new_avg_rating' => round($artikel->nilai_rata_rata, 1),
+                    'new_rating_count' => $artikel->ratingArtikel->count(),
+                    'new_comment_count' => $artikel->komentarArtikel->count(),
+                ];
+
+                if ($newKomentar) {
+                    $data['new_comment_html'] = view('partials.komentar', ['komentar' => $newKomentar, 'konten' => $artikel])->render();
+                }
+                return response()->json($data);
+            }
+
+            return back()->with('success', 'Terima kasih atas tanggapan Anda!')->with('previous_artikel_url', route('artikel-siswa.show', $id));
+        } catch (\Exception $e) {
+            \Log::error('Error storing komentar: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal menyimpan komentar.'], 500);
+        }
+    }
+
     public function storeInteraksi(Request $request, $id)
     {
-        $request->validate(['jenis' => 'required|in:suka,bookmark']);
+        try {
+            $request->validate(['jenis' => 'required|in:suka,bookmark']);
 
-        $siswaId = Auth::guard('siswa')->id();
-        $jenis = $request->jenis;
-        $artikel = Artikel::findOrFail($id);
+            $siswaId = Auth::guard('siswa')->id();
+            $jenis = $request->jenis;
+            $artikel = Artikel::findOrFail($id);
 
-        $interaksi = InteraksiArtikel::where('id_artikel', $id)
-            ->where('id_siswa', $siswaId)
-            ->where('jenis', $jenis)->first();
+            $interaksi = InteraksiArtikel::where('id_artikel', $id)
+                ->where('id_siswa', $siswaId)
+                ->where('jenis', $jenis)->first();
 
-        if ($interaksi) {
-            $interaksi->delete();
-        } else {
-            InteraksiArtikel::create(['id_artikel' => $id, 'id_siswa' => $siswaId, 'jenis' => $jenis]);
+            if ($interaksi) {
+                $interaksi->delete();
+            } else {
+                $interaksi = InteraksiArtikel::create(['id_artikel' => $id, 'id_siswa' => $siswaId, 'jenis' => $jenis]);
 
-            if ($jenis == 'suka' && $artikel->id_siswa && $artikel->id_siswa != $siswaId) {
-                Notifikasi::create([
-                    'id_siswa' => $artikel->id_siswa,
-                    'judul' => 'Artikel Anda Disukai',
-                    'pesan' => Auth::guard('siswa')->user()->nama . ' menyukai artikel Anda: "' . $artikel->judul . '".',
-                    'jenis' => 'like',
-                    'referensi_tipe' => 'artikel',
-                    'referensi_id' => $artikel->id,
-                ]);
+                if ($jenis == 'suka' && $artikel->id_siswa && $artikel->id_siswa != $siswaId) {
+                    Notifikasi::create([
+                        'id_siswa' => $artikel->id_siswa,
+                        'judul' => 'Artikel Anda Disukai',
+                        'pesan' => Auth::guard('siswa')->user()->nama . ' menyukai artikel Anda: "' . $artikel->judul . '".',
+                        'jenis' => 'like',
+                        'referensi_tipe' => 'artikel',
+                        'referensi_id' => $artikel->id,
+                    ]);
+                }
             }
-        }
-        
-        $artikel->jumlah_suka = $artikel->interaksis()->where('jenis', 'suka')->count();
-        $artikel->save();
 
-        return response()->json([
-            'success' => true,
-            'like_count' => $artikel->jumlah_suka
-        ]);
+            $artikel->jumlah_suka = $artikel->interaksis()->where('jenis', 'suka')->count();
+            $artikel->save();
+
+            return response()->json([
+                'success' => true,
+                'like_count' => $artikel->jumlah_suka
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error storing interaksi: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal menyimpan interaksi.'], 500);
+        }
     }
 }
