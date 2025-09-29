@@ -11,21 +11,35 @@
         <h1 class="page-title">Kelola Artikel</h1>
         <p class="page-subtitle">Kelola dan atur semua artikel literasi akhlak untuk sistem pembelajaran</p>
 
-        <div class="action-buttons">
-            <a href="{{ route('admin.artikel.create') }}" class="btn btn-primary-custom">
+       <div class="action-buttons d-flex flex-wrap gap-3">
+    <div class="card shadow-sm">
+        <div class="card-body p-2">
+            <a href="{{ route('admin.artikel.create') }}" class="btn btn-primary-custom w-100">
                 <i class="fas fa-plus me-2"></i>Tambah Artikel Baru
             </a>
-            <a href="{{ route('admin.artikel.status', ['status' => 'menunggu']) }}" class="btn btn-warning-custom">
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-2">
+            <a href="{{ route('admin.artikel.status', ['status' => 'menunggu']) }}" class="btn btn-warning-custom w-100">
                 <i class="fas fa-clock me-2"></i>Status Menunggu
             </a>
-            @if (isset($status) && $status)
-                <a href="{{ route('admin.artikel.index') }}" class="btn btn-secondary-custom">
+        </div>
+    </div>
+
+    @if (isset($status) && $status)
+        <div class="card shadow-sm">
+            <div class="card-body p-2">
+                <a href="{{ route('admin.artikel.index') }}" class="btn btn-secondary-custom w-100">
                     <i class="fas fa-arrow-left me-2"></i>Kembali ke Semua Artikel
                 </a>
-            @endif
-            <a href="{{ route('admin.artikel.export') }}" class="btn btn-success-custom">
-                <i class="fas fa-download me-2"></i>Export Excel
-            </a>
+            </div>
+        </div>
+    @endif
+    </div>
+</div>
+
         </div>
     </div>
 
