@@ -21,7 +21,7 @@ class LogAdmin extends Model
     ];
 
     protected $casts = [
-        'detail' => 'array',
+        'detail' => 'string',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

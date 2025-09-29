@@ -6,15 +6,17 @@
 @section('content')
     <link rel="stylesheet" href="{{ asset('css/artikel.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
     <div class="container-fluid">
         <div class="row">
             <div class="col-lg-10 offset-lg-1">
                 <div class="main-card">
+                    <!-- Card Header -->
                     <div class="card-header-custom">
                         <i class="fas fa-plus me-2"></i> Form Tambah Artikel
                     </div>
+                    <!-- Card Body -->
                     <div class="card-body-custom">
+                        <!-- Error Messages -->
                         @if ($errors->any())
                             <div class="alert alert-danger">
                                 <ul class="mb-0">
@@ -24,44 +26,81 @@
                                 </ul>
                             </div>
                         @endif
+                        <!-- Success/Error Session Messages -->
                         @if (session('success'))
-                            <div class="alert alert-success custom-alert">{{ session('success') }}</div>
+                            <div class="alert alert-success custom-alert">
+                                {{ session('success') }}
+                            </div>
                         @endif
                         @if (session('error'))
-                            <div class="alert alert-danger custom-alert">{{ session('error') }}</div>
+                            <div class="alert alert-danger custom-alert">
+                                {{ session('error') }}
+                            </div>
                         @endif
-
-                        <form action="{{ route('admin.artikel.store') }}" method="POST" enctype="multipart/form-data" id="create-artikel-form" novalidate>
+                        <!-- Main Form -->
+                        <form action="{{ route('admin.artikel.store') }}"
+                              method="POST"
+                              enctype="multipart/form-data"
+                              id="create-artikel-form"
+                              novalidate>
                             @csrf
+                            <!-- Judul Artikel -->
                             <div class="mb-3">
-                                <label for="judul" class="form-label">Judul Artikel <span class="text-danger">*</span></label>
-                                <input type="text" name="judul" id="judul" class="form-control" value="{{ old('judul') }}" required>
+                                <label for="judul" class="form-label">
+                                    Judul Artikel <span class="text-danger">*</span>
+                                </label>
+                                <input type="text"
+                                       name="judul"
+                                       id="judul"
+                                       class="form-control"
+                                       value="{{ old('judul') }}"
+                                       required>
                                 @error('judul')
                                     <div class="alert alert-danger mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
+                            <!-- Isi Artikel -->
                             <div class="mb-3">
-                                <label for="isi" class="form-label">Isi Artikel <span class="text-danger">*</span></label>
-                                <textarea name="isi" id="tambah_isi" class="form-control" rows="10" required>{{ old('isi') }}</textarea>
-                                <div id="charCount" class="text-muted mt-1" style="font-size: 0.9em;">0/3000</div>
+                                <label for="isi" class="form-label">
+                                    Isi Artikel <span class="text-danger">*</span>
+                                </label>
+                                <textarea name="isi"
+                                          id="tambah_isi"
+                                          class="form-control"
+                                          rows="10"
+                                          required>{{ old('isi') }}</textarea>
+                                <div id="charCount" class="text-muted mt-1" style="font-size: 0.9em;">
+                                    0/3000
+                                </div>
                                 @error('isi')
                                     <div class="alert alert-danger mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
+                            <!-- Gambar -->
                             <div class="mb-3">
-                                <label for="gambar" class="form-label">Gambar (opsional)</label>
-                                <input type="file" name="gambar" id="gambar" class="form-control" accept="image/*">
+                                <label for="gambar" class="form-label">
+                                    Gambar (opsional)
+                                </label>
+                                <input type="file"
+                                       name="gambar"
+                                       id="gambar"
+                                       class="form-control"
+                                       accept="image/*">
                                 <div id="imagePreview" class="mt-2" style="max-width: 200px;"></div>
                                 @error('gambar')
                                     <div class="alert alert-danger mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
+                            <!-- Kategori -->
                             <div class="mb-3">
-                                <label for="id_kategori" class="form-label">Kategori <span class="text-danger">*</span></label>
-                                <select name="id_kategori" id="id_kategori" class="form-select" required>
+                                <label for="id_kategori" class="form-label">
+                                    Kategori <span class="text-danger">*</span>
+                                </label>
+                                <select name="id_kategori" id="id_kategori" class="form-select select2" required>
                                     <option value="">Pilih Kategori</option>
                                     @foreach ($kategoris as $kategori)
-                                        <option value="{{ $kategori->id }}" {{ old('id_kategori') == $kategori->id ? 'selected' : '' }}>
+                                        <option value="{{ $kategori->id }}"
+                                                {{ old('id_kategori') == $kategori->id ? 'selected' : '' }}>
                                             {{ $kategori->nama }}
                                         </option>
                                     @endforeach
@@ -70,25 +109,50 @@
                                     <div class="alert alert-danger mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
+                            <!-- Penulis Artikel -->
                             <div class="mb-3">
-                                <label class="form-label">Penulis Artikel <span class="text-danger">*</span></label>
+                                <label class="form-label">
+                                    Penulis Artikel <span class="text-danger">*</span>
+                                </label>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="penulis_type" id="penulis_admin" value="admin" {{ old('penulis_type', 'admin') == 'admin' ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="penulis_admin">Admin</label>
+                                    <input class="form-check-input"
+                                           type="radio"
+                                           name="penulis_type"
+                                           id="penulis_admin"
+                                           value="admin"
+                                           {{ old('penulis_type', 'admin') == 'admin' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="penulis_admin">
+                                        Admin
+                                    </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="penulis_type" id="penulis_siswa" value="siswa" {{ old('penulis_type') == 'siswa' ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="penulis_siswa">Siswa</label>
+                                    <input class="form-check-input"
+                                           type="radio"
+                                           name="penulis_type"
+                                           id="penulis_siswa"
+                                           value="siswa"
+                                           {{ old('penulis_type') == 'siswa' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="penulis_siswa">
+                                        Siswa
+                                    </label>
                                 </div>
                                 @error('penulis_type')
                                     <div class="alert alert-danger mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <div id="siswa-fields" class="row {{ old('penulis_type') == 'siswa' ? '' : 'd-none' }}">
-                                <div class="col-md-8">
-                                    <div class="mb-3">
-                                        <label for="id_siswa" class="form-label">Cari Nama Siswa <span class="text-danger">*</span></label>
-                                        <select name="id_siswa" id="id_siswa" class="form-control select2" style="width: 100%;">
+                            <!-- Siswa Fields (Conditional) -->
+                            <div id="siswa-fields"
+                                 class="mb-3 {{ old('penulis_type') == 'siswa' ? '' : 'd-none' }}">
+                                <div class="row g-3">
+                                    <!-- Cari Nama Siswa -->
+                                    <div class="col-md-8">
+                                        <label for="id_siswa" class="form-label">
+                                            Cari Nama Siswa <span class="text-danger">*</span>
+                                        </label>
+                                        <select name="id_siswa"
+                                                id="id_siswa"
+                                                class="form-control select2"
+                                                style="width: 100%;">
                                             @if (old('id_siswa'))
                                                 <option value="{{ old('id_siswa') }}" selected>
                                                     {{ \App\Models\Siswa::find(old('id_siswa'))->nama ?? 'Siswa Tidak Ditemukan' }}
@@ -99,54 +163,102 @@
                                             <div class="alert alert-danger mt-1">{{ $message }}</div>
                                         @enderror
                                     </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="kelas_siswa" class="form-label">Kelas</label>
-                                        <input type="text" id="kelas_siswa" class="form-control" readonly>
+                                    <!-- Kelas -->
+                                    <div class="col-md-4">
+                                        <label for="kelas_siswa" class="form-label">
+                                            Kelas
+                                        </label>
+                                        <input type="text"
+                                               id="kelas_siswa"
+                                               class="form-control"
+                                               readonly>
                                     </div>
                                 </div>
                             </div>
+                            <!-- Jenis -->
                             <div class="mb-3">
-                                <label for="jenis" class="form-label">Jenis <span class="text-danger">*</span></label>
+                                <label for="jenis" class="form-label">
+                                    Jenis <span class="text-danger">*</span>
+                                </label>
                                 <select name="jenis" id="jenis" class="form-select" required>
-                                    <option value="bebas" {{ old('jenis') == 'bebas' ? 'selected' : '' }}>Bebas</option>
-                                    <option value="resensi_buku" {{ old('jenis') == 'resensi_buku' ? 'selected' : '' }}>Resensi Buku</option>
-                                    <option value="resensi_film" {{ old('jenis') == 'resensi_film' ? 'selected' : '' }}>Resensi Film</option>
-                                    <option value="video" {{ old('jenis') == 'video' ? 'selected' : '' }}>Video</option>
+                                    <option value="bebas"
+                                            {{ old('jenis') == 'bebas' ? 'selected' : '' }}>
+                                        Bebas
+                                    </option>
+                                    <option value="resensi_buku"
+                                            {{ old('jenis') == 'resensi_buku' ? 'selected' : '' }}>
+                                        Resensi Buku
+                                    </option>
+                                    <option value="resensi_film"
+                                            {{ old('jenis') == 'resensi_film' ? 'selected' : '' }}>
+                                        Resensi Film
+                                    </option>
+                                    <option value="video"
+                                            {{ old('jenis') == 'video' ? 'selected' : '' }}>
+                                        Video
+                                    </option>
                                 </select>
                                 @error('jenis')
                                     <div class="alert alert-danger mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
+                            <!-- Status -->
                             <div class="mb-3">
-                                <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                                <label for="status" class="form-label">
+                                    Status <span class="text-danger">*</span>
+                                </label>
                                 <select name="status" id="status" class="form-select" required>
-                                    <option value="menunggu" {{ old('status', 'menunggu') == 'menunggu' ? 'selected' : '' }}>Menunggu</option>
-                                    <option value="draf" {{ old('status') == 'draf' ? 'selected' : '' }}>Draf</option>
-                                    <option value="disetujui" {{ old('status') == 'disetujui' ? 'selected' : '' }}>Disetujui</option>
-                                    <option value="ditolak" {{ old('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
+                                    <option value="menunggu"
+                                            {{ old('status', 'menunggu') == 'menunggu' ? 'selected' : '' }}>
+                                        Menunggu
+                                    </option>
+                                    <option value="draf"
+                                            {{ old('status') == 'draf' ? 'selected' : '' }}>
+                                        Draf
+                                    </option>
+                                    <option value="disetujui"
+                                            {{ old('status') == 'disetujui' ? 'selected' : '' }}>
+                                        Disetujui
+                                    </option>
+                                    <option value="ditolak"
+                                            {{ old('status') == 'ditolak' ? 'selected' : '' }}>
+                                        Ditolak
+                                    </option>
                                 </select>
                                 @error('status')
                                     <div class="alert alert-danger mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <div id="alasan-penolakan-field" class="mb-3 {{ old('status') == 'ditolak' ? '' : 'd-none' }}">
-                                <label for="alasan_penolakan" class="form-label">Alasan Penolakan</label>
-                                <textarea name="alasan_penolakan" id="alasan_penolakan" class="form-control" rows="3">{{ old('alasan_penolakan') }}</textarea>
+                            <!-- Alasan Penolakan (Conditional) -->
+                            <div id="alasan-penolakan-field"
+                                 class="mb-3 {{ old('status') == 'ditolak' ? '' : 'd-none' }}">
+                                <label for="alasan_penolakan" class="form-label">
+                                    Alasan Penolakan
+                                </label>
+                                <textarea name="alasan_penolakan"
+                                          id="alasan_penolakan"
+                                          class="form-control"
+                                          rows="3">{{ old('alasan_penolakan') }}</textarea>
                                 @error('alasan_penolakan')
                                     <div class="alert alert-danger mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
+                            <!-- Rating Awal -->
                             <div class="mb-3">
-                                <label for="rating" class="form-label">Rating Awal (opsional)</label>
+                                <label for="rating" class="form-label">
+                                    Rating Awal (opsional)
+                                </label>
                                 <select name="rating" id="rating" class="form-select">
                                     <option value="">Belum ada</option>
                                     @for ($i = 1; $i <= 5; $i++)
-                                        <option value="{{ $i }}" {{ old('rating') == $i ? 'selected' : '' }}>⭐ {{ $i }}</option>
+                                        <option value="{{ $i }}"
+                                                {{ old('rating') == $i ? 'selected' : '' }}>
+                                            ⭐ {{ $i }}
+                                        </option>
                                     @endfor
                                 </select>
                             </div>
+                            <!-- Submit Buttons -->
                             <div class="mt-4">
                                 <button type="submit" class="btn btn-success" id="submitBtn">
                                     <i class="fas fa-save me-2"></i>Simpan Artikel
@@ -192,16 +304,30 @@
                 }
             });
 
-            // Initialize Select2
+            // Initialize Select2 for Category
+            $('#id_kategori').select2({
+                placeholder: 'Pilih Kategori',
+                allowClear: true,
+                width: '100%',
+                dropdownCssClass: 'custom-select2-dropdown',
+                minimumResultsForSearch: Infinity // Disable search for small lists
+            });
+
+            // Initialize Select2 for Student Search
             $('#id_siswa').select2({
                 placeholder: 'Ketik nama atau NIS siswa',
                 allowClear: true,
+                width: '100%',
+                dropdownCssClass: 'custom-select2-dropdown',
                 ajax: {
                     url: '{{ route('admin.search.siswa') }}',
                     dataType: 'json',
                     delay: 250,
                     data: function (params) {
-                        return { term: params.term || '', page: params.page || 1 };
+                        return {
+                            term: params.term || '',
+                            page: params.page || 1
+                        };
                     },
                     processResults: function (data, params) {
                         params.page = params.page || 1;
@@ -214,12 +340,7 @@
                 }
             });
 
-            $('#id_kategori').select2({
-                placeholder: 'Pilih Kategori',
-                allowClear: true
-            });
-
-            // Author Type Logic
+            // Author Type Change Handler
             $('input[name="penulis_type"]').change(function () {
                 const isSiswa = this.value === 'siswa';
                 $('#siswa-fields').toggleClass('d-none', !isSiswa);
@@ -227,26 +348,30 @@
                 $('#kelas_siswa').val('');
             });
 
-            // Update Student Class
+            // Update Student Class when Student is Selected
             $('#id_siswa').on('select2:select', function (e) {
                 const data = e.params.data;
                 $('#kelas_siswa').val(data.kelas || '-');
             });
 
-            // Status Change Logic
+            // Status Change Handler
             $('#status').change(function () {
                 const isDitolak = $(this).val() === 'ditolak';
                 $('#alasan-penolakan-field').toggleClass('d-none', !isDitolak);
                 $('#alasan_penolakan').prop('required', isDitolak);
             });
 
-            // Image Preview
+            // Image Preview Handler
             $('#gambar').on('change', function (e) {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = function (e) {
-                        $('#imagePreview').html(`<img src="${e.target.result}" style="max-width: 200px; border-radius: 5px;">`);
+                        $('#imagePreview').html(`
+                            <img src="${e.target.result}"
+                                 style="max-width: 200px; border-radius: 5px;"
+                                 alt="Preview">
+                        `);
                     };
                     reader.readAsDataURL(file);
                 } else {
@@ -261,8 +386,8 @@
                 const formData = new FormData(this);
                 const submitBtn = $('#submitBtn');
                 const originalText = submitBtn.html();
-                submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Menyimpan...').prop('disabled', true);
-
+                submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Menyimpan...')
+                         .prop('disabled', true);
                 $.ajax({
                     url: $(this).attr('action'),
                     method: 'POST',
@@ -271,13 +396,17 @@
                     contentType: false,
                     success: function (response) {
                         showAlert('success', response.message);
-                        setTimeout(() => window.location.href = response.redirect, 1500);
+                        setTimeout(() => {
+                            window.location.href = response.redirect;
+                        }, 1500);
                     },
                     error: function (xhr) {
                         showAlert('error', xhr.responseJSON?.message || 'Gagal menyimpan artikel.');
                         if (xhr.responseJSON?.errors) {
                             $.each(xhr.responseJSON.errors, function (key, error) {
-                                $(`[name="${key}"]`).after(`<div class="alert alert-danger mt-1">${error[0]}</div>`);
+                                $(`[name="${key}"]`).after(`
+                                    <div class="alert alert-danger mt-1">${error[0]}</div>
+                                `);
                             });
                         }
                     },
@@ -298,9 +427,35 @@
                     </div>
                 `;
                 $('.custom-alert').remove();
-                $('body').append(alertHtml);
-                setTimeout(() => $('.custom-alert').fadeOut(() => $('.custom-alert').remove()), 5000);
+                $('.card-body-custom').prepend(alertHtml);
+                setTimeout(() => {
+                    $('.custom-alert').fadeOut(() => {
+                        $('.custom-alert').remove();
+                    });
+                }, 5000);
             }
+
+            // Ensure Select2 dropdowns match form-control styling
+            $('.select2').each(function () {
+                $(this).next('.select2-container').addClass('form-control p-0');
+            });
         });
     </script>
+    <style>
+        .select2-container .select2-selection--single {
+            height: calc(1.5em + 0.75rem + 2px);
+            padding: 0.375rem 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: calc(1.5em + 0.75rem);
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: calc(1.5em + 0.75rem);
+        }
+        .custom-select2-dropdown {
+            border-radius: 0.25rem;
+        }
+    </style>
 @endsection
