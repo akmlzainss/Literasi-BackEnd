@@ -26,20 +26,21 @@ class KelolaSiswaController extends Controller
     {
         $query = Siswa::query();
 
-        if ($request->filled('q')) {
-            $q = trim($request->input('q'));
-            $query->where(function ($sub) use ($q) {
-                $sub->where('nis', 'like', "%{$q}%")
-                    ->orWhere('nama', 'like', "%{$q}%")
-                    ->orWhere('email', 'like', "%{$q}%")
-                    ->orWhere('kelas', 'like', "%{$q}%");
-            });
-        }
+      if ($request->filled('q')) {
+    $q = trim($request->input('q'));
+    $query->where(function ($sub) use ($q) {
+        $sub->where('nis', 'like', "%{$q}%")
+            ->orWhere('nama', 'like', "%{$q}%")
+            ->orWhere('email', 'like', "%{$q}%");
+            // HAPUS kelas dari pencarian bebas
+    });
+}
 
-        if ($request->filled('kelas')) {
-            $kelas = trim($request->input('kelas'));
-            $query->where('kelas', 'like', "%{$kelas}%"); // bebas
-        }
+if ($request->filled('kelas')) {
+    $kelas = trim($request->input('kelas'));
+    $query->where('kelas', 'like', "%{$kelas}%"); 
+}
+
 
         $sort = $request->input('sort', 'created_at_desc');
         match ($sort) {

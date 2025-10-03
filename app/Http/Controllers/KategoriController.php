@@ -28,7 +28,8 @@ class KategoriController extends Controller
             return view('kategori.kategori', compact('kategoris'));
         } catch (\Exception $e) {
             Log::error('Error fetching categories: ' . $e->getMessage());
-            return redirect()->route('admin.kategori.index')->with('error', 'Gagal memuat kategori.');
+            return redirect()->route('admin.kategori.index')
+                             ->with('error', 'Gagal memuat kategori.');
         }
     }
 
@@ -38,7 +39,8 @@ class KategoriController extends Controller
             return view('kategori.create');
         } catch (\Exception $e) {
             Log::error('Error loading create form: ' . $e->getMessage());
-            return redirect()->route('admin.kategori.index')->with('error', 'Gagal memuat form tambah kategori.');
+            return redirect()->route('admin.kategori.index')
+                             ->with('error', 'Gagal memuat form tambah kategori.');
         }
     }
 
@@ -66,42 +68,30 @@ class KategoriController extends Controller
                     'aksi' => 'Menambahkan kategori baru',
                     'referensi_tipe' => 'kategori',
                     'referensi_id' => $kategori->id,
-                    'detail' => json_encode(['nama' => $request->nama, 'deskripsi' => $request->deskripsi]),
+                    'detail' => json_encode([
+                        'nama' => $request->nama,
+                        'deskripsi' => $request->deskripsi
+                    ]),
                     'dibuat_pada' => now(),
                 ]);
             }
 
             $total = Kategori::count();
             $lastPage = ceil($total / 6);
-            return redirect()->route('admin.kategori.index', ['page' => $lastPage])->with('success', 'Kategori berhasil ditambahkan.');
+            return redirect()->route('admin.kategori.index', ['page' => $lastPage])
+                             ->with('success', 'Kategori berhasil ditambahkan.');
         } catch (\Illuminate\Validation\ValidationException $e) {
-            $adminId = Auth::guard('admin')->id();
-            if ($adminId) {
-                LogAdmin::create([
-                    'id_admin' => $adminId,
-                    'jenis_aksi' => 'gagal_create',
-                    'aksi' => 'Gagal menambahkan kategori baru',
-                    'referensi_tipe' => 'kategori',
-                    'referensi_id' => null,
-                    'detail' => json_encode(['nama' => $request->nama, 'error' => $e->getMessage()]),
-                    'dibuat_pada' => now(),
-                ]);
-            }
+            $this->logError('gagal_create', 'Gagal menambahkan kategori baru', null, [
+                'nama' => $request->nama,
+                'error' => $e->getMessage()
+            ]);
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             Log::error('Error creating category: ' . $e->getMessage());
-            $adminId = Auth::guard('admin')->id();
-            if ($adminId) {
-                LogAdmin::create([
-                    'id_admin' => $adminId,
-                    'jenis_aksi' => 'gagal_create',
-                    'aksi' => 'Gagal menambahkan kategori baru',
-                    'referensi_tipe' => 'kategori',
-                    'referensi_id' => null,
-                    'detail' => json_encode(['nama' => $request->nama, 'error' => $e->getMessage()]),
-                    'dibuat_pada' => now(),
-                ]);
-            }
+            $this->logError('gagal_create', 'Gagal menambahkan kategori baru', null, [
+                'nama' => $request->nama,
+                'error' => $e->getMessage()
+            ]);
             return redirect()->back()->with('error', 'Gagal menambahkan kategori.');
         }
     }
@@ -110,10 +100,11 @@ class KategoriController extends Controller
     {
         try {
             $kategori = Kategori::findOrFail($id);
-            return view('kategori.edit', compact('kategori')); // Ganti dengan view biasa, hapus JSON
+            return view('kategori.edit', compact('kategori'));
         } catch (\Exception $e) {
             Log::error('Error loading edit form: ' . $e->getMessage());
-            return redirect()->route('admin.kategori.index')->with('error', 'Gagal memuat data kategori.');
+            return redirect()->route('admin.kategori.index')
+                             ->with('error', 'Gagal memuat data kategori.');
         }
     }
 
@@ -122,7 +113,7 @@ class KategoriController extends Controller
         try {
             $request->validate([
                 'nama' => 'required|string|max:255|unique:kategori,nama,' . $id,
-                'deskripsi' => 'required|string',
+                'deskripsi' => 'nullable|string', // ✅ fix: sekarang boleh kosong
             ], [
                 'nama.unique' => 'Nama kategori sudah digunakan. Silakan gunakan nama lain.',
             ]);
@@ -133,49 +124,27 @@ class KategoriController extends Controller
                 'deskripsi' => $request->deskripsi,
             ]);
 
-            $adminId = Auth::guard('admin')->id();
-            if ($adminId) {
-                LogAdmin::create([
-                    'id_admin' => $adminId,
-                    'jenis_aksi' => 'update',
-                    'aksi' => 'Mengedit kategori',
-                    'referensi_tipe' => 'kategori',
-                    'referensi_id' => $kategori->id,
-                    'detail' => json_encode(['nama' => $request->nama, 'deskripsi' => $request->deskripsi]),
-                    'dibuat_pada' => now(),
-                ]);
-            }
+            $this->logSuccess('update', 'Mengedit kategori', $kategori->id, [
+                'nama' => $request->nama,
+                'deskripsi' => $request->deskripsi
+            ]);
 
-            return redirect()->route('admin.kategori.index')->with('success', 'Data berhasil diedit.');
+            return redirect()->route('admin.kategori.index')
+                             ->with('success', 'Data berhasil diedit.');
         } catch (\Illuminate\Validation\ValidationException $e) {
-            $adminId = Auth::guard('admin')->id();
-            if ($adminId) {
-                LogAdmin::create([
-                    'id_admin' => $adminId,
-                    'jenis_aksi' => 'gagal_update',
-                    'aksi' => 'Gagal mengedit kategori',
-                    'referensi_tipe' => 'kategori',
-                    'referensi_id' => $id,
-                    'detail' => json_encode(['nama' => $request->nama, 'error' => $e->getMessage()]),
-                    'dibuat_pada' => now(),
-                ]);
-            }
+            $this->logError('gagal_update', 'Gagal mengedit kategori', $id, [
+                'nama' => $request->nama,
+                'error' => $e->getMessage()
+            ]);
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             Log::error('Error updating category: ' . $e->getMessage());
-            $adminId = Auth::guard('admin')->id();
-            if ($adminId) {
-                LogAdmin::create([
-                    'id_admin' => $adminId,
-                    'jenis_aksi' => 'gagal_update',
-                    'aksi' => 'Gagal mengedit kategori',
-                    'referensi_tipe' => 'kategori',
-                    'referensi_id' => $id,
-                    'detail' => json_encode(['nama' => $request->nama, 'error' => $e->getMessage()]),
-                    'dibuat_pada' => now(),
-                ]);
-            }
-            return redirect()->route('admin.kategori.index')->with('error', 'Gagal memperbarui kategori.');
+            $this->logError('gagal_update', 'Gagal mengedit kategori', $id, [
+                'nama' => $request->nama,
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->route('admin.kategori.index')
+                             ->with('error', 'Gagal memperbarui kategori.');
         }
     }
 
@@ -184,37 +153,22 @@ class KategoriController extends Controller
         try {
             $kategori = Kategori::findOrFail($id);
 
-            $adminId = Auth::guard('admin')->id();
-            if ($adminId) {
-                LogAdmin::create([
-                    'id_admin' => $adminId,
-                    'jenis_aksi' => 'delete',
-                    'aksi' => 'Menghapus kategori',
-                    'referensi_tipe' => 'kategori',
-                    'referensi_id' => $kategori->id,
-                    'detail' => json_encode(['nama' => $kategori->nama, 'deskripsi' => $kategori->deskripsi]),
-                    'dibuat_pada' => now(),
-                ]);
-            }
+            $this->logSuccess('delete', 'Menghapus kategori', $kategori->id, [
+                'nama' => $kategori->nama,
+                'deskripsi' => $kategori->deskripsi
+            ]);
 
             $kategori->delete();
 
-            return redirect()->route('admin.kategori.index')->with('success', 'Data berhasil dihapus.');
+            return redirect()->route('admin.kategori.index')
+                             ->with('success', 'Data berhasil dihapus.');
         } catch (\Exception $e) {
             Log::error('Error deleting category: ' . $e->getMessage());
-            $adminId = Auth::guard('admin')->id();
-            if ($adminId) {
-                LogAdmin::create([
-                    'id_admin' => $adminId,
-                    'jenis_aksi' => 'gagal_delete',
-                    'aksi' => 'Gagal menghapus kategori',
-                    'referensi_tipe' => 'kategori',
-                    'referensi_id' => $id,
-                    'detail' => json_encode(['error' => $e->getMessage()]),
-                    'dibuat_pada' => now(),
-                ]);
-            }
-            return redirect()->route('admin.kategori.index')->with('error', 'Gagal menghapus kategori.');
+            $this->logError('gagal_delete', 'Gagal menghapus kategori', $id, [
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->route('admin.kategori.index')
+                             ->with('error', 'Gagal menghapus kategori.');
         }
     }
 
@@ -225,7 +179,8 @@ class KategoriController extends Controller
             return view('kategori.detail', compact('kategori'));
         } catch (\Exception $e) {
             Log::error('Error loading category detail: ' . $e->getMessage());
-            return redirect()->route('admin.kategori.index')->with('error', 'Gagal memuat detail kategori.');
+            return redirect()->route('admin.kategori.index')
+                             ->with('error', 'Gagal memuat detail kategori.');
         }
     }
 
@@ -234,18 +189,9 @@ class KategoriController extends Controller
         try {
             $kategoris = Kategori::all();
 
-            $adminId = Auth::guard('admin')->id();
-            if ($adminId) {
-                LogAdmin::create([
-                    'id_admin' => $adminId,
-                    'jenis_aksi' => 'export',
-                    'aksi' => 'Mengekspor data kategori',
-                    'referensi_tipe' => 'kategori',
-                    'referensi_id' => null,
-                    'detail' => json_encode(['total' => $kategoris->count()]),
-                    'dibuat_pada' => now(),
-                ]);
-            }
+            $this->logSuccess('export', 'Mengekspor data kategori', null, [
+                'total' => $kategoris->count()
+            ]);
 
             $filename = 'kategori_' . date('Ymd_His') . '.csv';
             $headers = [
@@ -272,19 +218,35 @@ class KategoriController extends Controller
             return new StreamedResponse($callback, 200, $headers);
         } catch (\Exception $e) {
             Log::error('Error exporting categories: ' . $e->getMessage());
-            $adminId = Auth::guard('admin')->id();
-            if ($adminId) {
-                LogAdmin::create([
-                    'id_admin' => $adminId,
-                    'jenis_aksi' => 'gagal_export',
-                    'aksi' => 'Gagal menekspor data kategori',
-                    'referensi_tipe' => 'kategori',
-                    'referensi_id' => null,
-                    'detail' => json_encode(['error' => $e->getMessage()]),
-                    'dibuat_pada' => now(),
-                ]);
-            }
-            return redirect()->route('admin.kategori.index')->with('error', 'Gagal menekspor data.');
+            $this->logError('gagal_export', 'Gagal mengekspor data kategori', null, [
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->route('admin.kategori.index')
+                             ->with('error', 'Gagal mengekspor data.');
         }
+    }
+
+    /* =====================
+     |   HELPER LOGGING
+     ===================== */
+    private function logSuccess($jenis, $aksi, $referensiId = null, array $detail = [])
+    {
+        $adminId = Auth::guard('admin')->id();
+        if ($adminId) {
+            LogAdmin::create([
+                'id_admin' => $adminId,
+                'jenis_aksi' => $jenis,
+                'aksi' => $aksi,
+                'referensi_tipe' => 'kategori',
+                'referensi_id' => $referensiId,
+                'detail' => json_encode($detail),
+                'dibuat_pada' => now(),
+            ]);
+        }
+    }
+
+    private function logError($jenis, $aksi, $referensiId = null, array $detail = [])
+    {
+        $this->logSuccess($jenis, $aksi, $referensiId, $detail);
     }
 }
