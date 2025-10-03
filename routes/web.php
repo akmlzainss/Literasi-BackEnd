@@ -97,8 +97,11 @@ Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function ()
     Route::get('/kategori/export', [KategoriController::class, 'export'])->name('kategori.export');
     Route::get('/kategori/{id}/detail', [KategoriController::class, 'detail'])->name('kategori.detail');
 
-    Route::resource('penghargaan', PenghargaanController::class);
+     // --- PERBAIKAN RUTE PENGHARGAAN ---
     Route::post('/send-award-notification', [PenghargaanController::class, 'sendAwardNotification'])->name('send.award.notification');
+    Route::get('/penghargaan/reset/{month?}', [PenghargaanController::class, 'resetMonthly'])->name('penghargaan.reset');
+    Route::resource('penghargaan', PenghargaanController::class);
+    // --- AKHIR PERBAIKAN ---
 
     Route::resource('siswa', KelolaSiswaController::class)->except(['create', 'show', 'edit']);
     Route::get('/siswa/{nis}/detail', [KelolaSiswaController::class, 'show'])->name('siswa.detail');
