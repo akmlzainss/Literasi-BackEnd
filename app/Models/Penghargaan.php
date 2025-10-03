@@ -15,16 +15,19 @@ class Penghargaan extends Model
 
     protected $fillable = [
         'id_artikel',
+        'id_video',
         'id_siswa',
         'id_admin',
         'jenis',
         'bulan_tahun',
         'deskripsi_penghargaan',
-        'dibuat_pada'
+        'dibuat_pada',
+        'arsip'
     ];
 
     protected $casts = [
         'deleted_at' => 'datetime',
+        'arsip' => 'boolean',
     ];
 
     /* =====================
@@ -33,6 +36,11 @@ class Penghargaan extends Model
     public function artikel()
     {
         return $this->belongsTo(Artikel::class, 'id_artikel');
+    }
+
+    public function video() // Tambah relasi video
+    {
+        return $this->belongsTo(Video::class, 'id_video');
     }
 
     public function siswa()

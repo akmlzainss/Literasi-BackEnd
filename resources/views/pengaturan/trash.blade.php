@@ -275,13 +275,13 @@
                                     <td>{{ $item->dibuat_pada }}</td>
                                     <td>{{ $item->deleted_at }}</td>
                                     <td class="text-center">
-                                        <form action="{{ route('pengaturan.restore', ['model' => 'penghargaan', 'id' => $item->id]) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('admin.pengaturan.restore', ['model' => 'penghargaan', 'id' => $item->id]) }}" method="POST" class="d-inline">
                                             @csrf
                                             <button type="submit" class="btn btn-sm btn-success me-2" title="Restore Penghargaan">
                                                 <i class="bi bi-arrow-counterclockwise"></i> Restore
                                             </button>
                                         </form>
-                                        <form action="{{ route('pengaturan.forceDelete', ['model' => 'penghargaan', 'id' => $item->id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus penghargaan ini secara permanen?')">
+                                        <form action="{{ route('admin.pengaturan.forceDelete', ['model' => 'penghargaan', 'id' => $item->id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus penghargaan ini secara permanen?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-danger" title="Hapus Permanen">

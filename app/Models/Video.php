@@ -21,6 +21,7 @@ class Video extends Model
         'alasan_penolakan',
         'jumlah_dilihat',
         'diterbitkan_pada',
+        'jumlah_suka'
     ];
 
     public function siswa()
@@ -41,5 +42,11 @@ class Video extends Model
     public function komentar()
     {
         return $this->hasMany(KomentarVideo::class, 'id_video');
+    }
+
+
+    public function getLikeCountAttribute() // Accessor untuk sum like jika belum auto-update
+    {
+        return $this->interaksi()->where('tipe', 'like')->count();
     }
 }

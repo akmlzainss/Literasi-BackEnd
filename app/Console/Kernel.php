@@ -4,15 +4,23 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use App\Models\Penghargaan;
 
 class Kernel extends ConsoleKernel
 {
     /**
      * Define the application's command schedule.
      */
-    protected function schedule(Schedule $schedule): void
+    protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        $schedule->call(function () {
+            // Panggil reset untuk bulan lalu
+            $monthToArchive = now()->subMonth()->format('Y-m');
+            Penghargaan::where('bulan_tahun', 'like', $monthToArchive . '%')
+                ->where('arsip', false)
+                ->update(['arsip' => true]);
+            // Log atau notif jika perlu
+        })->monthlyOn(1, '0:00'); // Tanggal 1 jam 00:00 setiap bulan
     }
 
     /**
@@ -20,7 +28,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands(): void
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }
