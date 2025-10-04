@@ -177,8 +177,8 @@
                                         </small>
                                     </div>
                                     <div class="card-stats">
-                                        <span><i class="fas fa-eye fa-xs"></i> {{ $video->jumlah_dilihat ?? 0 }}</span>
-                                        <span><i class="fas fa-heart fa-xs"></i> {{ $video->jumlah_suka ?? 0 }}</span>
+                                        <span><i class="fas fa-eye fa-xs"></i> {{ $video->komentar()->count() }}</span>
+                                        <span><i class="fas fa-heart fa-xs"></i> {{ $video->interaksi()->where('jenis', 'suka')->count() }}</span>
                                     </div>
                                 </div>
                             </a>

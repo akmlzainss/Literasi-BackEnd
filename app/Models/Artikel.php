@@ -92,7 +92,7 @@ class Artikel extends Model
         return $this->hasMany(RatingArtikel::class, 'id_artikel', 'id');
     }
 
-    public function interaksis()
+    public function interaksi()
     {
         return $this->hasMany(InteraksiArtikel::class, 'id_artikel');
     }
