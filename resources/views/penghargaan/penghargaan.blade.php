@@ -10,62 +10,97 @@
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 
+    <!-- Page Header -->
     <div class="page-header">
-        <h1 class="page-title">Kelola Penghargaan Bulan Ini</h1>
-        <p class="page-subtitle" id="monthDisplay">Pilih pemenang berdasarkan rating (artikel) atau like (video). Bulan aktif: {{ \Carbon\Carbon::parse($currentMonth)->translatedFormat('F Y') }}</p>
-        <div class="action-buttons">
-            <a href="{{ route('admin.penghargaan.create') }}" class="btn-primary-custom">
-                <i class="fas fa-plus"></i> Tambah Manual
-            </a>
-            <a href="{{ route('admin.penghargaan.reset') }}" class="btn btn-warning" onclick="return confirm('Anda yakin ingin mengarsipkan semua pemenang dari bulan lalu?')">
-                <i class="fas fa-refresh"></i> Reset Bulanan
-            </a>
+        <div class="header-content">
+            <div class="header-text">
+                <h1 class="page-title">
+                    <i class="fas fa-trophy me-2"></i>Kelola Penghargaan Bulan Ini
+                </h1>
+                <p class="page-subtitle">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    Pilih pemenang berdasarkan rating (artikel) atau like (video). 
+                    Bulan aktif: <strong>{{ \Carbon\Carbon::parse($currentMonth)->translatedFormat('F Y') }}</strong>
+                </p>
+            </div>
+            <div class="action-buttons">
+                <a href="{{ route('admin.penghargaan.create') }}" class="btn-primary-custom">
+                    <i class="fas fa-plus"></i>
+                    <span>Tambah Manual</span>
+                </a>
+                <a href="{{ route('admin.penghargaan.reset') }}" class="btn-warning-custom" onclick="return confirm('Anda yakin ingin mengarsipkan semua pemenang dari bulan lalu?')">
+                    <i class="fas fa-refresh"></i>
+                    <span>Reset Bulanan</span>
+                </a>
+            </div>
         </div>
     </div>
 
     @include('penghargaan.modal-edit')
     @include('penghargaan.modal-confirm-pilih')
 
-    <hr>
-
+    <!-- Main Content Card -->
     <div class="main-card">
+        <!-- Card Header with Tabs -->
         <div class="card-header-custom">
-            <div>
-                <ul class="nav nav-tabs" id="penghargaanTab" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link {{ $activeTab == 'artikel' ? 'active' : '' }}" id="artikel-tab" data-bs-toggle="tab" data-bs-target="#artikel" type="button" role="tab">
-                            <i class="fas fa-book me-1"></i> Artikel (Rating Tertinggi)
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link {{ $activeTab == 'video' ? 'active' : '' }}" id="video-tab" data-bs-toggle="tab" data-bs-target="#video" type="button" role="tab">
-                            <i class="fas fa-video me-1"></i> Video (Like Terbanyak)
-                        </button>
-                    </li>
-                </ul>
-            </div>
-            <div class="d-flex align-items-center gap-2 text-white">
-                <i class="fas fa-info-circle"></i>
-                <span>Total: {{ $totalPenghargaan ?? 0 }} penghargaan</span>
+            <ul class="nav nav-tabs custom-tabs" id="penghargaanTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {{ $activeTab == 'artikel' ? 'active' : '' }}" 
+                            id="artikel-tab" 
+                            data-bs-toggle="tab" 
+                            data-bs-target="#artikel" 
+                            type="button" 
+                            role="tab">
+                        <i class="fas fa-book me-2"></i>
+                        <span>Artikel (Rating Tertinggi)</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {{ $activeTab == 'video' ? 'active' : '' }}" 
+                            id="video-tab" 
+                            data-bs-toggle="tab" 
+                            data-bs-target="#video" 
+                            type="button" 
+                            role="tab">
+                        <i class="fas fa-video me-2"></i>
+                        <span>Video (Like Terbanyak)</span>
+                    </button>
+                </li>
+            </ul>
+            <div class="header-info">
+                <i class="fas fa-award me-2"></i>
+                <span>Total: <strong>{{ $totalPenghargaan ?? 0 }}</strong> penghargaan</span>
             </div>
         </div>
 
         <div class="card-body-custom">
             <div class="tab-content" id="penghargaanTabContent">
+                
                 {{-- TAB ARTIKEL --}}
-                <div class="tab-pane fade {{ $activeTab == 'artikel' ? 'show active' : '' }}" id="artikel" role="tabpanel" aria-labelledby="artikel-tab">
-                    <div class="search-filter-section">
+                <div class="tab-pane fade {{ $activeTab == 'artikel' ? 'show active' : '' }}" 
+                     id="artikel" 
+                     role="tabpanel" 
+                     aria-labelledby="artikel-tab">
+                    
+                    <!-- Filter Section -->
+                    <div class="filter-section">
                         <form method="GET" action="{{ route('admin.penghargaan.index') }}" id="filterFormArtikel">
                             <input type="hidden" name="active_tab" value="artikel">
-                            <div class="row g-3">
-                                <div class="col-md-6">
+                            <div class="filter-grid">
+                                <div class="filter-item">
+                                    <label class="filter-label">
+                                        <i class="fas fa-calendar me-2"></i>Tahun
+                                    </label>
                                     <select name="year" class="form-select filter-select" id="yearFilterArtikel">
                                         @for ($y = $maxYear; $y >= $minYear; $y--)
                                             <option value="{{ $y }}" {{ $currentYear == $y ? 'selected' : '' }}>{{ $y }}</option>
                                         @endfor
                                     </select>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="filter-item">
+                                    <label class="filter-label">
+                                        <i class="fas fa-calendar-alt me-2"></i>Bulan
+                                    </label>
                                     <select name="month" class="form-select filter-select" id="monthFilterArtikel" onchange="this.form.submit()">
                                         {{-- Opsi bulan akan diisi oleh JavaScript --}}
                                     </select>
@@ -74,28 +109,45 @@
                         </form>
                     </div>
 
-                    <hr>
-
                     @if($topArtikel->count() > 0)
-                    <div class="top-candidates mb-4">
-                        <h5 class="text-warning"><i class="fas fa-crown me-2"></i> Rekomendasi Pemenang (Top 3 Rating)</h5>
-                        <div class="row g-3">
-                            @foreach($topArtikel as $item)
-                            <div class="col-md-4">
-                                <div class="card bg-warning bg-opacity-10 border-warning">
-                                    <div class="card-body">
-                                        <h6 class="card-title">{{ Str::limit($item->judul ?? 'Tanpa Judul', 40) }}</h6>
-                                        <div class="rating-display">
+                    <!-- Top Candidates Section -->
+                    <div class="top-candidates-section">
+                        <div class="section-header">
+                            <h5 class="section-title">
+                                <i class="fas fa-crown me-2"></i>
+                                Rekomendasi Pemenang (Top 3 Rating)
+                            </h5>
+                        </div>
+                        <div class="candidates-grid">
+                            @foreach($topArtikel as $index => $item)
+                            <div class="candidate-card" data-rank="{{ $index + 1 }}">
+                                <div class="candidate-rank">
+                                    <span class="rank-badge rank-{{ $index + 1 }}">
+                                        #{{ $index + 1 }}
+                                    </span>
+                                </div>
+                                <div class="candidate-content">
+                                    <h6 class="candidate-title">{{ Str::limit($item->judul ?? 'Tanpa Judul', 40) }}</h6>
+                                    <div class="candidate-rating">
+                                        <div class="rating-stars">
                                             @for($i = 1; $i <= 5; $i++)
-                                                <span class="rating-star {{ $i <= ($item->avg_rating ?? 0) ? 'filled' : '' }}">{{ $i <= ($item->avg_rating ?? 0) ? '⭐' : '☆' }}</span>
+                                                <span class="star {{ $i <= round($item->avg_rating ?? 0) ? 'filled' : 'empty' }}">
+                                                    <i class="fas fa-star"></i>
+                                                </span>
                                             @endfor
-                                            <span class="ms-1 fw-bold">{{ number_format($item->avg_rating ?? 0, 1) }}/5</span>
                                         </div>
-                                        <p class="card-text small text-muted mt-2">{{ $item->siswa->nama ?? 'Unknown' }}</p>
-                                        <button class="btn btn-warning btn-sm mt-2 pilih-cepat" data-id="{{ $item->id }}" data-type="artikel">
-                                            <i class="fas fa-award"></i> Pilih sebagai Pemenang
-                                        </button>
+                                        <span class="rating-value">{{ number_format($item->avg_rating ?? 0, 1) }}/5</span>
                                     </div>
+                                    <div class="candidate-author">
+                                        <i class="fas fa-user-circle me-2"></i>
+                                        <span>{{ $item->siswa->nama ?? 'Unknown' }}</span>
+                                    </div>
+                                    <button class="btn-select-winner pilih-cepat" 
+                                            data-id="{{ $item->id }}" 
+                                            data-type="artikel">
+                                        <i class="fas fa-award me-2"></i>
+                                        <span>Pilih sebagai Pemenang</span>
+                                    </button>
                                 </div>
                             </div>
                             @endforeach
@@ -103,58 +155,91 @@
                     </div>
                     @endif
 
-                    <div class="table-responsive">
-                        <table id="artikelTable" class="table table-striped table-hover">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Judul</th>
-                                    <th>Penulis</th>
-                                    <th>Rating</th>
-                                    <th>Tanggal Post</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {{-- PERBAIKAN: @empty DIHAPUS, BIARKAN DATATABLES YANG MENANGANI --}}
-                                @foreach ($artikel ?? [] as $item)
-                                <tr>
-                                    <td>{{ Str::limit($item->judul ?? 'Tanpa Judul', 50) }}</td>
-                                    <td>{{ $item->siswa->nama ?? 'Unknown' }}</td>
-                                    <td>
-                                        <div class="rating-display">
-                                            @for($i = 1; $i <= 5; $i++)
-                                                <span class="rating-star {{ $i <= ($item->avg_rating ?? 0) ? 'filled' : '' }}">{{ $i <= ($item->avg_rating ?? 0) ? '⭐' : '☆' }}</span>
-                                            @endfor
-                                            <span class="ms-1">{{ number_format($item->avg_rating ?? 0, 1) }}</span>
-                                        </div>
-                                    </td>
-                                    <td>{{ \Carbon\Carbon::parse($item->diterbitkan_pada ?? now())->translatedFormat('d F Y') }}</td>
-                                    <td>
-                                        <button class="btn btn-outline-primary btn-sm pilih-cepat" data-id="{{ $item->id }}" data-type="artikel">
-                                            <i class="fas fa-award"></i> Pilih
-                                        </button>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                    <!-- DataTable Section -->
+                    <div class="datatable-section">
+                        <div class="table-responsive">
+                            <table id="artikelTable" class="table custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Judul</th>
+                                        <th>Penulis</th>
+                                        <th>Rating</th>
+                                        <th>Tanggal Post</th>
+                                        <th class="text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($artikel ?? [] as $item)
+                                    <tr>
+                                        <td>
+                                            <div class="item-title">
+                                                <i class="fas fa-file-alt me-2 text-primary"></i>
+                                                {{ Str::limit($item->judul ?? 'Tanpa Judul', 50) }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="item-author">
+                                                <i class="fas fa-user me-2"></i>
+                                                {{ $item->siswa->nama ?? 'Unknown' }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="rating-display">
+                                                @for($i = 1; $i <= 5; $i++)
+                                                    <span class="star-sm {{ $i <= round($item->avg_rating ?? 0) ? 'filled' : 'empty' }}">
+                                                        <i class="fas fa-star"></i>
+                                                    </span>
+                                                @endfor
+                                                <span class="rating-num">{{ number_format($item->avg_rating ?? 0, 1) }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="item-date">
+                                                <i class="fas fa-calendar me-2"></i>
+                                                {{ \Carbon\Carbon::parse($item->diterbitkan_pada ?? now())->translatedFormat('d F Y') }}
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn-action-table pilih-cepat" 
+                                                    data-id="{{ $item->id }}" 
+                                                    data-type="artikel"
+                                                    title="Pilih sebagai pemenang">
+                                                <i class="fas fa-award"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
                 {{-- TAB VIDEO --}}
-                <div class="tab-pane fade {{ $activeTab == 'video' ? 'show active' : '' }}" id="video" role="tabpanel" aria-labelledby="video-tab">
-                    <div class="search-filter-section">
-                         <form method="GET" action="{{ route('admin.penghargaan.index') }}" id="filterFormVideo">
+                <div class="tab-pane fade {{ $activeTab == 'video' ? 'show active' : '' }}" 
+                     id="video" 
+                     role="tabpanel" 
+                     aria-labelledby="video-tab">
+                    
+                    <!-- Filter Section -->
+                    <div class="filter-section">
+                        <form method="GET" action="{{ route('admin.penghargaan.index') }}" id="filterFormVideo">
                             <input type="hidden" name="active_tab" value="video">
-                             <div class="row g-3">
-                                <div class="col-md-6">
+                            <div class="filter-grid">
+                                <div class="filter-item">
+                                    <label class="filter-label">
+                                        <i class="fas fa-calendar me-2"></i>Tahun
+                                    </label>
                                     <select name="year" class="form-select filter-select" id="yearFilterVideo">
-                                         @for ($y = $maxYear; $y >= $minYear; $y--)
+                                        @for ($y = $maxYear; $y >= $minYear; $y--)
                                             <option value="{{ $y }}" {{ $currentYear == $y ? 'selected' : '' }}>{{ $y }}</option>
                                         @endfor
                                     </select>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="filter-item">
+                                    <label class="filter-label">
+                                        <i class="fas fa-calendar-alt me-2"></i>Bulan
+                                    </label>
                                     <select name="month" class="form-select filter-select" id="monthFilterVideo" onchange="this.form.submit()">
                                         {{-- Opsi bulan akan diisi oleh JavaScript --}}
                                     </select>
@@ -163,26 +248,39 @@
                         </form>
                     </div>
 
-                    <hr>
-
                     @if($topVideo->count() > 0)
-                    <div class="top-candidates mb-4">
-                        <h5 class="text-warning"><i class="fas fa-crown me-2"></i> Rekomendasi Pemenang (Top 3 Like)</h5>
-                        <div class="row g-3">
-                            @foreach($topVideo as $item)
-                            <div class="col-md-4">
-                                <div class="card bg-warning bg-opacity-10 border-warning">
-                                    <div class="card-body">
-                                        <h6 class="card-title">{{ Str::limit($item->judul ?? 'Tanpa Judul', 40) }}</h6>
-                                        <div class="rating-display">
-                                            <i class="fas fa-heart text-danger"></i>
-                                            <span class="ms-1 fw-bold">{{ $item->jumlah_like ?? 0 }} Like</span>
-                                        </div>
-                                        <p class="card-text small text-muted mt-2">{{ $item->siswa->nama ?? 'Unknown' }}</p>
-                                        <button class="btn btn-warning btn-sm mt-2 pilih-cepat" data-id="{{ $item->id }}" data-type="video">
-                                            <i class="fas fa-award"></i> Pilih sebagai Pemenang
-                                        </button>
+                    <!-- Top Candidates Section -->
+                    <div class="top-candidates-section">
+                        <div class="section-header">
+                            <h5 class="section-title">
+                                <i class="fas fa-crown me-2"></i>
+                                Rekomendasi Pemenang (Top 3 Like)
+                            </h5>
+                        </div>
+                        <div class="candidates-grid">
+                            @foreach($topVideo as $index => $item)
+                            <div class="candidate-card" data-rank="{{ $index + 1 }}">
+                                <div class="candidate-rank">
+                                    <span class="rank-badge rank-{{ $index + 1 }}">
+                                        #{{ $index + 1 }}
+                                    </span>
+                                </div>
+                                <div class="candidate-content">
+                                    <h6 class="candidate-title">{{ Str::limit($item->judul ?? 'Tanpa Judul', 40) }}</h6>
+                                    <div class="candidate-likes">
+                                        <i class="fas fa-heart text-danger me-2"></i>
+                                        <span class="likes-value">{{ $item->jumlah_like ?? 0 }} Like</span>
                                     </div>
+                                    <div class="candidate-author">
+                                        <i class="fas fa-user-circle me-2"></i>
+                                        <span>{{ $item->siswa->nama ?? 'Unknown' }}</span>
+                                    </div>
+                                    <button class="btn-select-winner pilih-cepat" 
+                                            data-id="{{ $item->id }}" 
+                                            data-type="video">
+                                        <i class="fas fa-award me-2"></i>
+                                        <span>Pilih sebagai Pemenang</span>
+                                    </button>
                                 </div>
                             </div>
                             @endforeach
@@ -190,123 +288,202 @@
                     </div>
                     @endif
 
-                    <div class="table-responsive">
-                        <table id="videoTable" class="table table-striped table-hover">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Judul</th>
-                                    <th>Penulis</th>
-                                    <th>Like</th>
-                                    <th>Tanggal Post</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {{-- PERBAIKAN: @empty DIHAPUS, BIARKAN DATATABLES YANG MENANGANI --}}
-                                @foreach ($video ?? [] as $item)
-                                <tr>
-                                    <td>{{ Str::limit($item->judul ?? 'Tanpa Judul', 50) }}</td>
-                                    <td>{{ $item->siswa->nama ?? 'Unknown' }}</td>
-                                    <td>
-                                        <div class="rating-display">
-                                            <i class="fas fa-heart text-danger"></i>
-                                            <span class="ms-1">{{ $item->jumlah_like ?? 0 }}</span>
-                                        </div>
-                                    </td>
-                                    <td>{{ \Carbon\Carbon::parse($item->diterbitkan_pada ?? now())->translatedFormat('d F Y') }}</td>
-                                    <td>
-                                        <button class="btn btn-outline-primary btn-sm pilih-cepat" data-id="{{ $item->id }}" data-type="video">
-                                            <i class="fas fa-award"></i> Pilih
-                                        </button>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <hr>
-
-            <div class="winners-section mt-5">
-                <div class="card-header-custom">
-                    <div>
-                        <i class="fas fa-crown me-2"></i>Pemenang Penghargaan Bulan Ini
-                    </div>
-                </div>
-                <div class="card-body-custom">
-                    <div class="winners-list">
-                        @forelse ($penghargaan ?? [] as $item)
-                            @if (is_object($item) && isset($item->id) && isset($item->siswa))
-                                <div class="winner-item fade-in">
-                                    <div class="winner-avatar" style="background: linear-gradient(135deg, {{ $item->jenis == 'bulanan' ? '#f59e0b, #d97706' : '#8b5cf6, #7c3aed' }});">
-                                        {{ Str::substr($item->siswa->nama ?? '-', 0, 1) }}
-                                    </div>
-                                    <div class="winner-info">
-                                        <div class="winner-name">
-                                            {{ $item->siswa->nama ?? 'Siswa tidak ditemukan' }}
-                                        </div>
-                                        <div class="winner-description">
-                                            {{ ($item->artikel ? 'Artikel: ' . Str::limit($item->artikel->judul, 50) : ($item->video ? 'Video: ' . Str::limit($item->video->judul, 50) : ($item->deskripsi_penghargaan ?? 'Tidak ada deskripsi'))) }}
-                                        </div>
-                                    </div>
-                                    <div class="winner-actions">
-                                        <button class="btn btn-outline-primary btn-sm btn-edit-card" data-id="{{ $item->id }}" data-bs-toggle="modal" data-bs-target="#editPenghargaanModal">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </button>
-                                        <form action="{{ route('admin.penghargaan.destroy', $item->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus penghargaan ini?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-outline-danger btn-sm">
-                                                <i class="fas fa-trash"></i> Hapus
+                    <!-- DataTable Section -->
+                    <div class="datatable-section">
+                        <div class="table-responsive">
+                            <table id="videoTable" class="table custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Judul</th>
+                                        <th>Penulis</th>
+                                        <th>Like</th>
+                                        <th>Tanggal Post</th>
+                                        <th class="text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($video ?? [] as $item)
+                                    <tr>
+                                        <td>
+                                            <div class="item-title">
+                                                <i class="fas fa-video me-2 text-danger"></i>
+                                                {{ Str::limit($item->judul ?? 'Tanpa Judul', 50) }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="item-author">
+                                                <i class="fas fa-user me-2"></i>
+                                                {{ $item->siswa->nama ?? 'Unknown' }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="likes-display">
+                                                <i class="fas fa-heart text-danger me-2"></i>
+                                                <span class="likes-num">{{ $item->jumlah_like ?? 0 }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="item-date">
+                                                <i class="fas fa-calendar me-2"></i>
+                                                {{ \Carbon\Carbon::parse($item->diterbitkan_pada ?? now())->translatedFormat('d F Y') }}
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn-action-table pilih-cepat" 
+                                                    data-id="{{ $item->id }}" 
+                                                    data-type="video"
+                                                    title="Pilih sebagai pemenang">
+                                                <i class="fas fa-award"></i>
                                             </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            @endif
-                        @empty
-                            <div class="alert alert-info text-center">
-                                <i class="fas fa-crown fa-3x mb-3 text-muted"></i>
-                                <h5>Belum Ada Pemenang</h5>
-                                <p class="mb-0">Pilih pemenang dari daftar di atas untuk bulan ini!</p>
-                            </div>
-                        @endforelse
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Winners Section -->
+    <div class="winners-section">
+        <div class="section-header-winners">
+            <div class="header-left">
+                <i class="fas fa-trophy me-2"></i>
+                <h5 class="mb-0">Pemenang Penghargaan Bulan Ini</h5>
+            </div>
+            <div class="header-right">
+                <span class="badge-count">{{ $penghargaan->count() ?? 0 }} Pemenang</span>
+            </div>
+        </div>
+        <div class="winners-content">
+            @forelse ($penghargaan ?? [] as $item)
+                @if (is_object($item) && isset($item->id) && isset($item->siswa))
+                    <div class="winner-card fade-in">
+                        <div class="winner-left">
+                            <div class="winner-avatar" style="background: linear-gradient(135deg, {{ $item->jenis == 'bulanan' ? '#f59e0b, #d97706' : '#8b5cf6, #7c3aed' }});">
+                                {{ Str::substr($item->siswa->nama ?? '-', 0, 1) }}
+                            </div>
+                            <div class="winner-info">
+                                <div class="winner-name">
+                                    {{ $item->siswa->nama ?? 'Siswa tidak ditemukan' }}
+                                </div>
+                                <div class="winner-badge">
+                                    <i class="fas {{ $item->jenis == 'bulanan' ? 'fa-calendar-check' : 'fa-star' }} me-1"></i>
+                                    {{ $item->jenis == 'bulanan' ? 'Pemenang Bulanan' : 'Penghargaan Spesial' }}
+                                </div>
+                                <div class="winner-description">
+                                    @if($item->artikel)
+                                        <i class="fas fa-book me-2"></i>
+                                        Artikel: {{ Str::limit($item->artikel->judul, 50) }}
+                                    @elseif($item->video)
+                                        <i class="fas fa-video me-2"></i>
+                                        Video: {{ Str::limit($item->video->judul, 50) }}
+                                    @else
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        {{ $item->deskripsi_penghargaan ?? 'Tidak ada deskripsi' }}
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        <div class="winner-actions">
+                            <button class="btn-winner-action btn-edit btn-edit-card" 
+                                    data-id="{{ $item->id }}" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#editPenghargaanModal"
+                                    title="Edit penghargaan">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <form action="{{ route('admin.penghargaan.destroy', $item->id) }}" 
+                                  method="POST" 
+                                  style="display:inline;" 
+                                  onsubmit="return confirm('Yakin ingin menghapus penghargaan ini?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" 
+                                        class="btn-winner-action btn-delete"
+                                        title="Hapus penghargaan">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @endif
+            @empty
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h5 class="empty-title">Belum Ada Pemenang</h5>
+                    <p class="empty-text">Pilih pemenang dari daftar di atas untuk bulan ini!</p>
+                </div>
+            @endforelse
+        </div>
+    </div>
+
     @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3" role="alert" style="z-index: 1050;">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="alert-notification alert-success">
+            <div class="alert-content">
+                <i class="fas fa-check-circle me-2"></i>
+                <span>{{ session('success') }}</span>
+            </div>
+            <button type="button" class="alert-close" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     @endif
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // Inisialisasi DataTable dengan pesan 'emptyTable'
+    // Inisialisasi DataTable
+    const tableConfig = {
+        "pageLength": 10,
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json",
+            "search": "Cari:",
+            "lengthMenu": "Tampilkan _MENU_ data",
+            "zeroRecords": "Tidak ada data yang ditemukan",
+            "info": "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+            "infoEmpty": "Tidak ada data",
+            "infoFiltered": "(difilter dari _MAX_ total data)",
+            "paginate": {
+                "first": "Pertama",
+                "last": "Terakhir",
+                "next": "Selanjutnya",
+                "previous": "Sebelumnya"
+            }
+        },
+        "columnDefs": [
+            { "orderable": false, "targets": 4 },
+            { "searchable": false, "targets": [2, 4] }
+        ],
+        "drawCallback": function() {
+            // Add animation to table rows
+            $(this).find('tbody tr').addClass('fade-in-row');
+        }
+    };
+
     $('#artikelTable').DataTable({
-        "pageLength": 10,
+        ...tableConfig,
         "order": [[2, "desc"]],
         "language": {
-            "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json",
+            ...tableConfig.language,
             "emptyTable": "Tidak ada artikel untuk bulan yang dipilih."
-        },
-        "columnDefs": [{ "orderable": false, "targets": 4 }, { "searchable": false, "targets": [2, 4] }],
+        }
     });
+
     $('#videoTable').DataTable({
-        "pageLength": 10,
+        ...tableConfig,
         "order": [[2, "desc"]],
         "language": {
-            "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json",
+            ...tableConfig.language,
             "emptyTable": "Tidak ada video untuk bulan yang dipilih."
-        },
-        "columnDefs": [{ "orderable": false, "targets": 4 }, { "searchable": false, "targets": [2, 4] }],
+        }
     });
     
+    // Setup Month Filter
     const setupFilter = (type) => {
         const yearSelect = document.getElementById(`yearFilter${type}`);
         const monthSelect = document.getElementById(`monthFilter${type}`);
@@ -331,7 +508,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if(index === 0) firstOption = option;
 
-                // Coba pertahankan bulan yang sama saat tahun berganti
                 if (currentSelectedMonth && currentSelectedMonth.substring(5) === monthNumber) {
                     option.selected = true;
                     monthExistsInNewYear = true;
@@ -359,6 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupFilter('Artikel');
     setupFilter('Video');
 
+    // Handle Pilih Cepat Button
     document.body.addEventListener('click', function(e) {
         if (e.target.classList.contains('pilih-cepat') || e.target.closest('.pilih-cepat')) {
             const btn = e.target.closest('.pilih-cepat');
@@ -372,13 +549,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Handle Confirm Form Submit
     const confirmForm = document.getElementById('confirmForm');
     if (confirmForm) {
         confirmForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const id = document.getElementById('confirmId').value;
             const type = document.getElementById('confirmType').value;
-            // Ambil bulan dari filter yang aktif
             const activeTabPane = document.querySelector('.tab-pane.active');
             const monthSelect = activeTabPane.querySelector('select[name="month"]');
             const month = monthSelect ? monthSelect.value : '{{ $currentMonth }}';
@@ -386,13 +563,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    // Handle Edit Button
     document.querySelectorAll('.btn-edit-card').forEach(button => {
         button.addEventListener('click', () => {
             const id = button.getAttribute('data-id');
             fetch(`/admin/penghargaan/${id}/edit`)
                 .then(response => {
                     if (!response.ok) {
-                        console.error('Server response:', response);
                         throw new Error(`Gagal memuat data: ${response.statusText}`);
                     }
                     return response.json();
@@ -437,15 +614,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Terjadi kesalahan saat memuat data penghargaan. Cek console untuk detail.');
+                    alert('Terjadi kesalahan saat memuat data penghargaan.');
                 });
         });
     });
 
-    const successAlert = document.querySelector('.alert-success');
-    if (successAlert) {
+    // Auto dismiss alert after 5 seconds
+    const alertNotification = document.querySelector('.alert-notification');
+    if (alertNotification) {
         setTimeout(() => {
-            new bootstrap.Alert(successAlert).close();
+            alertNotification.classList.add('fade-out');
+            setTimeout(() => alertNotification.remove(), 300);
         }, 5000);
     }
 });

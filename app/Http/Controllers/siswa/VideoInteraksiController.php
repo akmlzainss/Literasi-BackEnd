@@ -12,22 +12,28 @@ class VideoInteraksiController extends Controller
 {
     public function store(Request $request, $id)
     {
+        // Pastikan user login dengan guard siswa
         if (!Auth::guard('siswa')->check()) {
-            return response()->json(['error' => 'Anda harus login untuk menambahkan interaksi.'], 401);
+            return response()->json([
+                'success' => false,
+                'error' => 'Anda harus login untuk menambahkan interaksi.'
+            ], 401);
         }
+
+        // Validasi jenis interaksi
+        $request->validate([
+            'jenis' => 'required|in:suka,bookmark'
+        ]);
 
         $video = Video::findOrFail($id);
         $siswaId = Auth::guard('siswa')->id();
-        $jenis = $request->input('jenis');
+        $jenis = $request->jenis;
 
-        if (!in_array($jenis, ['suka', 'bookmark'])) {
-            return response()->json(['error' => 'Jenis interaksi tidak valid.'], 400);
-        }
-
+        // Cek apakah interaksi sudah ada
         $existing = InteraksiVideo::where('id_video', $video->id)
-                                 ->where('id_siswa', $siswaId)
-                                 ->where('jenis', $jenis)
-                                 ->first();
+            ->where('id_siswa', $siswaId)
+            ->where('jenis', $jenis)
+            ->first();
 
         if ($existing) {
             $existing->delete();
@@ -41,14 +47,16 @@ class VideoInteraksiController extends Controller
             $action = 'added';
         }
 
+        // Hitung ulang jumlah interaksi
         $count = InteraksiVideo::where('id_video', $video->id)
-                              ->where('jenis', $jenis)
-                              ->count();
+            ->where('jenis', $jenis)
+            ->count();
 
         return response()->json([
             'success' => true,
             'action' => $action,
-            'count' => $count,
+            'jenis'  => $jenis,
+            'count'  => $count,
         ]);
     }
 }

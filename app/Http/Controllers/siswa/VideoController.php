@@ -7,13 +7,11 @@ use App\Models\Video;
 use App\Models\Kategori;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Intervention\Image\Facades\Image;
 use FFMpeg\FFMpeg;
 use FFMpeg\Coordinate\TimeCode;
+use FFMpeg\Format\Video\X264;
 use Intervention\Image\ImageManager;
-
-
-
+use Intervention\Image\Drivers\Gd\Driver;
 
 class VideoController extends Controller
 {
@@ -69,6 +67,21 @@ class VideoController extends Controller
         $kategoris = Kategori::orderBy('nama')->get();
         return view('siswa-web-video.create', compact('kategoris'));
     }
+    public function profil()
+{
+    $siswa = Auth::guard('siswa')->user();
+
+    $videoDisukai = Video::whereHas('interaksi', function ($q) use ($siswa) {
+        $q->where('id_siswa', $siswa->id)->where('jenis', 'suka');
+    })->latest()->get();
+
+    $videoDisimpan = Video::whereHas('interaksi', function ($q) use ($siswa) {
+        $q->where('id_siswa', $siswa->id)->where('jenis', 'bookmark');
+    })->latest()->get();
+
+    return view('siswa.profil', compact('siswa', 'videoDisukai', 'videoDisimpan'));
+}
+
 
     /**
      * Menyimpan video baru ke database.
@@ -82,40 +95,48 @@ class VideoController extends Controller
             'id_kategori' => 'nullable|exists:kategori,id',
         ]);
 
-        // Validasi durasi video
-        $ffmpeg = \FFMpeg\FFMpeg::create();
-        $videoFile = $ffmpeg->open($request->file('video')->getPathname());
+        $videoFilePath = $request->file('video')->getPathname();
 
+        // Validasi durasi video pakai FFProbe
         $ffprobe = \FFMpeg\FFProbe::create();
-        $duration = $ffprobe->format($request->file('video')->getPathname())->get('duration');
+        $duration = $ffprobe->format($videoFilePath)->get('duration');
 
         if ($duration > 60) {
             return back()->withErrors(['video' => 'Durasi video tidak boleh lebih dari 1 menit.']);
         }
 
-        // Kompresi video
+        // Pastikan folder ada
+        if (!file_exists(storage_path('app/public/videos'))) {
+            mkdir(storage_path('app/public/videos'), 0777, true);
+        }
+        if (!file_exists(storage_path('app/public/thumbnails'))) {
+            mkdir(storage_path('app/public/thumbnails'), 0777, true);
+        }
+
+        // Buka video dengan FFMpeg
+        $ffmpeg = \FFMpeg\FFMpeg::create();
+        $videoFile = $ffmpeg->open($videoFilePath);
+
+        // Simpan video dengan kompresi
         $videoPath = 'videos/' . uniqid() . '.mp4';
-        $format = new \FFMpeg\Format\Video\X264('aac', 'libx264');
-        $format->setKiloBitrate(1000); // Bitrate 1Mbps
+        $format = new X264();
+        $format->setAudioCodec("aac");
+        $format->setKiloBitrate(1000);
 
-        $videoFile->save(
-            $format,
-            storage_path('app/public/' . $videoPath)
-        );
+        $videoFile->save($format, storage_path('app/public/' . $videoPath));
 
-        // Buat thumbnail
+        // Buat thumbnail dari detik ke-1
         $thumbnailPath = 'thumbnails/' . uniqid() . '.jpg';
-        $videoFile->frame(\FFMpeg\Coordinate\TimeCode::fromSeconds(1))
+        $videoFile->frame(TimeCode::fromSeconds(1))
             ->save(storage_path('app/public/' . $thumbnailPath));
 
-        // Resize dengan Intervention Image
-        // Resize dengan Intervention Image v3
-        $manager = new ImageManager(['driver' => 'gd']); 
-        $image = $manager->read(storage_path('app/public/' . $thumbnailPath))
+        // Resize thumbnail dengan Intervention Image v3 (pakai GD driver)
+        $manager = new ImageManager(new Driver());
+        $manager->read(storage_path('app/public/' . $thumbnailPath))
             ->cover(320, 180)
             ->save();
 
-        // Simpan ke database
+        // Simpan metadata ke database
         Video::create([
             'id_siswa' => Auth::guard('siswa')->id(),
             'id_kategori' => $request->id_kategori,

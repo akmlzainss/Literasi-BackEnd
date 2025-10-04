@@ -44,9 +44,9 @@ class Video extends Model
         return $this->hasMany(KomentarVideo::class, 'id_video');
     }
 
-
-    public function getLikeCountAttribute() // Accessor untuk sum like jika belum auto-update
+    // ✅ Perbaikan: gunakan 'jenis' bukan 'tipe'
+    public function getLikeCountAttribute()
     {
-        return $this->interaksi()->where('tipe', 'like')->count();
+        return $this->interaksi()->where('jenis', 'suka')->count();
     }
 }
