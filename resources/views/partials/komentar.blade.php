@@ -1,5 +1,3 @@
-{{-- File: resources/views/partials/komentar.blade.php --}}
-
 <div class="komentar-item mb-4" id="komentar-{{ $komentar->id }}" data-id="{{ $komentar->id }}">
     <div class="d-flex align-items-start">
         <div class="author-avatar-siswa flex-shrink-0 me-3">
@@ -19,20 +17,25 @@
             </p>
             <p class="mb-1">{{ $komentar->komentar }}</p>
 
-            {{-- Tombol dan Form Balasan ditempatkan di sini --}}
-            @auth('siswa')
-                <div class="comment-actions mt-2">
+            <div class="comment-actions mt-2">
+                @auth('siswa')
                     <button class="btn btn-outline-secondary btn-sm btn-reply" data-id="{{ $komentar->id }}">
                         <i class="fas fa-reply"></i> Balas
                     </button>
-                </div>
+                    @if (Auth::guard('siswa')->id() == $komentar->id_siswa || Auth::guard('admin')->check() || Auth::guard('web')->check())
+                        <button class="btn btn-outline-secondary btn-sm delete-comment" data-id="{{ $komentar->id }}">
+                            <i class="fas fa-trash"></i> Hapus
+                        </button>
+                    @endif
+                @endauth
+            </div>
 
-                {{-- PERBAIKAN: Form ini sekarang menggunakan route 'komentar.reply' yang benar --}}
+            @auth('siswa')
                 <form action="{{ route('komentar.reply', ['id' => $konten->id, 'parentId' => $komentar->id]) }}"
-                    method="POST"
-                    class="reply-form mt-3"
-                    data-parent-id="{{ $komentar->id }}"
-                    style="display: none;">
+                      method="POST"
+                      class="reply-form mt-3"
+                      data-parent-id="{{ $komentar->id }}"
+                      style="display: none;">
                     @csrf
                     <div class="mb-2">
                         <textarea class="form-control" name="komentar" rows="2" placeholder="Tulis balasan Anda..." required></textarea>
@@ -44,7 +47,6 @@
         </div>
     </div>
 
-    {{-- Kode untuk menampilkan balasan dari balasan (rekursif) --}}
     @if($komentar->replies->isNotEmpty())
         <div class="komentar-replies" style="margin-left: 50px; margin-top: 1rem; border-left: 2px solid #e9ecef; padding-left: 15px;">
             @foreach($komentar->replies as $balasan)
@@ -52,6 +54,4 @@
             @endforeach
         </div>
     @endif
-</div>  
-
-{{-- Tambahkan skrip JavaScript untuk menangani tombol balas --}}
+</div>

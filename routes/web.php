@@ -47,6 +47,8 @@ Route::middleware(['auth:siswa'])->group(function () {
     Route::post('/artikel-siswa/{id}/komentar', [SiswaArtikelController::class, 'storeKomentar'])->name('komentar.store');
     Route::post('/artikel-siswa/{id}/interaksi', [SiswaArtikelController::class, 'storeInteraksi'])->name('artikel-siswa.interaksi');
     Route::post('/artikel-siswa/{id}/komentar/{parentId}', [SiswaArtikelController::class, 'storeKomentar'])->name('komentar.reply');
+    Route::post('/artikel-siswa/{id}/rate', [SiswaArtikelController::class, 'storeRating'])->name('artikel-siswa.rate');
+    Route::delete('/artikel-siswa/komentar/{id}', [SiswaArtikelController::class, 'destroyKomentar'])->name('komentar.destroy');
 
     // Upload Artikel oleh Siswa
     Route::get('/upload', [SiswaArtikelController::class, 'showUploadChoice'])->name('artikel-siswa.upload');
@@ -97,7 +99,7 @@ Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function ()
     Route::get('/kategori/export', [KategoriController::class, 'export'])->name('kategori.export');
     Route::get('/kategori/{id}/detail', [KategoriController::class, 'detail'])->name('kategori.detail');
 
-     // --- PERBAIKAN RUTE PENGHARGAAN ---
+    // --- PERBAIKAN RUTE PENGHARGAAN ---
     Route::post('/send-award-notification', [PenghargaanController::class, 'sendAwardNotification'])->name('send.award.notification');
     Route::get('/penghargaan/reset/{month?}', [PenghargaanController::class, 'resetMonthly'])->name('penghargaan.reset');
     Route::resource('penghargaan', PenghargaanController::class);
