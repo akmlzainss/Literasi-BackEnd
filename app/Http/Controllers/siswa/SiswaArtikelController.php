@@ -156,9 +156,13 @@ class SiswaArtikelController extends Controller
     {
         try {
             $request->validate([
-                'komentar' => 'required|string|max:2000',
+                'komentar' => 'nullable|string|max:2000',
                 'rating' => 'nullable|integer|between:1,5',
             ]);
+
+            if (!$request->filled('komentar') && !$request->filled('rating')) {
+                return response()->json(['success' => false, 'message' => 'Harus memberikan rating atau komentar.'], 400);
+            }
 
             $siswaId = Auth::guard('siswa')->id();
             $artikel = Artikel::findOrFail($id);
@@ -205,6 +209,33 @@ class SiswaArtikelController extends Controller
         }
     }
 
+    public function destroyKomentar($id)
+    {
+        try {
+            if (!Auth::guard('siswa')->check() && !Auth::guard('admin')->check() && !Auth::guard('web')->check()) {
+                return response()->json(['success' => false, 'message' => 'Anda harus login untuk menghapus komentar.'], 401);
+            }
+
+            $komentar = KomentarArtikel::findOrFail($id);
+
+            $bolehHapus =
+                (Auth::guard('siswa')->check() && $komentar->id_siswa == Auth::guard('siswa')->id()) ||
+                Auth::guard('admin')->check() ||
+                Auth::guard('web')->check();
+
+            if (!$bolehHapus) {
+                return response()->json(['success' => false, 'message' => 'Anda tidak berhak menghapus komentar ini.'], 403);
+            }
+
+            $komentar->delete();
+
+            return response()->json(['success' => true, 'message' => 'Komentar berhasil dihapus.']);
+        } catch (\Exception $e) {
+            \Log::error('Error deleting komentar: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal menghapus komentar.'], 500);
+        }
+    }
+
     public function storeInteraksi(Request $request, $id)
     {
         try {
@@ -235,7 +266,7 @@ class SiswaArtikelController extends Controller
                 }
             }
 
-            $artikel->jumlah_suka = $artikel->interaksis()->where('jenis', 'suka')->count();
+            $artikel->jumlah_suka = $artikel->interaksi()->where('jenis', 'suka')->count();
             $artikel->save();
 
             return response()->json([

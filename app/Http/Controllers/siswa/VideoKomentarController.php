@@ -13,7 +13,7 @@ class VideoKomentarController extends Controller
     public function store(Request $request, $id)
     {
         if (!Auth::guard('siswa')->check() && !Auth::guard('admin')->check() && !Auth::guard('web')->check()) {
-            return response()->json(['error' => 'Anda harus login untuk menambahkan komentar.'], 401);
+            return response()->json(['success' => false, 'message' => 'Anda harus login untuk berkomentar.'], 401);
         }
 
         $request->validate([
@@ -21,51 +21,74 @@ class VideoKomentarController extends Controller
         ]);
 
         $video = Video::findOrFail($id);
-
         $komentar = new KomentarVideo();
         $komentar->id_video = $video->id;
         $komentar->komentar = $request->komentar;
-        $komentar->id_komentar_parent = $request->id_komentar_parent ?? null;
-        $komentar->depth = $request->id_komentar_parent ? 1 : 0;
+
+        // --- PERBAIKAN PENTING DI SINI ---
+        // Mengambil parent_id dari input form, bukan dari URL
+        $komentar->id_komentar_parent = $request->input('id_komentar_parent', null);
 
         if (Auth::guard('siswa')->check()) {
             $komentar->id_siswa = Auth::guard('siswa')->id();
-            $komentar->id_admin = null;
         } elseif (Auth::guard('admin')->check() || Auth::guard('web')->check()) {
-            $komentar->id_admin = Auth::guard('admin')->id() ?? Auth::guard('web')->id();
-            $komentar->id_siswa = null;
+            $komentar->id_admin = Auth::guard('admin')->id() ?: Auth::guard('web')->id();
         }
 
         $komentar->save();
+        $komentar->load('siswa', 'admin'); // Load relasi agar bisa digunakan di view partial
 
+        // Jika ini adalah balasan, kirim balik HTML-nya
+        if ($komentar->id_komentar_parent) {
+            // Kita akan membuat partial view sederhana untuk ini
+            $html = view('partials.video_comment_item', ['komentar' => $komentar])->render();
+            
+            return response()->json([
+                'success' => true,
+                'new_comment_html' => $html,
+                'is_reply' => true
+            ]);
+        }
+
+        // Jika ini adalah komentar utama, kirim data seperti biasa
         return response()->json([
             'success' => true,
             'komentar' => [
                 'id' => $komentar->id,
                 'komentar' => $komentar->komentar,
                 'nama' => $komentar->siswa ? $komentar->siswa->nama : ($komentar->admin ? $komentar->admin->nama : 'Unknown'),
-                'created_at' => $komentar->created_at->diffForHumans(),
             ],
+            'is_reply' => false
         ]);
     }
 
+    /**
+     * Menghapus komentar.
+     *
+     * --- PERBAIKAN UTAMA ADA DI SINI ---
+     */
     public function destroy($id)
     {
+        // Cek apakah ada user yang login (siswa, admin, atau web)
         if (!Auth::guard('siswa')->check() && !Auth::guard('admin')->check() && !Auth::guard('web')->check()) {
-            return response()->json(['error' => 'Anda harus login untuk menghapus komentar.'], 401);
+            return response()->json(['success' => false, 'message' => 'Anda harus login untuk menghapus komentar.'], 401);
         }
 
         $komentar = KomentarVideo::findOrFail($id);
 
-        $bolehHapus =
-            (Auth::guard('siswa')->check() && $komentar->id_siswa == Auth::guard('siswa')->id()) ||
-            ((Auth::guard('admin')->check() || Auth::guard('web')->check()) && $komentar->id_admin == Auth::id());
+        // Logika 1: Admin (dari guard 'admin' atau 'web') bisa menghapus komentar apa pun.
+        if (Auth::guard('admin')->check() || Auth::guard('web')->check()) {
+            $komentar->delete();
+            return response()->json(['success' => true, 'message' => 'Komentar berhasil dihapus oleh admin.']);
+        }
 
-        if ($bolehHapus) {
+        // Logika 2: Siswa hanya bisa menghapus komentarnya sendiri.
+        if (Auth::guard('siswa')->check() && $komentar->id_siswa == Auth::guard('siswa')->id()) {
             $komentar->delete();
             return response()->json(['success' => true, 'message' => 'Komentar berhasil dihapus.']);
         }
 
-        return response()->json(['error' => 'Anda tidak berhak menghapus komentar ini.'], 403);
+        // Jika tidak memenuhi kondisi di atas, berarti tidak berhak.
+        return response()->json(['success' => false, 'message' => 'Anda tidak berhak menghapus komentar ini.'], 403);
     }
 }

@@ -1066,3 +1066,39 @@ select:focus-visible {
     outline: 2px solid var(--primary-blue);
     outline-offset: 2px;
 }
+
+/* =============================================== */
+/* ||   PERBAIKAN TATA LETAK FORM TAMBAH PENGHARGAAN   || */
+/* =============================================== */
+
+/* 1. Memberi padding pada body card agar form tidak menempel */
+.main-card .card-body-custom {
+    padding: 2rem; /* Atur padding sesuai selera */
+}
+
+/* 2. Mengatur grup form agar memiliki jarak bawah yang konsisten */
+.main-card form .mb-3 {
+    margin-bottom: 1.5rem; /* Menambah jarak antar elemen form */
+}
+
+/* 3. Menata ulang label agar lebih jelas dan rapi */
+.main-card form .form-label {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+    display: block; /* Memastikan label selalu di atas inputnya */
+}
+
+/* 4. Menata ulang tombol agar berada di kanan */
+.main-card form .d-flex.gap-2 {
+    justify-content: flex-end; /* Memindahkan tombol ke sisi kanan */
+    margin-top: 1.5rem;
+}
+
+/* 5. Sedikit penyesuaian pada Select2 agar lebih pas */
+.main-card .select2-container--bootstrap-5 .select2-selection {
+    min-height: calc(1.5em + .75rem + 2px); /* Menyamakan tinggi dengan input Bootstrap */
+    padding: .375rem .75rem;
+    display: flex;
+    align-items: center;
+}

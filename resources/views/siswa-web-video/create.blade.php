@@ -10,7 +10,6 @@
             <i class="fas fa-arrow-left me-2"></i>Kembali
         </a>
         <h2 class="section-title">Form Upload Video</h2>
-        \
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul class="mb-0">

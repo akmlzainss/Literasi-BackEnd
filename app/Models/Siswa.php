@@ -42,6 +42,11 @@ class Siswa extends Authenticatable
         return $this->hasMany(Artikel::class, 'id_siswa');
     }
 
+    public function video()
+    {
+        return $this->hasMany(Video::class, 'id_siswa');
+    }
+
     public function usulanKategori()
     {
         return $this->hasMany(UsulanKategori::class, 'id_siswa');
