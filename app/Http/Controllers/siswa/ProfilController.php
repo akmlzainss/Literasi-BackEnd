@@ -25,29 +25,35 @@ class ProfilController extends Controller
                 return redirect()->route('siswa.login')->with('error', 'Anda harus login terlebih dahulu.');
             }
 
-            // Ambil video yang disukai dengan eager loading
+            // Ambil video yang disukai
             $videoDisukai = Video::whereHas('interaksi', function ($q) use ($siswa) {
-                $q->where('id_siswa', $siswa->id)
-                  ->where('jenis', 'suka');
-            })->with(['interaksi'])->latest()->get();
+                $q->where('id_siswa', $siswa->id)->where('jenis', 'suka');
+            })->latest()->get();
 
-            // Ambil video yang disimpan dengan eager loading
+            // Ambil video yang disimpan
             $videoDisimpan = Video::whereHas('interaksi', function ($q) use ($siswa) {
-                $q->where('id_siswa', $siswa->id)
-                  ->where('jenis', 'simpan');
-            })->with(['interaksi'])->latest()->get();
+                $q->where('id_siswa', $siswa->id)->where('jenis', 'bookmark');
+            })->latest()->get();
 
-            // Ambil artikel yang disukai dengan eager loading
+            // Ambil artikel yang disukai
             $artikelDisukai = Artikel::whereHas('interaksi', function ($q) use ($siswa) {
-                $q->where('id_siswa', $siswa->id)
-                  ->where('jenis', 'suka');
-            })->with(['interaksi'])->latest()->get();
+                $q->where('id_siswa', $siswa->id)->where('jenis', 'suka');
+            })->latest()->get();
+
+            // =======================================================
+            // ||  TAMBAHKAN QUERY BARU UNTUK ARTIKEL DISIMPAN      ||
+            // =======================================================
+            $artikelDisimpan = Artikel::whereHas('interaksi', function ($q) use ($siswa) {
+                $q->where('id_siswa', $siswa->id)->where('jenis', 'bookmark'); // Ubah 'suka' menjadi 'simpan'
+            })->latest()->get();
+            // =======================================================
 
             return view('web_siswa.profil', compact(
                 'siswa',
                 'videoDisukai',
                 'videoDisimpan',
-                'artikelDisukai'
+                'artikelDisukai',
+                'artikelDisimpan' // <-- Jangan lupa tambahkan variabel baru di sini
             ));
         } catch (\Exception $e) {
             Log::error('Error in ProfilController@show: ' . $e->getMessage());
