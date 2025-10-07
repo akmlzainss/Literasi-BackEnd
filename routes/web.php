@@ -51,7 +51,7 @@ Route::middleware(['auth:siswa'])->group(function () {
     Route::delete('/artikel-siswa/komentar/{id}', [SiswaArtikelController::class, 'destroyKomentar'])->name('komentar.destroy');
 
     // Upload Artikel oleh Siswa
-    Route::get('/upload', [SiswaArtikelController::class, 'showUploadChoice'])->name('artikel-siswa.upload');
+    Route::get('/upload', [App\Http\Controllers\Siswa\UploadChoiceController::class, 'index'])->name('artikel-siswa.upload');
     Route::get('/upload/artikel/create', [SiswaArtikelController::class, 'createArtikel'])->name('artikel-siswa.create');
     Route::post('/upload/artikel', [SiswaArtikelController::class, 'storeArtikel'])->name('artikel-siswa.store');
 

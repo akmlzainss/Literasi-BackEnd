@@ -1,9 +1,46 @@
+{{-- Ganti seluruh isi file ini dengan kode di bawah --}}
+<div class="komentar-item" id="komentar-{{ $komentar->id }}" data-id="{{ $komentar->id }}">
 <div class="komentar-item mb-4" id="komentar-{{ $komentar->id }}" data-id="{{ $komentar->id }}">
     <div class="d-flex align-items-start">
         <div class="author-avatar-siswa flex-shrink-0 me-3">
             {{ strtoupper(substr($komentar->siswa->nama ?? ($komentar->admin->nama ?? 'U'), 0, 2)) }}
         </div>
         <div class="komentar-body w-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="name">
+                        {{ $komentar->siswa->nama ?? ($komentar->admin->nama ?? 'Pengguna') }}
+                        @if ($komentar->admin)
+                            <span class="badge bg-primary-subtle text-primary-emphasis rounded-pill ms-1" style="font-size: 0.7rem;">Admin</span>
+                        @endif
+                    </span>
+                    <p class="date">
+                        {{ $komentar->created_at ? $komentar->created_at->diffForHumans() : 'Beberapa waktu lalu' }}
+                    </p>
+                </div>
+                {{-- Tombol aksi dipindahkan ke sini --}}
+                <div class="comment-actions">
+                    @auth('siswa')
+                        <button class="btn btn-outline-secondary btn-sm btn-reply" data-id="{{ $komentar->id }}" title="Balas komentar">
+                            <i class="fas fa-reply"></i> Balas
+                        </button>
+                        @if ((Auth::guard('siswa')->check() && Auth::guard('siswa')->id() == $komentar->id_siswa) || Auth::guard('admin')->check() || Auth::guard('web')->check())
+                            <button class="btn btn-outline-danger btn-sm delete-comment" data-id="{{ $komentar->id }}" title="Hapus komentar">
+                                <i class="fas fa-trash"></i> Hapus
+                            </button>
+                        @endif
+                    @endauth
+                </div>
+            </div>
+
+            <p class="komentar-text mt-2">{{ $komentar->komentar }}</p>
+
+            @auth('siswa')
+                <form action="{{ route('komentar.reply', ['id' => $konten->id, 'parentId' => $komentar->id]) }}"
+                    method="POST"
+                    class="reply-form"
+                    data-parent-id="{{ $komentar->id }}"
+                    style="display: none;">
             <p class="meta mb-1">
                 <strong>
                     {{ $komentar->siswa->nama ?? ($komentar->admin->nama ?? 'Pengguna') }}
@@ -48,7 +85,7 @@
     </div>
 
     @if($komentar->replies->isNotEmpty())
-        <div class="komentar-replies" style="margin-left: 50px; margin-top: 1rem; border-left: 2px solid #e9ecef; padding-left: 15px;">
+        <div class="komentar-replies">
             @foreach($komentar->replies as $balasan)
                 @include('partials.komentar', ['komentar' => $balasan, 'konten' => $konten])
             @endforeach
