@@ -823,61 +823,59 @@
         document.addEventListener('DOMContentLoaded', function() {
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-            // =========================
-            // Handle Suka & Simpan (sudah ada sebelumnya)
-            // =========================
-            document.querySelectorAll('.btn-action').forEach(button => {
-                button.addEventListener('click', function() {
-                    this.disabled = true;
-                    const jenis = this.dataset.action;
-                    const artikelId = this.dataset.id;
-                    const url = "{{ route('artikel-siswa.interaksi', ':id') }}".replace(
-                        ':id', artikelId); // <-- PERBAIKAN
-
-                    fetch(url, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': csrfToken,
-                                'X-Requested-With': 'XMLHttpRequest'
-                            },
-                            body: JSON.stringify({
-                                jenis: jenis
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                this.classList.toggle('active');
-                                const icon = this.querySelector('i');
-                                icon.classList.toggle('far');
-                                icon.classList.toggle('fas');
-                                if (jenis === 'suka') {
-                                    document.getElementById('like-count').innerHTML =
-                                        `<i class="fas fa-heart"></i> ${data.like_count} Suka`;
-                                }
-                                // Animasi tambahan
-                                this.style.transform = 'scale(1.2)';
-                                setTimeout(() => {
-                                    this.style.transform = 'scale(1)';
-                                }, 300);
-                            } else {
-                                alert('Gagal menyimpan interaksi.');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('Terjadi kesalahan. Silakan coba lagi.');
-                        })
-                        .finally(() => {
-                            this.disabled = false;
-                        });
+            // Handle Suka & Simpan
+            function initializeActionButtons() {
+                document.querySelectorAll('.btn-action').forEach(button => {
+                    button.replaceWith(button.cloneNode(true));
                 });
-            });
 
-            // =========================
-            // Handle Form Komentar & Rating (sudah ada sebelumnya)
-            // =========================
+                document.querySelectorAll('.btn-action').forEach(button => {
+                    button.addEventListener('click', function() {
+                        this.disabled = true;
+                        const jenis = this.dataset.action;
+                        const artikelId = this.dataset.id;
+                        const url = "{{ route('artikel-siswa.interaksi', ':id') }}".replace(':id', artikelId);
+
+                        fetch(url, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': csrfToken,
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                body: JSON.stringify({ jenis })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    this.classList.toggle('active');
+                                    const icon = this.querySelector('i');
+                                    icon.classList.toggle('far');
+                                    icon.classList.toggle('fas');
+                                    if (jenis === 'suka') {
+                                        document.getElementById('like-count').innerHTML =
+                                            `<i class="fas fa-heart"></i> ${data.like_count} Suka`;
+                                    }
+                                    this.style.transform = 'scale(1.2)';
+                                    setTimeout(() => {
+                                        this.style.transform = 'scale(1)';
+                                    }, 300);
+                                } else {
+                                    alert('Gagal menyimpan interaksi.');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                alert('Terjadi kesalahan. Silakan coba lagi.');
+                            })
+                            .finally(() => {
+                                this.disabled = false;
+                            });
+                    });
+                });
+            }
+
+            // Handle Form Komentar & Rating
             const form = document.getElementById('feedbackForm');
             if (form) {
                 form.addEventListener('submit', function(e) {
@@ -885,8 +883,7 @@
                     const submitBtn = document.getElementById('submitBtn');
                     const originalBtnText = submitBtn.innerHTML;
                     submitBtn.disabled = true;
-                    submitBtn.innerHTML =
-                        '<span class="spinner-border spinner-border-sm"></span> Mengirim...';
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Mengirim...';
 
                     fetch(form.action, {
                             method: 'POST',
@@ -901,39 +898,9 @@
                             if (data.success) {
                                 submitBtn.classList.replace('btn-primary', 'btn-success');
                                 submitBtn.innerHTML = '<i class="fas fa-check"></i> Terkirim!';
-
-                                const ratingSummary = document.getElementById('rating-summary');
-                                if (data.new_rating_count > 0) {
-                                    ratingSummary.innerHTML =
-                                        `<i class="fas fa-star"></i> ${data.new_avg_rating}/5`;
-                                }
-
-                                const commentCount = document.getElementById('comment-count');
-                                const commentTitle = document.getElementById('comment-title');
-                                commentCount.innerHTML =
-                                    `<i class="fas fa-comments"></i> ${data.new_comment_count} Komentar`;
-                                commentTitle.innerText = `Komentar (${data.new_comment_count})`;
-
-                                if (data.new_comment_html) {
-                                    document.getElementById('no-comment-msg')?.remove();
-                                    const commentList = document.getElementById('comment-list');
-                                    const newCommentEl = document.createElement('div');
-                                    newCommentEl.innerHTML = data.new_comment_html;
-                                    commentList.prepend(newCommentEl.firstChild);
-
-                                    // Re-bind event listeners untuk komentar baru
-                                    initializeReplyButtons();
-                                }
-
                                 setTimeout(() => {
-                                    form.reset();
-                                    const checkedStar = document.querySelector(
-                                        '.rating-stars-modern input:checked');
-                                    if (checkedStar) checkedStar.checked = false;
-                                    submitBtn.disabled = false;
-                                    submitBtn.classList.replace('btn-success', 'btn-primary');
-                                    submitBtn.innerHTML = originalBtnText;
-                                }, 2000);
+                                    window.location.reload();
+                                }, 1000); // Refresh after 1 second
                             } else {
                                 alert(data.message || 'Gagal mengirim tanggapan.');
                                 submitBtn.disabled = false;
@@ -949,12 +916,8 @@
                 });
             }
 
-
-            // =========================
-            // Handle Balas Komentar - PERBAIKAN
-            // =========================
+            // Handle Balas Komentar
             function initializeReplyButtons() {
-                // Hapus event listener lama untuk menghindari duplikasi
                 document.querySelectorAll('.btn-reply').forEach(button => {
                     button.replaceWith(button.cloneNode(true));
                 });
@@ -963,59 +926,41 @@
                     button.replaceWith(button.cloneNode(true));
                 });
 
-                // Handle tombol Balas
                 document.querySelectorAll('.btn-reply').forEach(button => {
                     button.addEventListener('click', function(e) {
                         e.preventDefault();
                         const komentarId = this.dataset.id;
-
-                        // Cari form reply yang sesuai di dalam parent yang sama
                         const parentComment = this.closest('.komentar-item');
                         if (!parentComment) return;
 
-                        const form = parentComment.querySelector(
-                            `.reply-form[data-parent-id="${komentarId}"]`);
+                        const form = parentComment.querySelector(`.reply-form[data-parent-id="${komentarId}"]`);
 
                         if (form) {
-                            // Tutup semua form reply lain
                             document.querySelectorAll('.reply-form').forEach(f => {
                                 if (f !== form) {
                                     f.style.display = 'none';
-                                    // Juga reset tombol 'Balas' lainnya
                                     const otherParentId = f.dataset.parentId;
-                                    const otherReplyButton = document.querySelector(
-                                        `.btn-reply[data-id="${otherParentId}"]`);
+                                    const otherReplyButton = document.querySelector(`.btn-reply[data-id="${otherParentId}"]`);
                                     if (otherReplyButton) {
-                                        otherReplyButton.innerHTML =
-                                            '<i class="fas fa-reply"></i> Balas';
+                                        otherReplyButton.innerHTML = '<i class="fas fa-reply"></i> Balas';
                                         otherReplyButton.classList.remove('btn-secondary');
-                                        otherReplyButton.classList.add(
-                                            'btn-outline-secondary');
+                                        otherReplyButton.classList.add('btn-outline-secondary');
                                     }
                                 }
                             });
 
-                            // Toggle form yang diklik
-                            if (form.style.display === 'none' || !form.style.display) {
-                                form.style.display = 'block';
-                                form.querySelector('textarea').focus();
-                                this.innerHTML = '<i class="fas fa-times"></i> Batal';
-                                this.classList.add('btn-secondary');
-                                this.classList.remove('btn-outline-secondary');
-                            } else {
-                                form.style.display = 'none';
-                                this.innerHTML = '<i class="fas fa-reply"></i> Balas';
-                                this.classList.remove('btn-secondary');
-                                this.classList.add('btn-outline-secondary');
-                            }
+                            const isVisible = form.style.display === 'block';
+                            form.style.display = isVisible ? 'none' : 'block';
+                            form.querySelector('textarea').focus();
+                            this.innerHTML = isVisible ? '<i class="fas fa-reply"></i> Balas' : '<i class="fas fa-times"></i> Batal';
+                            this.classList.toggle('btn-secondary');
+                            this.classList.toggle('btn-outline-secondary');
                         } else {
-                            console.error('Form balasan tidak ditemukan untuk komentar ID:',
-                                komentarId);
+                            console.error('Form balasan tidak ditemukan untuk komentar ID:', komentarId);
                         }
                     });
                 });
 
-                // Handle tombol Batal
                 document.querySelectorAll('.btn-cancel-reply').forEach(button => {
                     button.addEventListener('click', function(e) {
                         e.preventDefault();
@@ -1023,11 +968,8 @@
                         if (form) {
                             form.style.display = 'none';
                             form.querySelector('textarea').value = '';
-
-                            // Reset tombol balas
                             const parentId = form.dataset.parentId;
-                            const replyButton = document.querySelector(
-                                `.btn-reply[data-id="${parentId}"]`);
+                            const replyButton = document.querySelector(`.btn-reply[data-id="${parentId}"]`);
                             if (replyButton) {
                                 replyButton.innerHTML = '<i class="fas fa-reply"></i> Balas';
                                 replyButton.classList.remove('btn-secondary');
@@ -1037,15 +979,12 @@
                     });
                 });
 
-                // Handle submit form balasan
                 document.querySelectorAll('.reply-form').forEach(form => {
-                    // Hapus event listener submit lama untuk mencegah duplikasi
                     const newForm = form.cloneNode(true);
                     form.parentNode.replaceChild(newForm, form);
 
                     newForm.addEventListener('submit', function(e) {
                         e.preventDefault();
-
                         const submitBtn = this.querySelector('button[type="submit"]');
                         const originalText = submitBtn.innerHTML;
                         const textarea = this.querySelector('textarea[name="komentar"]');
@@ -1056,8 +995,7 @@
                         }
 
                         submitBtn.disabled = true;
-                        submitBtn.innerHTML =
-                            '<span class="spinner-border spinner-border-sm"></span> Mengirim...';
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Mengirim...';
 
                         fetch(this.action, {
                                 method: 'POST',
@@ -1070,59 +1008,11 @@
                             .then(response => response.json())
                             .then(data => {
                                 if (data.success) {
-                                    // Reset form
-                                    textarea.value = '';
-                                    this.style.display = 'none';
-
-                                    // Update counter
-                                    const commentCount = document.getElementById(
-                                        'comment-count');
-                                    const commentTitle = document.getElementById(
-                                        'comment-title');
-                                    if (data.new_comment_count) {
-                                        commentCount.innerHTML =
-                                            `<i class="fas fa-comments"></i> ${data.new_comment_count} Komentar`;
-                                        commentTitle.innerText =
-                                            `Komentar (${data.new_comment_count})`;
-                                    }
-
-                                    // Tambahkan balasan baru ke DOM
-                                    if (data.new_comment_html) {
-                                        const parentId = this.dataset.parentId;
-                                        const parentComment = document.querySelector(
-                                            `.komentar-item[data-id="${parentId}"]`);
-
-                                        if (parentComment) {
-                                            let repliesContainer = parentComment.querySelector(
-                                                '.komentar-replies');
-                                            if (!repliesContainer) {
-                                                repliesContainer = document.createElement(
-                                                    'div');
-                                                repliesContainer.className = 'komentar-replies';
-                                                repliesContainer.style.cssText =
-                                                    'margin-left: 50px; margin-top: 1rem; border-left: 2px solid #e9ecef; padding-left: 15px;';
-                                                parentComment.appendChild(repliesContainer);
-                                            }
-
-                                            repliesContainer.insertAdjacentHTML('beforeend',
-                                                data.new_comment_html);
-
-                                            // Re-bind event listeners untuk komentar yg baru ditambahkan
-                                            initializeReplyButtons();
-                                        }
-                                    }
-
-                                    // Reset tombol balas
-                                    const parentId = this.dataset.parentId;
-                                    const replyButton = document.querySelector(
-                                        `.btn-reply[data-id="${parentId}"]`);
-                                    if (replyButton) {
-                                        replyButton.innerHTML =
-                                            '<i class="fas fa-reply"></i> Balas';
-                                        replyButton.classList.remove('btn-secondary');
-                                        replyButton.classList.add('btn-outline-secondary');
-                                    }
-
+                                    submitBtn.classList.replace('btn-primary', 'btn-success');
+                                    submitBtn.innerHTML = '<i class="fas fa-check"></i> Terkirim!';
+                                    setTimeout(() => {
+                                        window.location.reload();
+                                    }, 1000); // Refresh after 1 second
                                 } else {
                                     alert(data.message || 'Gagal mengirim balasan.');
                                 }
@@ -1139,9 +1029,81 @@
                 });
             }
 
-            // Inisialisasi pertama kali
-            initializeReplyButtons();
+            // Handle Delete Komentar
+            function initializeDeleteButtons() {
+                document.querySelectorAll('.delete-comment').forEach(button => {
+                    button.replaceWith(button.cloneNode(true));
+                });
 
+                document.querySelectorAll('.delete-comment').forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        if (!confirm('Apakah Anda yakin ingin menghapus komentar ini beserta balasannya?')) {
+                            return;
+                        }
+
+                        const komentarId = this.dataset.id;
+                        const url = "{{ route('komentar.destroy', ':id') }}".replace(':id', komentarId);
+
+                        fetch(url, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const commentElement = document.getElementById(`komentar-${komentarId}`);
+                                if (commentElement) {
+                                    commentElement.remove();
+                                    const repliesContainer = commentElement.querySelector('.komentar-replies');
+                                    if (repliesContainer) {
+                                        repliesContainer.querySelectorAll('.komentar-item').forEach(reply => reply.remove());
+                                    }
+                                }
+
+                                const commentCount = document.getElementById('comment-count');
+                                const commentTitle = document.getElementById('comment-title');
+                                let currentCount = parseInt(commentCount.textContent.match(/\d+/)[0]);
+                                const replyCount = commentElement?.querySelectorAll('.komentar-replies .komentar-item').length || 0;
+                                const newCount = Math.max(0, currentCount - 1 - replyCount);
+                                commentCount.innerHTML = `<i class="fas fa-comments"></i> ${newCount} Komentar`;
+                                commentTitle.innerText = `Komentar (${newCount})`;
+
+                                if (newCount === 0) {
+                                    const commentList = document.getElementById('comment-list');
+                                    commentList.innerHTML = '<p id="no-comment-msg">Belum ada komentar. Jadilah yang pertama!</p>';
+                                }
+
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1000); // Refresh after 1 second
+                            } else {
+                                alert(data.message || 'Gagal menghapus komentar.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Terjadi kesalahan saat menghapus komentar.');
+                        });
+                    });
+                });
+            }
+
+            // Initialize all event listeners
+            initializeActionButtons();
+            initializeReplyButtons();
+            initializeDeleteButtons();
+
+            // Re-bind for dynamically added comments
+            document.addEventListener('DOMNodeInserted', function(event) {
+                if (event.target.classList && event.target.classList.contains('komentar-item')) {
+                    initializeReplyButtons();
+                    initializeDeleteButtons();
+                }
+            });
         });
     </script>
 @endsection
