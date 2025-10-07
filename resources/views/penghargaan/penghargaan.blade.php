@@ -9,10 +9,6 @@
     <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-    
-    {{-- =============================================== --}}
-    {{-- || TAMBAHKAN LIBRARY SWEETALERT2 DI SINI     || --}}
-    {{-- =============================================== --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <div class="page-header">
@@ -27,19 +23,40 @@
                     Bulan aktif: <strong>{{ \Carbon\Carbon::parse($currentMonth)->translatedFormat('F Y') }}</strong>
                 </p>
             </div>
-            <div class="action-buttons">
+            <div class="action-buttons d-flex gap-2">
                 <a href="{{ route('admin.penghargaan.create', ['month' => $currentMonth]) }}" class="btn-primary-custom">
                     <i class="fas fa-plus"></i>
                     <span>Tambah Manual</span>
                 </a>
-
-                {{-- =============================================== --}}
-                {{-- ||    UBAH TOMBOL RESET DI BAWAH INI         || --}}
-                {{-- =============================================== --}}
-                <a href="{{ route('admin.penghargaan.reset') }}" class="btn-warning-custom" id="reset-bulanan-btn">
+                <button type="button" class="btn-warning-custom" data-bs-toggle="modal" data-bs-target="#resetConfirmModal">
                     <i class="fas fa-refresh"></i>
                     <span>Reset Bulanan</span>
-                </a>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="resetConfirmModal" tabindex="-1" aria-labelledby="resetConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content delete-warning-modal">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="resetConfirmModalLabel">Peringatan</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    Semua penghargaan dari bulan lalu akan diarsipkan.
+                    <br><br>
+                    <strong>Tindakan ini tidak dapat dibatalkan!</strong>
+                    <br><br>
+                    Yakin ingin melanjutkan reset bulanan?
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <form action="{{ route('admin.penghargaan.reset') }}" method="POST" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-danger" id="confirmResetBtn">Ya</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -52,14 +69,14 @@
             <ul class="nav nav-tabs custom-tabs" id="penghargaanTab" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link {{ $activeTab == 'artikel' ? 'active' : '' }}" id="artikel-tab"
-                        data-bs-toggle="tab" data-bs-target="#artikel" type="button" role="tab">
+                            data-bs-toggle="tab" data-bs-target="#artikel" type="button" role="tab">
                         <i class="fas fa-book me-2"></i>
                         <span>Artikel (Rating Tertinggi)</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link {{ $activeTab == 'video' ? 'active' : '' }}" id="video-tab" data-bs-toggle="tab"
-                        data-bs-target="#video" type="button" role="tab">
+                            data-bs-target="#video" type="button" role="tab">
                         <i class="fas fa-video me-2"></i>
                         <span>Video (Like Terbanyak)</span>
                     </button>
@@ -73,11 +90,8 @@
 
         <div class="card-body-custom">
             <div class="tab-content" id="penghargaanTabContent">
-
-                {{-- TAB ARTIKEL --}}
                 <div class="tab-pane fade {{ $activeTab == 'artikel' ? 'show active' : '' }}" id="artikel" role="tabpanel"
-                    aria-labelledby="artikel-tab">
-
+                     aria-labelledby="artikel-tab">
                     <div class="filter-section">
                         <form method="GET" action="{{ route('admin.penghargaan.index') }}" id="filterFormArtikel">
                             <input type="hidden" name="active_tab" value="artikel">
@@ -89,7 +103,8 @@
                                     <select name="year" class="form-select filter-select" id="yearFilterArtikel">
                                         @for ($y = $maxYear; $y >= $minYear; $y--)
                                             <option value="{{ $y }}" {{ $currentYear == $y ? 'selected' : '' }}>
-                                                {{ $y }}</option>
+                                                {{ $y }}
+                                            </option>
                                         @endfor
                                     </select>
                                 </div>
@@ -98,8 +113,7 @@
                                         <i class="fas fa-calendar-alt me-2"></i>Bulan
                                     </label>
                                     <select name="month" class="form-select filter-select" id="monthFilterArtikel"
-                                        onchange="this.form.submit()">
-                                        {{-- Opsi bulan akan diisi oleh JavaScript --}}
+                                            onchange="this.form.submit()">
                                     </select>
                                 </div>
                             </div>
@@ -123,26 +137,23 @@
                                             </span>
                                         </div>
                                         <div class="candidate-content">
-                                            <h6 class="candidate-title">{{ Str::limit($item->judul ?? 'Tanpa Judul', 40) }}
-                                            </h6>
+                                            <h6 class="candidate-title">{{ Str::limit($item->judul ?? 'Tanpa Judul', 40) }}</h6>
                                             <div class="candidate-rating">
                                                 <div class="rating-stars">
                                                     @for ($i = 1; $i <= 5; $i++)
-                                                        <span
-                                                            class="star {{ $i <= round($item->avg_rating ?? 0) ? 'filled' : 'empty' }}">
+                                                        <span class="star {{ $i <= round($item->avg_rating ?? 0) ? 'filled' : 'empty' }}">
                                                             <i class="fas fa-star"></i>
                                                         </span>
                                                     @endfor
                                                 </div>
-                                                <span
-                                                    class="rating-value">{{ number_format($item->avg_rating ?? 0, 1) }}/5</span>
+                                                <span class="rating-value">{{ number_format($item->avg_rating ?? 0, 1) }}/5</span>
                                             </div>
                                             <div class="candidate-author">
                                                 <i class="fas fa-user-circle me-2"></i>
                                                 <span>{{ $item->siswa->nama ?? 'Unknown' }}</span>
                                             </div>
                                             <button class="btn-select-winner pilih-cepat" data-id="{{ $item->id }}"
-                                                data-type="artikel">
+                                                    data-type="artikel">
                                                 <i class="fas fa-award me-2"></i>
                                                 <span>Pilih sebagai Pemenang</span>
                                             </button>
@@ -183,13 +194,11 @@
                                             <td>
                                                 <div class="rating-display">
                                                     @for ($i = 1; $i <= 5; $i++)
-                                                        <span
-                                                            class="star-sm {{ $i <= round($item->avg_rating ?? 0) ? 'filled' : 'empty' }}">
+                                                        <span class="star-sm {{ $i <= round($item->avg_rating ?? 0) ? 'filled' : 'empty' }}">
                                                             <i class="fas fa-star"></i>
                                                         </span>
                                                     @endfor
-                                                    <span
-                                                        class="rating-num">{{ number_format($item->avg_rating ?? 0, 1) }}</span>
+                                                    <span class="rating-num">{{ number_format($item->avg_rating ?? 0, 1) }}</span>
                                                 </div>
                                             </td>
                                             <td>
@@ -200,8 +209,8 @@
                                             </td>
                                             <td class="text-center">
                                                 <button class="btn-action-table pilih-cepat"
-                                                    data-id="{{ $item->id }}" data-type="artikel"
-                                                    title="Pilih sebagai pemenang">
+                                                        data-id="{{ $item->id }}" data-type="artikel"
+                                                        title="Pilih sebagai pemenang">
                                                     <i class="fas fa-award"></i>
                                                 </button>
                                             </td>
@@ -213,10 +222,8 @@
                     </div>
                 </div>
 
-                {{-- TAB VIDEO --}}
                 <div class="tab-pane fade {{ $activeTab == 'video' ? 'show active' : '' }}" id="video"
-                    role="tabpanel" aria-labelledby="video-tab">
-
+                     role="tabpanel" aria-labelledby="video-tab">
                     <div class="filter-section">
                         <form method="GET" action="{{ route('admin.penghargaan.index') }}" id="filterFormVideo">
                             <input type="hidden" name="active_tab" value="video">
@@ -227,8 +234,7 @@
                                     </label>
                                     <select name="year" class="form-select filter-select" id="yearFilterVideo">
                                         @for ($y = $maxYear; $y >= $minYear; $y--)
-                                            <option value="{{ $y }}"
-                                                {{ $currentYear == $y ? 'selected' : '' }}>{{ $y }}</option>
+                                            <option value="{{ $y }}" {{ $currentYear == $y ? 'selected' : '' }}>{{ $y }}</option>
                                         @endfor
                                     </select>
                                 </div>
@@ -237,8 +243,7 @@
                                         <i class="fas fa-calendar-alt me-2"></i>Bulan
                                     </label>
                                     <select name="month" class="form-select filter-select" id="monthFilterVideo"
-                                        onchange="this.form.submit()">
-                                        {{-- Opsi bulan akan diisi oleh JavaScript --}}
+                                            onchange="this.form.submit()">
                                     </select>
                                 </div>
                             </div>
@@ -262,8 +267,7 @@
                                             </span>
                                         </div>
                                         <div class="candidate-content">
-                                            <h6 class="candidate-title">
-                                                {{ Str::limit($item->judul ?? 'Tanpa Judul', 40) }}</h6>
+                                            <h6 class="candidate-title">{{ Str::limit($item->judul ?? 'Tanpa Judul', 40) }}</h6>
                                             <div class="candidate-likes">
                                                 <i class="fas fa-heart text-danger me-2"></i>
                                                 <span class="likes-value">{{ $item->jumlah_like ?? 0 }} Like</span>
@@ -273,7 +277,7 @@
                                                 <span>{{ $item->siswa->nama ?? 'Unknown' }}</span>
                                             </div>
                                             <button class="btn-select-winner pilih-cepat" data-id="{{ $item->id }}"
-                                                data-type="video">
+                                                    data-type="video">
                                                 <i class="fas fa-award me-2"></i>
                                                 <span>Pilih sebagai Pemenang</span>
                                             </button>
@@ -325,8 +329,8 @@
                                             </td>
                                             <td class="text-center">
                                                 <button class="btn-action-table pilih-cepat"
-                                                    data-id="{{ $item->id }}" data-type="video"
-                                                    title="Pilih sebagai pemenang">
+                                                        data-id="{{ $item->id }}" data-type="video"
+                                                        title="Pilih sebagai pemenang">
                                                     <i class="fas fa-award"></i>
                                                 </button>
                                             </td>
@@ -357,7 +361,7 @@
                     <div class="winner-card fade-in">
                         <div class="winner-left">
                             <div class="winner-avatar"
-                                style="background: linear-gradient(135deg, {{ $item->jenis == 'bulanan' ? '#f59e0b, #d97706' : '#8b5cf6, #7c3aed' }});">
+                                 style="background: linear-gradient(135deg, {{ $item->jenis == 'bulanan' ? '#f59e0b, #d97706' : '#8b5cf6, #7c3aed' }});">
                                 {{ Str::substr($item->siswa->nama ?? '-', 0, 1) }}
                             </div>
                             <div class="winner-info">
@@ -365,8 +369,7 @@
                                     {{ $item->siswa->nama ?? 'Siswa tidak ditemukan' }}
                                 </div>
                                 <div class="winner-badge">
-                                    <i
-                                        class="fas {{ $item->jenis == 'bulanan' ? 'fa-calendar-check' : 'fa-star' }} me-1"></i>
+                                    <i class="fas {{ $item->jenis == 'bulanan' ? 'fa-calendar-check' : 'fa-star' }} me-1"></i>
                                     {{ $item->jenis == 'bulanan' ? 'Pemenang Bulanan' : 'Penghargaan Spesial' }}
                                 </div>
                                 <div class="winner-description">
@@ -385,12 +388,12 @@
                         </div>
                         <div class="winner-actions">
                             <button class="btn-winner-action btn-edit btn-edit-card" data-id="{{ $item->id }}"
-                                data-bs-toggle="modal" data-bs-target="#editPenghargaanModal" title="Edit penghargaan">
+                                    data-bs-toggle="modal" data-bs-target="#editPenghargaanModal" title="Edit penghargaan">
                                 <i class="fas fa-edit"></i>
                             </button>
                             <form action="{{ route('admin.penghargaan.destroy', $item->id) }}" method="POST"
-                                style="display:inline;"
-                                onsubmit="return confirm('Yakin ingin menghapus penghargaan ini?');">
+                                  style="display:inline;"
+                                  onsubmit="return confirm('Yakin ingin menghapus penghargaan ini?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn-winner-action btn-delete" title="Hapus penghargaan">
@@ -426,69 +429,56 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Inisialisasi DataTable
             const tableConfig = {
-                "pageLength": 10,
-                "language": {
-                    "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json",
-                    "search": "Cari:",
-                    "lengthMenu": "Tampilkan _MENU_ data",
-                    "zeroRecords": "Tidak ada data yang ditemukan",
-                    "info": "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-                    "infoEmpty": "Tidak ada data",
-                    "infoFiltered": "(difilter dari _MAX_ total data)",
-                    "paginate": {
-                        "first": "Pertama",
-                        "last": "Terakhir",
-                        "next": "Selanjutnya",
-                        "previous": "Sebelumnya"
+                pageLength: 10,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json',
+                    search: 'Cari:',
+                    lengthMenu: 'Tampilkan _MENU_ data',
+                    zeroRecords: 'Tidak ada data yang ditemukan',
+                    info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
+                    infoEmpty: 'Tidak ada data',
+                    infoFiltered: '(difilter dari _MAX_ total data)',
+                    paginate: {
+                        first: 'Pertama',
+                        last: 'Terakhir',
+                        next: 'Selanjutnya',
+                        previous: 'Sebelumnya'
                     }
                 },
-                "columnDefs": [{
-                        "orderable": false,
-                        "targets": 4
-                    },
-                    {
-                        "searchable": false,
-                        "targets": [2, 4]
-                    }
+                columnDefs: [
+                    { orderable: false, targets: 4 },
+                    { searchable: false, targets: [2, 4] }
                 ],
-                "drawCallback": function() {
+                drawCallback: function() {
                     $(this).find('tbody tr').addClass('fade-in-row');
                 }
             };
 
             $('#artikelTable').DataTable({
                 ...tableConfig,
-                "order": [
-                    [2, "desc"]
-                ],
-                "language": {
+                order: [[2, 'desc']],
+                language: {
                     ...tableConfig.language,
-                    "emptyTable": "Tidak ada artikel untuk bulan yang dipilih."
+                    emptyTable: 'Tidak ada artikel untuk bulan yang dipilih.'
                 }
             });
 
             $('#videoTable').DataTable({
                 ...tableConfig,
-                "order": [
-                    [2, "desc"]
-                ],
-                "language": {
+                order: [[2, 'desc']],
+                language: {
                     ...tableConfig.language,
-                    "emptyTable": "Tidak ada video untuk bulan yang dipilih."
+                    emptyTable: 'Tidak ada video untuk bulan yang dipilih.'
                 }
             });
 
-            // Setup Month Filter
             const setupFilter = (type) => {
                 const yearSelect = document.getElementById(`yearFilter${type}`);
                 const monthSelect = document.getElementById(`monthFilter${type}`);
                 const currentMonthValue = '{{ $currentMonth }}';
-
-                const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus",
-                    "September", "Oktober", "November", "Desember"
-                ];
+                const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus',
+                    'September', 'Oktober', 'November', 'Desember'];
 
                 const updateMonths = (shouldSubmit) => {
                     const selectedYear = yearSelect.value;
@@ -507,8 +497,7 @@
 
                         if (index === 0) firstOption = option;
 
-                        if (currentSelectedMonth && currentSelectedMonth.substring(5) ===
-                            monthNumber) {
+                        if (currentSelectedMonth && currentSelectedMonth.substring(5) === monthNumber) {
                             option.selected = true;
                             monthExistsInNewYear = true;
                         } else if (!currentSelectedMonth && monthValue === currentMonthValue) {
@@ -534,20 +523,16 @@
 
             setupFilter('Artikel');
             setupFilter('Video');
-            
-            // ===============================================
-            // ||   TAMBAHAN KODE UNTUK SWEETALERT2         ||
-            // ===============================================
+
             const resetButton = document.getElementById('reset-bulanan-btn');
             if (resetButton) {
                 resetButton.addEventListener('click', function(e) {
-                    // Mencegah link langsung dieksekusi
                     e.preventDefault();
                     const url = this.href;
 
                     Swal.fire({
                         title: 'Anda Yakin?',
-                        text: "Semua penghargaan dari bulan lalu akan diarsipkan. Tindakan ini tidak dapat dibatalkan!",
+                        text: 'Semua penghargaan dari bulan lalu akan diarsipkan. Tindakan ini tidak dapat dibatalkan!',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#d33',
@@ -555,16 +540,13 @@
                         confirmButtonText: 'Ya, arsipkan!',
                         cancelButtonText: 'Batal'
                     }).then((result) => {
-                        // Jika pengguna menekan tombol "Ya, arsipkan!"
                         if (result.isConfirmed) {
-                            // Arahkan ke URL reset
                             window.location.href = url;
                         }
                     });
                 });
             }
-            
-            // Handle Pilih Cepat Button
+
             document.body.addEventListener('click', function(e) {
                 if (e.target.classList.contains('pilih-cepat') || e.target.closest('.pilih-cepat')) {
                     const btn = e.target.closest('.pilih-cepat');
@@ -579,7 +561,6 @@
                 }
             });
 
-            // Handle Confirm Form Submit
             const confirmForm = document.getElementById('confirmForm');
             if (confirmForm) {
                 confirmForm.addEventListener('submit', (e) => {
@@ -594,7 +575,6 @@
                 });
             }
 
-            // Handle Edit Button
             document.querySelectorAll('.btn-edit-card').forEach(button => {
                 button.addEventListener('click', () => {
                     const id = button.getAttribute('data-id');
@@ -620,34 +600,27 @@
                             setInputValue('edit_id', data.penghargaan?.id);
                             setInputValue('edit_type', itemType);
                             setInputValue('edit_id_siswa', data.penghargaan?.id_siswa);
-                            setInputValue('edit_nama_siswa', data.penghargaan?.siswa?.nama ||
-                                'Siswa tidak ditemukan');
+                            setInputValue('edit_nama_siswa', data.penghargaan?.siswa?.nama || 'Siswa tidak ditemukan');
                             setInputValue('edit_jenis', data.penghargaan?.jenis);
                             setInputValue('edit_bulan_tahun', data.penghargaan?.bulan_tahun);
-                            setInputValue('edit_deskripsi_penghargaan', data.penghargaan
-                                ?.deskripsi_penghargaan);
+                            setInputValue('edit_deskripsi_penghargaan', data.penghargaan?.deskripsi_penghargaan);
 
                             const itemSelect = document.getElementById('edit_id_item');
                             const itemLabel = document.getElementById('editItemLabel');
 
-                            itemLabel.textContent =
-                                `Pilih ${itemType.charAt(0).toUpperCase() + itemType.slice(1)}`;
-                            itemSelect.innerHTML =
-                                `<option value="">-- Pilih ${itemType.charAt(0).toUpperCase() + itemType.slice(1)} --</option>`;
+                            itemLabel.textContent = `Pilih ${itemType.charAt(0).toUpperCase() + itemType.slice(1)}`;
+                            itemSelect.innerHTML = `<option value="">-- Pilih ${itemType.charAt(0).toUpperCase() + itemType.slice(1)} --</option>`;
 
                             if (data.items?.length) {
                                 data.items.forEach(item => {
                                     const ratingText = itemType === 'artikel' ?
                                         `Rating: ${parseFloat(item.rating || 0).toFixed(1)}` :
                                         `Like: ${item.rating || 0}`;
-                                    itemSelect.innerHTML +=
-                                        `<option value="${item.id}">${item.judul} (${ratingText})</option>`;
+                                    itemSelect.innerHTML += `<option value="${item.id}">${item.judul} (${ratingText})</option>`;
                                 });
                             }
 
-                            const selectedItemId = data.penghargaan?.[itemType === 'artikel' ?
-                                'id_artikel' : 'id_video'
-                            ];
+                            const selectedItemId = data.penghargaan?.[itemType === 'artikel' ? 'id_artikel' : 'id_video'];
                             if (selectedItemId) {
                                 itemSelect.value = selectedItemId;
                             }
@@ -659,7 +632,6 @@
                 });
             });
 
-            // Auto dismiss alert after 5 seconds
             const alertNotification = document.querySelector('.alert-notification');
             if (alertNotification) {
                 setTimeout(() => {

@@ -10,6 +10,7 @@
             <i class="fas fa-arrow-left me-2"></i>Kembali
         </a>
         <h2 class="section-title">Form Upload Video</h2>
+
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul class="mb-0">
@@ -20,7 +21,7 @@
             </div>
         @endif
 
-        <form action="{{ route('video.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="videoForm" action="{{ route('video.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="row justify-content-center">
                 <div class="col-lg-8">
@@ -48,7 +49,10 @@
                             <small class="form-text text-muted">Format yang didukung: MP4, WebM, OGG. Maksimal ukuran: 50MB.</small>
                         </div>
                         <div class="d-grid mt-4">
-                            <button type="submit" class="btn btn-primary fw-bold btn-lg">Upload Video</button>
+                            <!-- Tombol ini TIDAK langsung submit -->
+                            <button type="button" class="btn btn-primary fw-bold btn-lg" data-bs-toggle="modal" data-bs-target="#konfirmasiModal">
+                                Upload Video
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -56,5 +60,24 @@
         </form>
     </section>
 </div>
+
+<!-- Modal Konfirmasi -->
+<div class="modal fade" id="konfirmasiModal" tabindex="-1" aria-labelledby="konfirmasiModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <p class="mb-0 fs-5">
+                    Apakah Anda yakin ingin mengupload video ini untuk direview?
+                    <br><br>
+                    <small class="text-muted">Setelah dikirim, video tidak dapat diedit sampai proses review selesai.</small>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <!-- Tombol ini submit form -->
+                <button type="submit" class="btn btn-primary fw-bold" form="videoForm">Ya, Upload Sekarang</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
-<!-- Ganti bagian Video Card (Coming Soon) -->

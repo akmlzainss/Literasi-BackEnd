@@ -4,6 +4,7 @@
 
 @section('content')
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <!-- Content Area -->
     <div class="content-area fade-in">
@@ -14,9 +15,8 @@
                     {{ date('d M Y, H:i A') }} WIB</small></p>
         </div>
 
-        <!-- Stats Cards (Kotak-kotak) -->
+        <!-- Stats Cards -->
         <div class="row g-4 mb-4">
-
             <!-- Artikel -->
             <div class="col-xl-3 col-md-6">
                 <div class="stats-card primary enhanced-card" data-aos="fade-up" data-aos-delay="100">
@@ -27,7 +27,6 @@
                     <div class="stats-number counter" data-target="{{ $artikelCount }}">{{ $artikelCount }}</div>
                 </div>
             </div>
-
             <!-- Kategori -->
             <div class="col-xl-3 col-md-6">
                 <div class="stats-card success enhanced-card" data-aos="fade-up" data-aos-delay="200">
@@ -38,7 +37,6 @@
                     <div class="stats-number counter" data-target="{{ $kategoriCount }}">{{ $kategoriCount }}</div>
                 </div>
             </div>
-
             <!-- Video -->
             <div class="col-xl-3 col-md-6">
                 <div class="stats-card warning enhanced-card" data-aos="fade-up" data-aos-delay="300">
@@ -46,10 +44,9 @@
                         <i class="fas fa-play-circle pulse-icon"></i>
                     </div>
                     <h5 class="stats-title">Total Video</h5>
-                    <div class="stats-number counter" data-target="{{ $penghargaanCount }}">{{ $penghargaanCount }}</div>
+                    <div class="stats-number counter" data-target="{{ $videoCount }}">{{ $videoCount }}</div>
                 </div>
             </div>
-
             <!-- Siswa -->
             <div class="col-xl-3 col-md-6">
                 <div class="stats-card info enhanced-card" data-aos="fade-up" data-aos-delay="400">
@@ -60,7 +57,6 @@
                     <div class="stats-number counter" data-target="{{ $siswaCount }}">{{ $siswaCount }}</div>
                 </div>
             </div>
-
         </div>
 
         <!-- Charts Section -->
@@ -68,11 +64,8 @@
             <div class="col-xl-8">
                 <div class="card h-100 enhanced-card" data-aos="fade-right">
                     <div class="card-header glass-effect">
-
                         <span class="fw-bold">Statistik Data Berdasarkan Kategori</span>
-                        <div class="card-actions">
-
-                        </div>
+                        <div class="card-actions"></div>
                     </div>
                     <div class="card-body">
                         <div class="chart-container">
@@ -85,9 +78,7 @@
                 <div class="card h-100 enhanced-card" data-aos="fade-left">
                     <div class="card-header glass-effect">
                         <span class="fw-bold">Distribusi Data</span>
-                        <div class="card-actions">
-
-                        </div>
+                        <div class="card-actions"></div>
                     </div>
                     <div class="card-body">
                         <div class="chart-container">
@@ -101,10 +92,8 @@
             <div class="col-12">
                 <div class="card enhanced-card" data-aos="fade-up">
                     <div class="card-header glass-effect">
-
                         <span class="fw-bold">Trend Aktivitas 7 Hari Terakhir</span>
-                        <div class="card-actions">
-                        </div>
+                        <div class="card-actions"></div>
                     </div>
                     <div class="card-body">
                         <div class="chart-container">
@@ -149,7 +138,7 @@
                         <div class="activity-list">
                             @forelse ($logs as $log)
                                 <div class="activity-row row g-0 align-items-center" data-aos="fade-up"
-                                    data-aos-delay="{{ ($loop->index + 1) * 100 }}">
+                                     data-aos-delay="{{ ($loop->index + 1) * 100 }}">
                                     <div class="col-5">
                                         <div class="activity-info">
                                             <div class="activity-icon-new success-gradient">
@@ -157,8 +146,7 @@
                                             </div>
                                             <div class="activity-details">
                                                 <div class="activity-name">{{ $log->aksi }}</div>
-                                                <div class="activity-desc">
-                                                    {{ $log->detail['nama'] ?? 'Tidak ada detail' }}</div>
+                                                <div class="activity-desc">{{ $log->detail['nama'] ?? 'Tidak ada detail' }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -168,8 +156,7 @@
                                                 <i class="fas fa-user"></i>
                                             </div>
                                             <div class="user-details">
-                                                <div class="user-name">
-                                                    {{ $log->admin->nama_pengguna ?? 'Admin tidak ditemukan' }}</div>
+                                                <div class="user-name">{{ $log->admin->nama_pengguna ?? 'Admin tidak ditemukan' }}</div>
                                                 <div class="user-email">{{ $log->admin->email ?? '-' }}</div>
                                             </div>
                                         </div>
@@ -177,8 +164,7 @@
                                     <div class="col-2">
                                         <div class="date-info">
                                             <div class="date-main">{{ optional($log->created_at)->format('d M Y') }}</div>
-                                            <div class="date-time">{{ optional($log->created_at)->format('H:i') }} WIB
-                                            </div>
+                                            <div class="date-time">{{ optional($log->created_at)->format('H:i') }} WIB</div>
                                         </div>
                                     </div>
                                 </div>
@@ -200,10 +186,9 @@
             </div>
         </div>
 
-        <!-- Include Chart.js and AOS -->
+        <!-- Scripts -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-        <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
         <script>
             // Initialize AOS
@@ -243,7 +228,7 @@
 
             counters.forEach(counter => observer.observe(counter));
 
-            // Enhanced Chart.js configurations
+            // Chart.js configurations
             Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
             Chart.defaults.font.size = 12;
             Chart.defaults.color = '#6b7280';
@@ -256,7 +241,7 @@
                 activityData: @json($activityData ?? [])
             };
 
-            // Debugging - bisa dihapus nanti
+            // Debugging
             console.log('Chart Data:', chartData);
 
             // Bar Chart - Statistik berdasarkan kategori/data
@@ -270,8 +255,7 @@
                     datasets: [{
                         label: 'Jumlah Data',
                         data: chartData.categories && chartData.categories.length > 0 ? chartData.categories : [
-                            {{ $artikelCount }}, {{ $kategoriCount }}, {{ $penghargaanCount }},
-                            {{ $siswaCount }}
+                            {{ $artikelCount }}, {{ $kategoriCount }}, {{ $videoCount }}, {{ $siswaCount }}
                         ],
                         backgroundColor: [
                             'rgba(37, 99, 235, 0.8)',
@@ -287,7 +271,7 @@
                         ],
                         borderWidth: 2,
                         borderRadius: 8,
-                        borderSkipped: false,
+                        borderSkipped: false
                     }]
                 },
                 options: {
@@ -323,18 +307,17 @@
                 }
             });
 
-            // Enhanced Pie Chart - Distribusi data
+            // Pie Chart - Distribusi data
             const ctxPie = document.getElementById('pieChart').getContext('2d');
             new Chart(ctxPie, {
                 type: 'doughnut',
                 data: {
-                    labels: chartData.statsData && chartData.statsData.labels ? chartData.statsData.labels : ['Artikel',
-                        'Kategori', 'Video', 'Siswa'
+                    labels: chartData.statsData && chartData.statsData.labels ? chartData.statsData.labels : [
+                        'Artikel', 'Kategori', 'Video', 'Siswa'
                     ],
                     datasets: [{
                         data: chartData.statsData && chartData.statsData.data ? chartData.statsData.data : [
-                            {{ $artikelCount }}, {{ $kategoriCount }}, {{ $penghargaanCount }},
-                            {{ $siswaCount }}
+                            {{ $artikelCount }}, {{ $kategoriCount }}, {{ $videoCount }}, {{ $siswaCount }}
                         ],
                         backgroundColor: [
                             'rgba(37, 99, 235, 0.8)',
@@ -372,19 +355,19 @@
                 }
             });
 
-            // Enhanced Line Chart - Trend aktivitas 7 hari terakhir
+            // Line Chart - Trend aktivitas 7 hari terakhir
             const ctxLine = document.getElementById('lineChart').getContext('2d');
             new Chart(ctxLine, {
                 type: 'line',
                 data: {
                     labels: chartData.activityData && chartData.activityData.labels ? chartData.activityData.labels : [
-                        '6 hari lalu', '5 hari lalu', '4 hari lalu', '3 hari lalu', '2 hari lalu', 'Kemarin',
-                        'Hari ini'
+                        '6 hari lalu', '5 hari lalu', '4 hari lalu', '3 hari lalu', '2 hari lalu', 'Kemarin', 'Hari ini'
                     ],
                     datasets: [{
                         label: 'Aktivitas Harian',
-                        data: chartData.activityData && chartData.activityData.data ? chartData.activityData
-                            .data : [2, 5, 3, 8, 4, 6, 7],
+                        data: chartData.activityData && chartData.activityData.data ? chartData.activityData.data : [
+                            2, 5, 3, 8, 4, 6, 7
+                        ],
                         fill: true,
                         backgroundColor: 'rgba(37, 99, 235, 0.1)',
                         borderColor: 'rgba(37, 99, 235, 1)',

@@ -9,6 +9,33 @@
     box-shadow: var(--shadow);
     border: 1px solid rgba(37, 99, 235, 0.1);
 }
+/* Modal style */
+.delete-warning-modal {
+  border: 3px solid #dc3545; /* warna merah border */
+  border-radius: 10px;
+  box-shadow: 0 5px 25px rgba(220, 53, 69, 0.4); /* bayangan merah lembut */
+}
+
+/* Header tetap merah */
+.delete-warning-modal .modal-header {
+  border-bottom: none;
+}
+
+/* Footer bersih tanpa garis */
+.delete-warning-modal .modal-footer {
+  border-top: none;
+}
+
+/* Tombol "Ya" bisa dibuat merah juga biar serasi */
+.delete-warning-modal .btn-primary {
+  background-color: #dc3545;
+  border: none;
+}
+
+.delete-warning-modal .btn-primary:hover {
+  background-color: #bb2d3b;
+}
+
 
 .page-title {
     background: linear-gradient(135deg, var(--primary-blue), var(--light-blue));
