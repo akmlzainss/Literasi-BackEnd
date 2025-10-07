@@ -1,41 +1,41 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Kategori')
-@section('page-title', 'Detail Kategori')
+@section('title', 'Detail Siswa')
+@section('page-title', 'Detail Siswa')
 
 @section('content')
 <div class="container mt-4">
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">Informasi Detail Kategori</h5>
+            <h5 class="mb-0">Informasi Detail Siswa</h5>
         </div>
         <div class="card-body">
             <table class="table table-bordered">
                 <tr>
-                    <th scope="row">Nama Kategori</th>
-                    <td>{{ $kategori->nama }}</td>
+                    <th scope="row" style="width: 25%">No</th>
+                    <td>{{ $siswa->id }}</td>
                 </tr>
                 <tr>
-                    <th scope="row">Deskripsi</th>
-                    <td>{{ $kategori->deskripsi }}</td>
+                    <th scope="row">NIS</th>
+                    <td>{{ $siswa->nis }}</td>
                 </tr>
                 <tr>
-                    <th scope="row">Artikel Terkait</th>
-                    <td>
-                        @if ($kategori->artikel->isEmpty())
-                            <span class="text-muted">Tidak ada artikel terkait.</span>
-                        @else
-                            <ul class="mb-0">
-                                @foreach ($kategori->artikel as $artikel)
-                                    <li>{{ $artikel->judul }} (ID: {{ $artikel->id }})</li>
-                                @endforeach
-                            </ul>
-                        @endif
-                    </td>
+                    <th scope="row">Nama Lengkap</th>
+                    <td>{{ $siswa->nama }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Email</th>
+                    <td>{{ $siswa->email }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Kelas</th>
+                    <td>{{ $siswa->kelas }}</td>
                 </tr>
             </table>
 
-            <a href="{{ route('admin.kategori.index') }}" class="btn btn-secondary">← Kembali</a>
+            <a href="{{ route('admin.siswa.index') }}" class="btn btn-secondary">
+                ← Kembali
+            </a>
         </div>
     </div>
 </div>

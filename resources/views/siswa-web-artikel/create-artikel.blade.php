@@ -22,7 +22,8 @@
             </div>
         @endif
 
-        <form action="{{ route('artikel-siswa.store') }}" method="POST" enctype="multipart/form-data">
+        <!-- Formulir Artikel -->
+        <form id="artikelForm" action="{{ route('artikel-siswa.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="row g-4">
                 <div class="col-lg-8">
@@ -55,7 +56,9 @@
                             <select name="id_kategori" id="id_kategori" class="form-select">
                                 <option value="">Pilih yang sudah ada...</option>
                                 @foreach ($kategoris as $kategori)
-                                    <option value="{{ $kategori->id }}" {{ old('id_kategori') == $kategori->id ? 'selected' : '' }}>{{ $kategori->nama }}</option>
+                                    <option value="{{ $kategori->id }}" {{ old('id_kategori') == $kategori->id ? 'selected' : '' }}>
+                                        {{ $kategori->nama }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -65,7 +68,10 @@
                             <small class="form-text text-muted">Isi salah satu: pilih kategori atau usulkan baru.</small>
                         </div>
                         <div class="d-grid mt-4">
-                            <button type="submit" class="btn btn-primary fw-bold btn-lg">Kirim untuk Direview</button>
+                            <!-- Tombol buka modal konfirmasi -->
+                            <button type="button" class="btn btn-primary fw-bold btn-lg" data-bs-toggle="modal" data-bs-target="#confirmModal">
+                                Kirim untuk Direview
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -73,10 +79,33 @@
         </form>
     </section>
 </main>
+
+<!-- Modal Konfirmasi Kirim Artikel -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="confirmModalLabel">Konfirmasi Pengiriman</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0 fs-5">
+                    Apakah Anda yakin ingin mengirim artikel ini untuk direview?
+                    <br><br>
+                    <small class="text-muted">Setelah dikirim, artikel tidak dapat diedit sampai proses review selesai.</small>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary fw-bold" form="artikelForm">Ya, Kirim Sekarang</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
-{{-- Menggunakan jQuery dan TinyMCE versi 5 seperti di admin --}}
+{{-- jQuery dan TinyMCE untuk editor teks --}}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.tiny.cloud/1/4xazwn7uf3t198xvx4jq99bmdaj364wz6x88joubmdqdtlrn/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
@@ -87,7 +116,7 @@
             plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount',
             toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
         });
-        
+
         // Simpan isi TinyMCE ke textarea sebelum form disubmit
         $('form').on('submit', function () {
             tinymce.triggerSave();

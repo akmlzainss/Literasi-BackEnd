@@ -150,6 +150,7 @@ class SiswaArtikelController extends Controller
             \Log::error('Error storing artikel: ' . $e->getMessage());
             return back()->with('error', 'Gagal menyimpan artikel. Silakan coba lagi.');
         }
+        
     }
 
     public function storeKomentar(Request $request, $id, $parentId = null)

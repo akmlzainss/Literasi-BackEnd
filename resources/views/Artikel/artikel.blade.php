@@ -11,36 +11,37 @@
         <h1 class="page-title">Kelola Artikel</h1>
         <p class="page-subtitle">Kelola dan atur semua artikel literasi akhlak untuk sistem pembelajaran</p>
 
-       <div class="action-buttons d-flex flex-wrap gap-3">
-    <div class="card shadow-sm">
-        <div class="card-body p-2">
-            <a href="{{ route('admin.artikel.create') }}" class="btn btn-primary-custom w-100">
-                <i class="fas fa-plus me-2"></i>Tambah Artikel Baru
-            </a>
-        </div>
-    </div>
-
-    <div class="card shadow-sm">
-        <div class="card-body p-2">
-            <a href="{{ route('admin.artikel.status', ['status' => 'menunggu']) }}" class="btn btn-warning-custom w-100">
-                <i class="fas fa-clock me-2"></i>Status Menunggu
-            </a>
-        </div>
-    </div>
-
-    @if (isset($status) && $status)
-        <div class="card shadow-sm">
-            <div class="card-body p-2">
-                <a href="{{ route('admin.artikel.index') }}" class="btn btn-secondary-custom w-100">
-                    <i class="fas fa-arrow-left me-2"></i>Kembali ke Semua Artikel
-                </a>
+        <div class="action-buttons d-flex flex-wrap gap-3">
+            <div class="card shadow-sm">
+                <div class="card-body p-2">
+                    <a href="{{ route('admin.artikel.create') }}" class="btn btn-primary-custom w-100">
+                        <i class="fas fa-plus me-2"></i>Tambah Artikel Baru
+                    </a>
+                </div>
             </div>
-        </div>
-    @endif
-    </div>
-</div>
 
+            <div class="card shadow-sm">
+                <div class="card-body p-2">
+                    <a href="{{ route('admin.artikel.status', ['status' => 'menunggu']) }}"
+                        class="btn btn-warning-custom w-100">
+                        <i class="fas fa-clock me-2"></i>Status Menunggu
+                    </a>
+                </div>
+            </div>
+
+            @if (isset($status) && $status)
+                <div class="card shadow-sm">
+                    <div class="card-body p-2">
+                        <a href="{{ route('admin.artikel.index') }}" class="btn btn-secondary-custom w-100">
+                            <i class="fas fa-arrow-left me-2"></i>Kembali ke Semua Artikel
+                        </a>
+                    </div>
+                </div>
+            @endif
         </div>
+    </div>
+
+    </div>
     </div>
 
     <div class="main-card">
@@ -133,7 +134,8 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="button" class="btn-action-card btn-delete-card"
-                                                data-id="{{ $artikel->id }}" onclick="confirmDelete({{ $artikel->id }})">
+                                                data-id="{{ $artikel->id }}"
+                                                onclick="confirmDelete({{ $artikel->id }})">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
@@ -155,7 +157,8 @@
                             <div class="article-rating">
                                 <div class="rating-display">
                                     @php
-                                        $rating = $artikel->ratingArtikel->avg('rating') ?? ($artikel->nilai_rata_rata ?? 0);
+                                        $rating =
+                                            $artikel->ratingArtikel->avg('rating') ?? ($artikel->nilai_rata_rata ?? 0);
                                         $totalReviews = $artikel->ratingArtikel->count();
                                         $fullStars = floor($rating);
                                         $hasHalfStar = $rating - $fullStars >= 0.5;
@@ -215,23 +218,35 @@
         </div>
     </div>
 
-    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteConfirmModalLabel">Konfirmasi Hapus</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    Apakah Anda yakin ingin menghapus artikel ini? Tindakan ini tidak dapat dibatalkan.
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Hapus</button>
-                </div>
-            </div>
-        </div>
+<!-- Modal Konfirmasi Hapus -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content delete-warning-modal">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="deleteConfirmModalLabel">Peringatan</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body text-center">
+        Data yang dihapus <strong>tidak dapat dikembalikan!</strong>
+        <br><br>
+        Yakin ingin menghapus data ini?
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <form id="deleteForm" method="POST" class="d-inline">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-danger" id="confirmDeleteBtn">Ya</button>
+        </form>
+      </div>
     </div>
+  </div>
+</div>
+
+
+    
 @endsection
 
 @section('scripts')
@@ -258,14 +273,18 @@
                     method: 'GET',
                     data: formData,
                     beforeSend: function() {
-                        $('#articlesGrid').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin"></i> Memuat...</div>');
+                        $('#articlesGrid').html(
+                            '<div class="text-center py-5"><i class="fas fa-spinner fa-spin"></i> Memuat...</div>'
+                            );
                     },
                     success: function(response) {
                         $('#articlesGrid').html($(response).find('#articlesGrid').html());
-                        $('.pagination-custom').html($(response).find('.pagination-custom').html());
+                        $('.pagination-custom').html($(response).find('.pagination-custom')
+                            .html());
                     },
                     error: function(xhr) {
-                        showAlert('error', 'Gagal memuat artikel: ' + (xhr.responseJSON?.message || 'Terjadi kesalahan.'));
+                        showAlert('error', 'Gagal memuat artikel: ' + (xhr.responseJSON
+                            ?.message || 'Terjadi kesalahan.'));
                     }
                 });
             });
@@ -280,7 +299,8 @@
                         method: 'POST',
                         data: form.serialize(),
                         beforeSend: function() {
-                            $('#confirmDeleteBtn').html('<i class="fas fa-spinner fa-spin"></i> Menghapus...');
+                            $('#confirmDeleteBtn').html(
+                                '<i class="fas fa-spinner fa-spin"></i> Menghapus...');
                         },
                         success: function(response) {
                             $('#deleteConfirmModal').modal('hide');
@@ -289,7 +309,8 @@
                         },
                         error: function(xhr) {
                             $('#deleteConfirmModal').modal('hide');
-                            showAlert('error', xhr.responseJSON?.message || 'Gagal menghapus artikel.');
+                            showAlert('error', xhr.responseJSON?.message ||
+                                'Gagal menghapus artikel.');
                         },
                         complete: function() {
                             $('#confirmDeleteBtn').html('Hapus');
@@ -323,3 +344,4 @@
         });
     </script>
 @endsection
+
