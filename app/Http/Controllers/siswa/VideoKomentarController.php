@@ -25,14 +25,27 @@ class VideoKomentarController extends Controller
         $komentar->id_video = $video->id;
         $komentar->komentar = $request->komentar;
 
+
         // --- PERBAIKAN PENTING DI SINI ---
         // Mengambil parent_id dari input form, bukan dari URL
         $komentar->id_komentar_parent = $request->input('id_komentar_parent', null);
 
+        // --- PERBAIKAN: Mengambil parent ID dari request body, bukan URL ---
+        $komentar->id_komentar_parent = $request->input('id_komentar_parent', null);
+        $komentar->depth = $request->id_komentar_parent ? 1 : 0;
+
+
+
         if (Auth::guard('siswa')->check()) {
             $komentar->id_siswa = Auth::guard('siswa')->id();
         } elseif (Auth::guard('admin')->check() || Auth::guard('web')->check()) {
+
             $komentar->id_admin = Auth::guard('admin')->id() ?: Auth::guard('web')->id();
+
+            // Menggunakan ID dari guard yang aktif
+            $komentar->id_admin = Auth::guard('admin')->id() ?: Auth::guard('web')->id();
+            $komentar->id_siswa = null;
+
         }
 
         $komentar->save();
@@ -50,7 +63,18 @@ class VideoKomentarController extends Controller
             ]);
         }
 
-        // Jika ini adalah komentar utama, kirim data seperti biasa
+
+        // --- PERBAIKAN: Mengirim HTML baru jika ini adalah balasan ---
+        if ($komentar->id_komentar_parent) {
+             $new_comment_html = view('partials.comment_reply_item', ['balasan' => $komentar])->render();
+             return response()->json([
+                'success' => true,
+                'message' => 'Balasan berhasil dikirim!',
+                'new_comment_html' => $new_comment_html
+             ]);
+        }
+
+
         return response()->json([
             'success' => true,
             'komentar' => [
