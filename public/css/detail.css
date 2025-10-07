@@ -1,0 +1,557 @@
+/* ========================================
+           RATING STARS - KUNING MODERN
+        ======================================== */
+    .rating-stars-modern {
+        display: flex;
+        gap: 0.5rem;
+        direction: rtl;
+        margin-bottom: 1rem;
+        justify-content: flex-start;
+    }
+
+    .rating-label {
+        font-size: 2rem;
+        color: #d1d5db;
+        cursor: pointer;
+        transition: var(--transition-smooth);
+        display: flex;
+        align-items: center;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+    }
+
+    .rating-input {
+        display: none;
+    }
+
+    .rating-input:checked~.rating-label,
+    .rating-input:checked~.rating-label:hover,
+    .rating-label:hover,
+    .rating-label:hover~.rating-label {
+        color: #fbbf24;
+        filter: drop-shadow(0 2px 4px rgba(251, 191, 36, 0.4));
+    }
+
+    .rating-label:hover {
+        transform: scale(1.15) rotate(-5deg);
+    }
+
+    .rating-input:checked~.rating-label {
+        animation: starPop 0.4s ease;
+    }
+
+    @keyframes starPop {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.2);
+        }
+    }
+
+    /* ========================================
+           ACTION BUTTONS - MODERN DENGAN SHADOW
+        ======================================== */
+    .action-buttons-wrapper {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        transition: var(--transition-smooth);
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        border: 2px solid var(--border);
+        background: var(--white);
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--text-primary);
+        box-shadow: var(--shadow-sm);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-light);
+    }
+
+    .btn-action.active {
+        border-color: transparent;
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-action[data-action="suka"].active {
+        background: linear-gradient(135deg, #fecaca 0%, #fee2e2 100%);
+        color: #dc2626;
+        animation: heartBeat 0.6s ease;
+    }
+
+    .btn-action[data-action="bookmark"].active {
+        background: linear-gradient(135deg, #bfdbfe 0%, #dbeafe 100%);
+        color: #1e40af;
+        animation: bookmarkSave 0.6s ease;
+    }
+
+    @keyframes heartBeat {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        25% {
+            transform: scale(1.1);
+        }
+
+        50% {
+            transform: scale(1);
+        }
+
+        75% {
+            transform: scale(1.05);
+        }
+    }
+
+    @keyframes bookmarkSave {
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-5px);
+        }
+    }
+
+    .btn-action i {
+        transition: transform 0.3s ease;
+    }
+
+    .btn-action:hover i {
+        transform: scale(1.2);
+    }
+
+    /* ========================================
+           FEEDBACK SECTION - CARD MODERN
+        ======================================== */
+    .feedback-section {
+        background: linear-gradient(135deg, var(--light) 0%, var(--white) 100%);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-light);
+        margin-top: 2rem;
+    }
+
+    .feedback-section h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 1.5rem;
+        position: relative;
+        padding-bottom: 0.75rem;
+    }
+
+    .feedback-section h3:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background: var(--gradient-blue-enhanced);
+        border-radius: 2px;
+    }
+
+    /* ========================================
+           KOMENTAR SECTION - ULTRA MODERN
+        ======================================== */
+    .komentar-section {
+        margin-top: 3rem;
+    }
+
+    .komentar-section h3 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .komentar-section h3:before {
+        content: '💬';
+        font-size: 1.5rem;
+    }
+
+    /* ========================================
+           KOMENTAR ITEM - CARD DESIGN
+        ======================================== */
+    .komentar-item {
+        margin-bottom: 1.5rem;
+        padding: 1.75rem;
+        background: var(--white);
+        border-radius: 16px;
+        border: 1px solid var(--border-light);
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition-smooth);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .komentar-item:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--gradient-blue-enhanced);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .komentar-item:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+        border-color: var(--border);
+    }
+
+    .komentar-item:hover:before {
+        opacity: 1;
+    }
+
+    /* Komentar Header */
+    .komentar-item .author-avatar-siswa {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: var(--gradient-blue-enhanced);
+        color: var(--white);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .komentar-item .name {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .komentar-item .date {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+
+    .komentar-item .komentar-text {
+        color: var(--text-primary);
+        line-height: 1.7;
+        margin-top: 1rem;
+        font-size: 0.95rem;
+    }
+
+    /* ========================================
+           REPLY FORM - MODERN DESIGN
+        ======================================== */
+    .reply-form {
+        margin-left: 2rem;
+        margin-top: 1rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f8fafc 0%, var(--white) 100%);
+        border-radius: 12px;
+        border: 2px dashed var(--border);
+        display: none;
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .reply-form textarea {
+        border-radius: 10px;
+        border: 2px solid var(--border);
+        transition: var(--transition-smooth);
+        resize: none;
+        font-size: 0.95rem;
+        color: var(--text-primary);
+    }
+
+    .reply-form textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        outline: none;
+    }
+
+    .reply-form textarea::placeholder {
+        color: var(--text-secondary);
+    }
+
+    /* ========================================
+           KOMENTAR REPLIES - NESTED DESIGN
+        ======================================== */
+    .komentar-replies {
+        margin-left: 3rem;
+        margin-top: 1.25rem;
+        padding-left: 1.5rem;
+        border-left: 3px solid var(--border-light);
+        position: relative;
+    }
+
+    .komentar-replies:before {
+        content: '';
+        position: absolute;
+        left: -3px;
+        top: 0;
+        width: 3px;
+        height: 100%;
+        background: linear-gradient(180deg, var(--primary) 0%, transparent 100%);
+        opacity: 0.5;
+    }
+
+    /* ========================================
+           BUTTON BALAS - MODERN STYLE
+        ======================================== */
+    .btn-reply {
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: var(--transition-smooth);
+        font-weight: 500;
+        border: 1px solid var(--border);
+        background: var(--white);
+        color: var(--text-primary);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-reply:hover {
+        transform: translateX(5px);
+        box-shadow: var(--shadow-sm);
+        border-color: var(--primary-light);
+        background: var(--light);
+    }
+
+    .btn-reply.btn-secondary {
+        background: var(--primary);
+        color: var(--white);
+        border-color: var(--primary);
+    }
+
+    .btn-cancel-reply {
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: var(--transition-smooth);
+        font-weight: 500;
+    }
+
+    /* ========================================
+           FORM CONTROLS - ENHANCED
+        ======================================== */
+    .form-control {
+        border-radius: 12px;
+        border: 2px solid var(--border);
+        padding: 0.875rem 1.25rem;
+        transition: var(--transition-smooth);
+        font-size: 0.95rem;
+        color: var(--text-primary);
+    }
+
+    .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        outline: none;
+        background: var(--white);
+    }
+
+    .form-control::placeholder {
+        color: var(--text-secondary);
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.625rem;
+        font-size: 0.95rem;
+    }
+
+    /* ========================================
+           SUBMIT BUTTON - GRADIENT MODERN
+        ======================================== */
+    #submitBtn {
+        background: var(--gradient-blue-enhanced);
+        border: none;
+        border-radius: 12px;
+        padding: 0.875rem 2.5rem;
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--white);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        transition: var(--transition-smooth);
+        cursor: pointer;
+    }
+
+    #submitBtn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+    }
+
+    #submitBtn:active {
+        transform: translateY(0);
+    }
+
+    #submitBtn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    }
+
+    /* ========================================
+           NO COMMENT MESSAGE
+        ======================================== */
+    #no-comment-msg {
+        text-align: center;
+        padding: 3rem 1.5rem;
+        color: var(--text-secondary);
+        font-style: italic;
+        background: linear-gradient(135deg, var(--light) 0%, var(--white) 100%);
+        border-radius: 16px;
+        border: 2px dashed var(--border);
+        font-size: 0.95rem;
+    }
+
+    /* ========================================
+           META INFO - ENHANCED
+        ======================================== */
+    .meta-info {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-light);
+    }
+
+    .meta-info span {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .meta-info i {
+        color: var(--primary);
+    }
+
+    /* ========================================
+           RESPONSIVE DESIGN
+        ======================================== */
+    @media (max-width: 768px) {
+        .feedback-section {
+            padding: 1.5rem;
+            border-radius: 16px;
+        }
+
+        .rating-label {
+            font-size: 1.75rem;
+        }
+
+        .reply-form {
+            margin-left: 0;
+            margin-top: 0.75rem;
+            padding: 1.25rem;
+        }
+
+        .komentar-replies {
+            margin-left: 1rem;
+            padding-left: 1rem;
+        }
+
+        .komentar-item {
+            padding: 1.25rem;
+        }
+
+        .btn-action {
+            padding: 0.625rem 1.25rem;
+            font-size: 0.875rem;
+        }
+
+        .meta-info {
+            gap: 1rem;
+        }
+
+        .meta-info span {
+            font-size: 0.85rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .komentar-section h3 {
+            font-size: 1.5rem;
+        }
+
+        .feedback-section h3 {
+            font-size: 1.25rem;
+        }
+
+        .action-buttons-wrapper {
+            flex-direction: column;
+        }
+
+        .btn-action {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* ========================================
+           UTILITY ANIMATIONS
+        ======================================== */
+    @keyframes pulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    .spinner-border-sm {
+        width: 1rem;
+        height: 1rem;
+        border-width: 2px;
+    }
