@@ -150,7 +150,6 @@ class SiswaArtikelController extends Controller
             \Log::error('Error storing artikel: ' . $e->getMessage());
             return back()->with('error', 'Gagal menyimpan artikel. Silakan coba lagi.');
         }
-        
     }
 
     public function storeKomentar(Request $request, $id, $parentId = null)
@@ -228,6 +227,8 @@ class SiswaArtikelController extends Controller
                 return response()->json(['success' => false, 'message' => 'Anda tidak berhak menghapus komentar ini.'], 403);
             }
 
+            // Hapus semua balasan secara rekursif
+            $komentar->replies()->delete();
             $komentar->delete();
 
             return response()->json(['success' => true, 'message' => 'Komentar berhasil dihapus.']);

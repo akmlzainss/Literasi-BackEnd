@@ -46,4 +46,14 @@ class KomentarArtikel extends Model
     {
         return $this->hasMany(KomentarArtikel::class, 'id_komentar_parent', 'id');
     }
+
+    public function getFormattedDateAttribute()
+    {
+        $now = now();
+        $createdAt = $this->dibuat_pada ?? $now;
+
+        return $now->diffInMonths($createdAt) >= 1
+            ? $createdAt->format('d-m-Y')
+            : $createdAt->diffForHumans();
+    }
 }
