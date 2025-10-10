@@ -218,35 +218,37 @@
         </div>
     </div>
 
-<!-- Modal Konfirmasi Hapus -->
-<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content delete-warning-modal">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title" id="deleteConfirmModalLabel">Peringatan</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
+    <!-- Modal Konfirmasi Hapus -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content delete-warning-modal">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteConfirmModalLabel">Peringatan</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
 
-      <div class="modal-body text-center">
-        Data yang dihapus <strong>tidak dapat dikembalikan!</strong>
-        <br><br>
-        Yakin ingin menghapus data ini?
-      </div>
+                <div class="modal-body text-center">
+                    Data yang dihapus <strong>tidak dapat dikembalikan!</strong>
+                    <br><br>
+                    Yakin ingin menghapus data ini?
+                </div>
 
-      <div class="modal-footer justify-content-center">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-        <form id="deleteForm" method="POST" class="d-inline">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="btn btn-danger" id="confirmDeleteBtn">Ya</button>
-        </form>
-      </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <form id="deleteForm" method="POST" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger" id="confirmDeleteBtn">Ya</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 
 
-    
+
 @endsection
 
 @section('scripts')
@@ -275,7 +277,7 @@
                     beforeSend: function() {
                         $('#articlesGrid').html(
                             '<div class="text-center py-5"><i class="fas fa-spinner fa-spin"></i> Memuat...</div>'
-                            );
+                        );
                     },
                     success: function(response) {
                         $('#articlesGrid').html($(response).find('#articlesGrid').html());
@@ -292,8 +294,16 @@
             // Delete Confirmation
             window.confirmDelete = function(id) {
                 $('#deleteConfirmModal').modal('show');
-                $('#confirmDeleteBtn').off('click').on('click', function() {
-                    const form = $('#deleteForm_' + id);
+
+                // Set action form modal ke URL sesuai ID artikel
+                $('#deleteForm').attr('action', '/admin/artikel/' + id);
+
+                // Pastikan tidak ada event lama yang tertinggal
+                $('#confirmDeleteBtn').off('click').on('click', function(e) {
+                    e.preventDefault();
+
+                    const form = $('#deleteForm');
+
                     $.ajax({
                         url: form.attr('action'),
                         method: 'POST',
@@ -304,8 +314,9 @@
                         },
                         success: function(response) {
                             $('#deleteConfirmModal').modal('hide');
-                            showAlert('success', response.message);
-                            setTimeout(() => location.reload(), 1500);
+                            showAlert('success', response.message ||
+                                'Artikel berhasil dihapus.');
+                            setTimeout(() => location.reload(), 1000);
                         },
                         error: function(xhr) {
                             $('#deleteConfirmModal').modal('hide');
@@ -313,7 +324,7 @@
                                 'Gagal menghapus artikel.');
                         },
                         complete: function() {
-                            $('#confirmDeleteBtn').html('Hapus');
+                            $('#confirmDeleteBtn').html('Ya');
                         }
                     });
                 });
@@ -344,4 +355,3 @@
         });
     </script>
 @endsection
-
