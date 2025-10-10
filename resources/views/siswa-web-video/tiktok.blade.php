@@ -423,7 +423,28 @@
             </div>
         @endforelse
     </div>
+    <!-- Modal Konfirmasi Hapus Komentar -->
+<div class="modal fade" id="deleteCommentModal" tabindex="-1" aria-labelledby="deleteCommentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="deleteCommentModalLabel"><i class="fas fa-exclamation-triangle me-2"></i>Konfirmasi Hapus</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+      <div class="modal-body">
+        <p>Apakah kamu yakin ingin menghapus komentar ini? Tindakan ini tidak bisa dibatalkan.</p>
+        <input type="hidden" id="deleteCommentId">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn"><i class="fas fa-trash me-1"></i> Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 @endsection
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 @section('scripts')
     <script>
@@ -775,6 +796,53 @@
                         .catch(error => console.error('Error saat menghapus:', error));
                     }
                 }
+               if (deleteBtn) {
+    e.preventDefault();
+
+    // Ambil ID komentar dan simpan di modal
+    const commentId = deleteBtn.dataset.id;
+    document.getElementById('deleteCommentId').value = commentId;
+
+    // Simpan referensi elemen tombol hapus agar bisa digunakan nanti
+    const commentItem = deleteBtn.closest('.comment-item');
+    const videoSlide = deleteBtn.closest('.video-slide');
+
+    // Tampilkan modal
+    const modal = new bootstrap.Modal(document.getElementById('deleteCommentModal'));
+    modal.show();
+
+    // Event listener tombol konfirmasi
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    confirmBtn.onclick = () => {
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Menghapus...';
+
+        fetch(`/video/komentar/${commentId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                commentItem.remove();
+                const countEl = videoSlide.querySelector('.comment-toggle .count');
+                countEl.textContent = Math.max(0, parseInt(countEl.textContent) - 1);
+                modal.hide();
+            } else {
+                alert(data.message || 'Gagal menghapus komentar.');
+            }
+        })
+        .catch(error => console.error('Error saat menghapus:', error))
+        .finally(() => {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '<i class="fas fa-trash me-1"></i> Hapus';
+        });
+    };
+}
+
 
                 if (viewRepliesBtn || hideRepliesBtn) {
                     e.preventDefault();
