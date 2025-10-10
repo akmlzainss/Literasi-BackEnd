@@ -147,7 +147,7 @@
                             <a href="{{ route('video.tiktok') }}#video-{{ $video->id }}" class="content-card"
                                 aria-label="Lihat video {{ $video->judul }}">
                                 <div class="card-img-top-wrapper">
-                                    <img src="{{ asset('storage/' . $video->thumbnail_path) }}"
+                                    <img src="{{ $video->thumbnail_path ? asset('storage/' . $video->thumbnail_path) : asset('images/default-thumbnail.jpg') }}"
                                         alt="Thumbnail untuk {{ $video->judul }}" class="card-img-top">
                                     <div class="card-overlay">
                                         <i class="fas fa-play" aria-hidden="true"></i>
@@ -178,7 +178,8 @@
                                     </div>
                                     <div class="card-stats">
                                         <span><i class="fas fa-eye fa-xs"></i> {{ $video->komentar()->count() }}</span>
-                                        <span><i class="fas fa-heart fa-xs"></i> {{ $video->interaksi()->where('jenis', 'suka')->count() }}</span>
+                                        <span><i class="fas fa-heart fa-xs"></i>
+                                            {{ $video->interaksi()->where('jenis', 'suka')->count() }}</span>
                                     </div>
                                 </div>
                             </a>

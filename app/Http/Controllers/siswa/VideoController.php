@@ -68,19 +68,19 @@ class VideoController extends Controller
         return view('siswa-web-video.create', compact('kategoris'));
     }
     public function profil()
-{
-    $siswa = Auth::guard('siswa')->user();
+    {
+        $siswa = Auth::guard('siswa')->user();
 
-    $videoDisukai = Video::whereHas('interaksi', function ($q) use ($siswa) {
-        $q->where('id_siswa', $siswa->id)->where('jenis', 'suka');
-    })->latest()->get();
+        $videoDisukai = Video::whereHas('interaksi', function ($q) use ($siswa) {
+            $q->where('id_siswa', $siswa->id)->where('jenis', 'suka');
+        })->latest()->get();
 
-    $videoDisimpan = Video::whereHas('interaksi', function ($q) use ($siswa) {
-        $q->where('id_siswa', $siswa->id)->where('jenis', 'bookmark');
-    })->latest()->get();
+        $videoDisimpan = Video::whereHas('interaksi', function ($q) use ($siswa) {
+            $q->where('id_siswa', $siswa->id)->where('jenis', 'bookmark');
+        })->latest()->get();
 
-    return view('siswa.profil', compact('siswa', 'videoDisukai', 'videoDisimpan'));
-}
+        return view('siswa.profil', compact('siswa', 'videoDisukai', 'videoDisimpan'));
+    }
 
 
     /**
@@ -97,8 +97,11 @@ class VideoController extends Controller
 
         $videoFilePath = $request->file('video')->getPathname();
 
-        // Validasi durasi video pakai FFProbe
-        $ffprobe = \FFMpeg\FFProbe::create();
+        // Inisialisasi FFProbe untuk validasi durasi
+        $ffprobe = \FFMpeg\FFProbe::create([
+            'ffmpeg.binaries'  => 'C:/ffmpeg/bin/ffmpeg.exe',
+            'ffprobe.binaries' => 'C:/ffmpeg/bin/ffprobe.exe',
+        ]);
         $duration = $ffprobe->format($videoFilePath)->get('duration');
 
         if ($duration > 60) {
@@ -113,8 +116,12 @@ class VideoController extends Controller
             mkdir(storage_path('app/public/thumbnails'), 0777, true);
         }
 
-        // Buka video dengan FFMpeg
-        $ffmpeg = \FFMpeg\FFMpeg::create();
+        // Inisialisasi FFMpeg
+        $ffmpeg = \FFMpeg\FFMpeg::create([
+            'ffmpeg.binaries'  => 'C:/ffmpeg/bin/ffmpeg.exe',
+            'ffprobe.binaries' => 'C:/ffmpeg/bin/ffprobe.exe',
+        ]);
+        // Buka video
         $videoFile = $ffmpeg->open($videoFilePath);
 
         // Simpan video dengan kompresi
@@ -130,22 +137,23 @@ class VideoController extends Controller
         $videoFile->frame(TimeCode::fromSeconds(1))
             ->save(storage_path('app/public/' . $thumbnailPath));
 
-        // Resize thumbnail dengan Intervention Image v3 (pakai GD driver)
+        // Resize pakai Intervention
         $manager = new ImageManager(new Driver());
         $manager->read(storage_path('app/public/' . $thumbnailPath))
             ->cover(320, 180)
             ->save();
 
-        // Simpan metadata ke database
+        // Simpan metadata
         Video::create([
             'id_siswa' => Auth::guard('siswa')->id(),
             'id_kategori' => $request->id_kategori,
             'judul' => $request->judul,
             'deskripsi' => $request->deskripsi,
             'video_path' => $videoPath,
-            'thumbnail_path' => $thumbnailPath,
+            'thumbnail_path' => $thumbnailPath, // <-- ini harus keisi
             'status' => 'menunggu',
         ]);
+
 
         return redirect()->route('video.index')->with('success', 'Video berhasil diupload dan menunggu persetujuan admin!');
     }
