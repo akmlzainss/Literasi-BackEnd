@@ -3,201 +3,254 @@
 @section('title', 'Profil Saya')
 
 @section('content')
-    <div class="container py-5">
-        <div class="row">
-            <!-- Sidebar Profil -->
-            <div class="col-lg-4">
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body text-center">
-                        <img src="{{ $siswa->foto_profil ? asset('storage/' . $siswa->foto_profil) : 'https://via.placeholder.com/150' }}"
-                            alt="Foto Profil" class="rounded-circle img-fluid mb-3"
-                            style="width: 150px; height: 150px; object-fit: cover;">
-                        <h5 class="my-3">{{ $siswa->nama }}</h5>
-                        <p class="text-muted mb-1">{{ $siswa->kelas }}</p>
-                        <p class="text-muted mb-4">{{ $siswa->email }}</p>
-                    </div>
-                </div>
+    <link rel="stylesheet" href="{{ asset('css/profil.css') }}">
+    <!-- Cover Profile -->
+    <div class="profile-cover"></div>
 
-                <!-- Ganti Password -->
-                <div class="card shadow-sm border-0">
-                    <div class="card-body">
-                        <h5 class="card-title mb-3">Ubah Password</h5>
-                        <form action="{{ route('profil.update-password') }}" method="POST">
-                            @csrf
-                            <div class="mb-3">
-                                <label for="password_lama" class="form-label">Password Lama</label>
-                                <input type="password" name="password_lama" class="form-control" required>
-                                @error('password_lama')
-                                    <div class="text-danger mt-1 small">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password Baru</label>
-                                <input type="password" name="password" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="password_confirmation" class="form-label">Konfirmasi Password Baru</label>
-                                <input type="password" name="password_confirmation" class="form-control" required>
-                                @error('password')
-                                    <div class="text-danger mt-1 small">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">Simpan Password</button>
-                        </form>
-                    </div>
+    <!-- Profile Content -->
+    <div class="container profile-container">
+        <div class="profile-info-card">
+            <!-- Avatar -->
+            <div class="profile-avatar-wrapper">
+                <img src="{{ $siswa->foto_profil ? asset('storage/' . $siswa->foto_profil) : 'https://ui-avatars.com/api/?name=' . urlencode($siswa->nama) . '&size=200&background=4285f4&color=fff' }}"
+                    alt="Foto Profil" class="rounded-circle profile-avatar">
+                <div class="edit-avatar-btn" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                    <i class="bi bi-pencil-fill"></i>
                 </div>
             </div>
 
-            <!-- Main Content -->
-            <div class="col-lg-8">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body">
-                        <h5 class="card-title mb-4">Edit Detail Profil</h5>
-                        @if (session('success'))
-                            <div class="alert alert-success">{{ session('success') }}</div>
-                        @endif
-                        <form action="{{ route('profil.update') }}" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            <div class="row mb-3">
-                                <div class="col-sm-3">
-                                    <p class="mb-0">Nama Lengkap</p>
-                                </div>
-                                <div class="col-sm-9">
-                                    <input type="text" name="nama" class="form-control"
-                                        value="{{ old('nama', $siswa->nama) }}">
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-sm-3">
-                                    <p class="mb-0">Email</p>
-                                </div>
-                                <div class="col-sm-9">
-                                    <input type="email" name="email" class="form-control"
-                                        value="{{ old('email', $siswa->email) }}">
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-sm-3">
-                                    <p class="mb-0">Kelas</p>
-                                </div>
-                                <div class="col-sm-9">
-                                    <input type="text" name="kelas" class="form-control"
-                                        value="{{ old('kelas', $siswa->kelas) }}">
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-sm-3">
-                                    <p class="mb-0">Foto Profil</p>
-                                </div>
-                                <div class="col-sm-9">
-                                    <input type="file" name="foto_profil" class="form-control">
-                                    <small class="text-muted">Kosongkan jika tidak ingin mengubah foto.</small>
-                                </div>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-                        </form>
-                    </div>
+            <!-- Profile Info -->
+            <div class="text-center mt-4">
+                <h1 class="profile-name">{{ $siswa->nama }}</h1>
+                <p class="profile-class">{{ $siswa->kelas }} • {{ $siswa->email }}</p>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-wrapper">
+                <div class="stat-item">
+                    <span class="stat-number">{{ $videoDisukai->count() + $artikelDisukai->count() }}</span>
+                    <span class="stat-label">Disukai</span>
                 </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ $videoDisimpan->count() + $artikelDisimpan->count() }}</span>
+                    <span class="stat-label">Disimpan</span>
+                </div>
+                <div class="stat-item">
+                    <span
+                        class="stat-number">{{ $videoDisukai->count() + $videoDisimpan->count() + $artikelDisukai->count() + $artikelDisimpan->count() }}</span>
+                    <span class="stat-label">Total Konten</span>
+                </div>
+            </div>
 
-                <!-- Tabs: Video & Artikel yang Disukai/Disimpan -->
-                <div class="card shadow-sm border-0 mt-4">
-                    <div class="card-body">
-                        <ul class="nav nav-tabs" id="profilTab" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="video-like-tab" data-bs-toggle="tab"
-                                    data-bs-target="#video-like" type="button" role="tab">
-                                    Video Disukai
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="video-bookmark-tab" data-bs-toggle="tab"
-                                    data-bs-target="#video-bookmark" type="button" role="tab">
-                                    Video Disimpan
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="artikel-like-tab" data-bs-toggle="tab"
-                                    data-bs-target="#artikel-like" type="button" role="tab">
-                                    Artikel Disukai
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="artikel-bookmark-tab" data-bs-toggle="tab"
-                                    data-bs-target="#artikel-bookmark" type="button" role="tab">
-                                    Artikel Disimpan
-                                </button>
-                            </li>
-                        </ul>
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="btn btn-action" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                    <i class="bi bi-pencil-square"></i> Edit Profil
+                </button>
+                <button class="btn btn-action" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                    <i class="bi bi-shield-lock"></i> Ubah Password
+                </button>
+            </div>
+        </div>
 
-                        <div class="tab-content mt-3">
+        <!-- Upload Section - Konten yang Diupload User -->
+        <!-- Section ini dihapus karena sudah dipindah ke tab -->
 
-                            <div class="tab-pane fade show active" id="video-like" role="tabpanel">
-                                @forelse($videoDisukai as $video)
-                                    <div class="d-flex align-items-center mb-3 border-bottom pb-2">
-                                        <img src="{{ $video->thumbnail_path ? asset('storage/' . $video->thumbnail_path) : 'https://via.placeholder.com/100' }}"
-                                            width="100" class="me-3 rounded">
-                                        <div>
-                                            <h6 class="mb-1">{{ $video->judul }}</h6>
-                                            <small class="text-muted">{{ Str::limit($video->deskripsi, 80) }}</small>
-                                        </div>
+        <!-- Content Tabs -->
+        <div class="content-tabs">
+            <ul class="nav nav-tabs nav-tabs-custom" id="profilTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="video-upload-tab" data-bs-toggle="tab"
+                        data-bs-target="#video-upload" type="button" role="tab">
+                        <i class="bi bi-camera-video-fill"></i>
+                        <span class="tab-label">Video Saya</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="artikel-upload-tab" data-bs-toggle="tab" data-bs-target="#artikel-upload"
+                        type="button" role="tab">
+                        <i class="bi bi-journal-text"></i>
+                        <span class="tab-label">Artikel Saya</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="video-like-tab" data-bs-toggle="tab" data-bs-target="#video-like"
+                        type="button" role="tab">
+                        <i class="bi bi-heart-fill"></i>
+                        <span class="tab-label">Video Disukai</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="video-bookmark-tab" data-bs-toggle="tab" data-bs-target="#video-bookmark"
+                        type="button" role="tab">
+                        <i class="bi bi-bookmark-fill"></i>
+                        <span class="tab-label">Video Disimpan</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="artikel-like-tab" data-bs-toggle="tab" data-bs-target="#artikel-like"
+                        type="button" role="tab">
+                        <i class="bi bi-heart-fill"></i>
+                        <span class="tab-label">Artikel Disukai</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="artikel-bookmark-tab" data-bs-toggle="tab"
+                        data-bs-target="#artikel-bookmark" type="button" role="tab">
+                        <i class="bi bi-bookmark-fill"></i>
+                        <span class="tab-label">Artikel Disimpan</span>
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content tab-content-wrapper">
+                <!-- Video Saya (Upload) -->
+                <div class="tab-pane fade show active" id="video-upload" role="tabpanel">
+                    @if (isset($videoUpload) && $videoUpload->count() > 0)
+                        <div class="content-grid">
+                            @foreach ($videoUpload as $video)
+                                <div class="content-card">
+                                    <img src="{{ $video->thumbnail_path ? asset('storage/' . $video->thumbnail_path) : 'https://via.placeholder.com/300x400/4285f4/ffffff?text=Video' }}"
+                                        class="content-thumbnail" alt="{{ $video->judul }}">
+                                    <span class="content-badge">Video Saya</span>
+                                    <div class="content-details">
+                                        <h6 class="content-title">{{ $video->judul }}</h6>
+                                        <p class="content-description">{{ Str::limit($video->deskripsi, 60) }}</p>
                                     </div>
-                                @empty
-                                    <p class="text-muted">Belum ada video yang disukai.</p>
-                                @endforelse
-                            </div>
-
-                            <div class="tab-pane fade" id="video-bookmark" role="tabpanel">
-                                @forelse($videoDisimpan as $video)
-                                    <div class="d-flex align-items-center mb-3 border-bottom pb-2">
-                                        <img src="{{ $video->thumbnail_path ? asset('storage/' . $video->thumbnail_path) : 'https://via.placeholder.com/100' }}"
-                                            width="100" class="me-3 rounded">
-                                        <div>
-                                            <h6 class="mb-1">{{ $video->judul }}</h6>
-                                            <small class="text-muted">{{ Str::limit($video->deskripsi, 80) }}</small>
-                                        </div>
-                                    </div>
-                                @empty
-                                    <p class="text-muted">Belum ada video yang disimpan.</p>
-                                @endforelse
-                            </div>
-
-                            <div class="tab-pane fade" id="artikel-like" role="tabpanel">
-                                @forelse($artikelDisukai as $artikel)
-                                    <div class="d-flex align-items-center mb-3 border-bottom pb-2">
-                                        <img src="{{ $artikel->gambar ? asset('storage/' . $artikel->gambar) : 'https://via.placeholder.com/100' }}"
-                                            width="100" class="me-3 rounded">
-                                        <div>
-                                            <h6 class="mb-1">{{ $artikel->judul }}</h6>
-                                            <small
-                                                class="text-muted">{{ Str::limit(strip_tags($artikel->isi), 80) }}</small>
-                                        </div>
-                                    </div>
-                                @empty
-                                    <p class="text-muted">Belum ada artikel yang disukai.</p>
-                                @endforelse
-                            </div>
-
-                            <div class="tab-pane fade" id="artikel-bookmark" role="tabpanel">
-                                @forelse($artikelDisimpan as $artikel)
-                                    <div class="d-flex align-items-center mb-3 border-bottom pb-2">
-                                        <img src="{{ $artikel->gambar ? asset('storage/' . $artikel->gambar) : 'https://via.placeholder.com/100' }}"
-                                            width="100" class="me-3 rounded">
-                                        <div>
-                                            <h6 class="mb-1">{{ $artikel->judul }}</h6>
-                                            <small
-                                                class="text-muted">{{ Str::limit(strip_tags($artikel->isi), 80) }}</small>
-                                        </div>
-                                    </div>
-                                @empty
-                                    <p class="text-muted">Belum ada artikel yang disimpan.</p>
-                                @endforelse
-                            </div>
-
+                                </div>
+                            @endforeach
                         </div>
-                    </div>
+                    @else
+                        <div class="empty-state">
+                            <i class="bi bi-camera-video"></i>
+                            <p>Belum ada video yang diupload</p>
+                        </div>
+                    @endif
                 </div>
 
-            </div> <!-- col-lg-8 -->
+                <!-- Artikel Saya (Upload) -->
+                <div class="tab-pane fade" id="artikel-upload" role="tabpanel">
+                    @if (isset($artikelUpload) && $artikelUpload->count() > 0)
+                        <div class="content-grid">
+                            @foreach ($artikelUpload as $artikel)
+                                <div class="content-card">
+                                    <img src="{{ $artikel->gambar ? asset('storage/' . $artikel->gambar) : 'https://via.placeholder.com/300x400/1a73e8/ffffff?text=Artikel' }}"
+                                        class="content-thumbnail" alt="{{ $artikel->judul }}">
+                                    <span class="content-badge">Artikel Saya</span>
+                                    <div class="content-details">
+                                        <h6 class="content-title">{{ $artikel->judul }}</h6>
+                                        <p class="content-description">{{ Str::limit(strip_tags($artikel->isi), 60) }}</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="empty-state">
+                            <i class="bi bi-journal-text"></i>
+                            <p>Belum ada artikel yang diupload</p>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Video Disukai -->
+                <div class="tab-pane fade" id="video-like" role="tabpanel">
+                    @if ($videoDisukai->count() > 0)
+                        <div class="content-grid">
+                            @foreach ($videoDisukai as $video)
+                                <div class="content-card">
+                                    <img src="{{ $video->thumbnail_path ? asset('storage/' . $video->thumbnail_path) : 'https://via.placeholder.com/300x400/4285f4/ffffff?text=Video' }}"
+                                        class="content-thumbnail" alt="{{ $video->judul }}">
+                                    <span class="content-badge">Video</span>
+                                    <div class="content-details">
+                                        <h6 class="content-title">{{ $video->judul }}</h6>
+                                        <p class="content-description">{{ Str::limit($video->deskripsi, 60) }}</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="empty-state">
+                            <i class="bi bi-heart"></i>
+                            <p>Belum ada video yang disukai</p>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Video Disimpan -->
+                <div class="tab-pane fade" id="video-bookmark" role="tabpanel">
+                    @if ($videoDisimpan->count() > 0)
+                        <div class="content-grid">
+                            @foreach ($videoDisimpan as $video)
+                                <div class="content-card">
+                                    <img src="{{ $video->thumbnail_path ? asset('storage/' . $video->thumbnail_path) : 'https://via.placeholder.com/300x400/4285f4/ffffff?text=Video' }}"
+                                        class="content-thumbnail" alt="{{ $video->judul }}">
+                                    <span class="content-badge">Video</span>
+                                    <div class="content-details">
+                                        <h6 class="content-title">{{ $video->judul }}</h6>
+                                        <p class="content-description">{{ Str::limit($video->deskripsi, 60) }}</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="empty-state">
+                            <i class="bi bi-bookmark"></i>
+                            <p>Belum ada video yang disimpan</p>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Artikel Disukai -->
+                <div class="tab-pane fade" id="artikel-like" role="tabpanel">
+                    @if ($artikelDisukai->count() > 0)
+                        <div class="content-grid">
+                            @foreach ($artikelDisukai as $artikel)
+                                <div class="content-card">
+                                    <img src="{{ $artikel->gambar ? asset('storage/' . $artikel->gambar) : 'https://via.placeholder.com/300x400/1a73e8/ffffff?text=Artikel' }}"
+                                        class="content-thumbnail" alt="{{ $artikel->judul }}">
+                                    <span class="content-badge">Artikel</span>
+                                    <div class="content-details">
+                                        <h6 class="content-title">{{ $artikel->judul }}</h6>
+                                        <p class="content-description">{{ Str::limit(strip_tags($artikel->isi), 60) }}</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="empty-state">
+                            <i class="bi bi-heart"></i>
+                            <p>Belum ada artikel yang disukai</p>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Artikel Disimpan -->
+                <div class="tab-pane fade" id="artikel-bookmark" role="tabpanel">
+                    @if ($artikelDisimpan->count() > 0)
+                        <div class="content-grid">
+                            @foreach ($artikelDisimpan as $artikel)
+                                <div class="content-card">
+                                    <img src="{{ $artikel->gambar ? asset('storage/' . $artikel->gambar) : 'https://via.placeholder.com/300x400/1a73e8/ffffff?text=Artikel' }}"
+                                        class="content-thumbnail" alt="{{ $artikel->judul }}">
+                                    <span class="content-badge">Artikel</span>
+                                    <div class="content-details">
+                                        <h6 class="content-title">{{ $artikel->judul }}</h6>
+                                        <p class="content-description">{{ Str::limit(strip_tags($artikel->isi), 60) }}</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="empty-state">
+                            <i class="bi bi-bookmark"></i>
+                            <p>Belum ada artikel yang disimpan</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
         </div>
     </div>
+ @include('web_siswa.edit')
+ @include('web_siswa.password')
+    <div class="pb-5"></div>
 @endsection
