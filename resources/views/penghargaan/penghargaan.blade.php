@@ -24,11 +24,11 @@
                 </p>
             </div>
             <div class="action-buttons d-flex gap-2">
-                <a href="{{ route('admin.penghargaan.create', ['month' => $currentMonth]) }}" class="btn-primary-custom">
+                <a href="{{ route('admin.penghargaan.create', ['month' => $currentMonth]) }}" class="btn btn-primary">
                     <i class="fas fa-plus"></i>
                     <span>Tambah Manual</span>
                 </a>
-                <button type="button" class="btn-warning-custom" data-bs-toggle="modal" data-bs-target="#resetConfirmModal">
+                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#resetConfirmModal">
                     <i class="fas fa-refresh"></i>
                     <span>Reset Bulanan</span>
                 </button>
@@ -54,7 +54,7 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <form action="{{ route('admin.penghargaan.reset') }}" method="POST" class="d-inline">
                         @csrf
-                        <button type="submit" class="btn btn-danger" id="confirmResetBtn">Ya</button>
+                        <button type="submit" class="btn btn-danger" id="confirmResetBtn">Ya, Hapus</button>
                     </form>
                 </div>
             </div>
@@ -100,7 +100,7 @@
                                     <label class="filter-label">
                                         <i class="fas fa-calendar me-2"></i>Tahun
                                     </label>
-                                    <select name="year" class="form-select filter-select" id="yearFilterArtikel">
+                                    <select name="year" class="form-select filter-select" id="yearFilterArtikel" onchange="this.form.submit()">
                                         @for ($y = $maxYear; $y >= $minYear; $y--)
                                             <option value="{{ $y }}" {{ $currentYear == $y ? 'selected' : '' }}>
                                                 {{ $y }}
@@ -112,13 +112,20 @@
                                     <label class="filter-label">
                                         <i class="fas fa-calendar-alt me-2"></i>Bulan
                                     </label>
-                                    <select name="month" class="form-select filter-select" id="monthFilterArtikel"
-                                            onchange="this.form.submit()">
+                                    <select name="month_number" class="form-select filter-select" id="monthFilterArtikel" onchange="this.form.submit()">
+                                        @for ($m = 1; $m <= 12; $m++)
+                                            <option value="{{ $m }}" {{ $currentMonthNumber == $m ? 'selected' : '' }}>
+                                                {{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
+                                            </option>
+                                        @endfor
                                     </select>
                                 </div>
                             </div>
                         </form>
                     </div>
+
+                    <!-- Debug: Tampilkan jumlah data -->
+                    <div class="alert alert-info mb-3">Debug: Jumlah Artikel = {{ $artikel->count() }}, Top Artikel = {{ $topArtikel->count() }}</div>
 
                     @if ($topArtikel->count() > 0)
                         <div class="top-candidates-section">
@@ -162,6 +169,8 @@
                                 @endforeach
                             </div>
                         </div>
+                    @else
+                        <div class="alert alert-warning">Tidak ada artikel untuk bulan ini.</div>
                     @endif
 
                     <div class="datatable-section">
@@ -204,7 +213,7 @@
                                             <td>
                                                 <div class="item-date">
                                                     <i class="fas fa-calendar me-2"></i>
-                                                    {{ \Carbon\Carbon::parse($item->diterbitkan_pada ?? now())->translatedFormat('d F Y') }}
+                                                    {{ \Carbon\Carbon::parse($item->diterbitkan_pada ?? $item->created_at ?? now())->translatedFormat('d F Y') }}
                                                 </div>
                                             </td>
                                             <td class="text-center">
@@ -232,9 +241,11 @@
                                     <label class="filter-label">
                                         <i class="fas fa-calendar me-2"></i>Tahun
                                     </label>
-                                    <select name="year" class="form-select filter-select" id="yearFilterVideo">
+                                    <select name="year" class="form-select filter-select" id="yearFilterVideo" onchange="this.form.submit()">
                                         @for ($y = $maxYear; $y >= $minYear; $y--)
-                                            <option value="{{ $y }}" {{ $currentYear == $y ? 'selected' : '' }}>{{ $y }}</option>
+                                            <option value="{{ $y }}" {{ $currentYear == $y ? 'selected' : '' }}>
+                                                {{ $y }}
+                                            </option>
                                         @endfor
                                     </select>
                                 </div>
@@ -242,13 +253,20 @@
                                     <label class="filter-label">
                                         <i class="fas fa-calendar-alt me-2"></i>Bulan
                                     </label>
-                                    <select name="month" class="form-select filter-select" id="monthFilterVideo"
-                                            onchange="this.form.submit()">
+                                    <select name="month_number" class="form-select filter-select" id="monthFilterVideo" onchange="this.form.submit()">
+                                        @for ($m = 1; $m <= 12; $m++)
+                                            <option value="{{ $m }}" {{ $currentMonthNumber == $m ? 'selected' : '' }}>
+                                                {{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
+                                            </option>
+                                        @endfor
                                     </select>
                                 </div>
                             </div>
                         </form>
                     </div>
+
+                    <!-- Debug: Tampilkan jumlah data -->
+                    <div class="alert alert-info mb-3">Debug: Jumlah Video = {{ $video->count() }}, Top Video = {{ $topVideo->count() }}</div>
 
                     @if ($topVideo->count() > 0)
                         <div class="top-candidates-section">
@@ -286,6 +304,8 @@
                                 @endforeach
                             </div>
                         </div>
+                    @else
+                        <div class="alert alert-warning">Tidak ada video untuk bulan ini.</div>
                     @endif
 
                     <div class="datatable-section">
@@ -324,7 +344,7 @@
                                             <td>
                                                 <div class="item-date">
                                                     <i class="fas fa-calendar me-2"></i>
-                                                    {{ \Carbon\Carbon::parse($item->diterbitkan_pada ?? now())->translatedFormat('d F Y') }}
+                                                    {{ \Carbon\Carbon::parse($item->diterbitkan_pada ?? $item->created_at ?? now())->translatedFormat('d F Y') }}
                                                 </div>
                                             </td>
                                             <td class="text-center">
@@ -473,6 +493,33 @@
                 }
             });
 
+            const updateYearFilter = (selectElement) => {
+                const currentYear = new Date().getFullYear(); // 2025
+                const minYear = currentYear - 5; // 2020
+                const maxYear = currentYear + 1; // 2026
+                selectElement.innerHTML = '';
+
+                for (let y = maxYear; y >= minYear; y--) {
+                    const option = document.createElement('option');
+                    option.value = y;
+                    option.textContent = y;
+                    if (y === currentYear) option.selected = true;
+                    selectElement.appendChild(option);
+                }
+            };
+
+            const yearFilters = [
+                document.getElementById('yearFilterArtikel'),
+                document.getElementById('yearFilterVideo')
+            ];
+
+            yearFilters.forEach(filter => {
+                if (filter) {
+                    updateYearFilter(filter);
+                    setInterval(() => updateYearFilter(filter), 60000);
+                }
+            });
+
             const setupFilter = (type) => {
                 const yearSelect = document.getElementById(`yearFilter${type}`);
                 const monthSelect = document.getElementById(`monthFilter${type}`);
@@ -482,35 +529,21 @@
 
                 const updateMonths = (shouldSubmit) => {
                     const selectedYear = yearSelect.value;
-                    const currentSelectedMonth = monthSelect.value;
                     monthSelect.innerHTML = '';
-
-                    let monthExistsInNewYear = false;
-                    let firstOption = null;
 
                     monthNames.forEach((name, index) => {
                         const monthNumber = String(index + 1).padStart(2, '0');
                         const monthValue = `${selectedYear}-${monthNumber}`;
                         const option = document.createElement('option');
-                        option.value = monthValue;
-                        option.textContent = `${name} ${selectedYear}`;
+                        option.value = monthNumber;
+                        option.textContent = name;
 
-                        if (index === 0) firstOption = option;
-
-                        if (currentSelectedMonth && currentSelectedMonth.substring(5) === monthNumber) {
+                        if (monthValue === currentMonthValue) {
                             option.selected = true;
-                            monthExistsInNewYear = true;
-                        } else if (!currentSelectedMonth && monthValue === currentMonthValue) {
-                            option.selected = true;
-                            monthExistsInNewYear = true;
                         }
 
                         monthSelect.appendChild(option);
                     });
-
-                    if (!monthExistsInNewYear && firstOption) {
-                        firstOption.selected = true;
-                    }
 
                     if (shouldSubmit) {
                         yearSelect.form.submit();
@@ -523,29 +556,6 @@
 
             setupFilter('Artikel');
             setupFilter('Video');
-
-            const resetButton = document.getElementById('reset-bulanan-btn');
-            if (resetButton) {
-                resetButton.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const url = this.href;
-
-                    Swal.fire({
-                        title: 'Anda Yakin?',
-                        text: 'Semua penghargaan dari bulan lalu akan diarsipkan. Tindakan ini tidak dapat dibatalkan!',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Ya, arsipkan!',
-                        cancelButtonText: 'Batal'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.href = url;
-                        }
-                    });
-                });
-            }
 
             document.body.addEventListener('click', function(e) {
                 if (e.target.classList.contains('pilih-cepat') || e.target.closest('.pilih-cepat')) {
@@ -568,10 +578,11 @@
                     const id = document.getElementById('confirmId').value;
                     const type = document.getElementById('confirmType').value;
                     const activeTabPane = document.querySelector('.tab-pane.active');
-                    const monthSelect = activeTabPane.querySelector('select[name="month"]');
-                    const month = monthSelect ? monthSelect.value : '{{ $currentMonth }}';
+                    const monthSelect = activeTabPane.querySelector('select[name="month_number"]');
+                    const month = monthSelect ? monthSelect.value : '{{ $currentMonthNumber }}';
+                    const year = activeTabPane.querySelector('select[name="year"]').value;
                     window.location.href =
-                        `/admin/penghargaan/create?type=${type}&${type}_id=${id}&month=${month}`;
+                        `/admin/penghargaan/create?type=${type}&${type}_id=${id}&month=${year}-${month.padStart(2, '0')}`;
                 });
             }
 
@@ -579,48 +590,34 @@
                 button.addEventListener('click', () => {
                     const id = button.getAttribute('data-id');
                     fetch(`/admin/penghargaan/${id}/edit`)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error(`Gagal memuat data: ${response.statusText}`);
-                            }
-                            return response.json();
-                        })
+                        .then(response => response.json())
                         .then(data => {
                             const form = document.getElementById('editPenghargaanForm');
-                            if (!form) return;
-
                             form.action = `/admin/penghargaan/${id}`;
 
-                            const setInputValue = (elId, value) => {
-                                const element = document.getElementById(elId);
-                                if (element) element.value = value || '';
-                            };
-
-                            const itemType = data.type;
-                            setInputValue('edit_id', data.penghargaan?.id);
-                            setInputValue('edit_type', itemType);
-                            setInputValue('edit_id_siswa', data.penghargaan?.id_siswa);
-                            setInputValue('edit_nama_siswa', data.penghargaan?.siswa?.nama || 'Siswa tidak ditemukan');
-                            setInputValue('edit_jenis', data.penghargaan?.jenis);
-                            setInputValue('edit_bulan_tahun', data.penghargaan?.bulan_tahun);
-                            setInputValue('edit_deskripsi_penghargaan', data.penghargaan?.deskripsi_penghargaan);
+                            document.getElementById('edit_id').value = data.penghargaan.id;
+                            document.getElementById('edit_type').value = data.type;
+                            document.getElementById('edit_id_siswa').value = data.penghargaan.id_siswa;
+                            document.getElementById('edit_nama_siswa').value = data.penghargaan.siswa?.nama || 'Siswa tidak ditemukan';
+                            document.getElementById('edit_jenis').value = data.penghargaan.jenis;
+                            document.getElementById('edit_bulan_tahun').value = data.penghargaan.bulan_tahun;
+                            document.getElementById('edit_deskripsi_penghargaan').value = data.penghargaan.deskripsi_penghargaan;
 
                             const itemSelect = document.getElementById('edit_id_item');
                             const itemLabel = document.getElementById('editItemLabel');
-
-                            itemLabel.textContent = `Pilih ${itemType.charAt(0).toUpperCase() + itemType.slice(1)}`;
-                            itemSelect.innerHTML = `<option value="">-- Pilih ${itemType.charAt(0).toUpperCase() + itemType.slice(1)} --</option>`;
+                            itemLabel.textContent = `Pilih ${data.type.charAt(0).toUpperCase() + data.type.slice(1)}`;
+                            itemSelect.innerHTML = '<option value="">-- Pilih --</option>';
 
                             if (data.items?.length) {
                                 data.items.forEach(item => {
-                                    const ratingText = itemType === 'artikel' ?
+                                    const ratingText = data.type === 'artikel' ?
                                         `Rating: ${parseFloat(item.rating || 0).toFixed(1)}` :
                                         `Like: ${item.rating || 0}`;
                                     itemSelect.innerHTML += `<option value="${item.id}">${item.judul} (${ratingText})</option>`;
                                 });
                             }
 
-                            const selectedItemId = data.penghargaan?.[itemType === 'artikel' ? 'id_artikel' : 'id_video'];
+                            const selectedItemId = data.penghargaan[data.type === 'artikel' ? 'id_artikel' : 'id_video'];
                             if (selectedItemId) {
                                 itemSelect.value = selectedItemId;
                             }

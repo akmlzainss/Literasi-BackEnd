@@ -22,8 +22,7 @@
 
             <div class="card shadow-sm">
                 <div class="card-body p-2">
-                    <a href="{{ route('admin.artikel.status', ['status' => 'menunggu']) }}"
-                        class="btn btn-warning-custom w-100">
+                    <a href="{{ route('admin.artikel.status', ['status' => 'menunggu']) }}" class="btn btn-primary-custom">
                         <i class="fas fa-clock me-2"></i>Status Menunggu
                     </a>
                 </div>

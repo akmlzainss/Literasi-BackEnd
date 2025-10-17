@@ -1144,6 +1144,13 @@ body::before {
     transform: translateY(-2px);
 }
 
+.card {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+
 /* Efek pada Card Header */
 .card-header-custom::after {
     content: '';
@@ -1417,4 +1424,429 @@ body::before {
         flex-direction: column;
         gap: 1rem;
     }
+}
+
+
+
+/* ===================================
+   PERBAIKAN FORM ARTIKEL
+   =================================== */
+
+/* Konsistensi untuk semua form-control dan form-select */
+.form-control, 
+.form-select, 
+.select2-container .select2-selection--single {
+    height: 48px !important;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 1rem !important;
+    transition: all 0.3s ease !important;
+    background: white !important;
+}
+
+/* Textarea khusus */
+textarea.form-control {
+    height: auto !important;
+    min-height: 120px !important;
+}
+
+/* Focus state yang konsisten */
+.form-control:focus, 
+.form-select:focus,
+.select2-container.select2-container--focus .select2-selection--single {
+    border-color: var(--primary-blue) !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+    outline: none !important;
+}
+
+/* Label yang konsisten */
+.form-label {
+    font-weight: 600 !important;
+    color: var(--text-dark) !important;
+    margin-bottom: 0.5rem !important;
+    font-size: 0.95rem !important;
+    display: block !important;
+}
+
+/* Spacing konsisten antar form group */
+.mb-3 {
+    margin-bottom: 1.5rem !important;
+}
+
+/* ===================================
+   PERBAIKAN SELECT2
+   =================================== */
+
+/* Select2 Container */
+.select2-container {
+    width: 100% !important;
+}
+
+.select2-container .select2-selection--single {
+    display: flex !important;
+    align-items: center !important;
+}
+
+.select2-container .select2-selection--single .select2-selection__rendered {
+    line-height: 48px !important;
+    padding-left: 1rem !important;
+    padding-right: 2.5rem !important;
+    color: #6c757d !important;
+}
+
+.select2-container .select2-selection--single .select2-selection__arrow {
+    height: 46px !important;
+    top: 1px !important;
+    right: 10px !important;
+}
+
+/* Select2 Dropdown */
+.select2-dropdown {
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    margin-top: 4px !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+.select2-results__option {
+    padding: 0.75rem 1rem !important;
+    font-size: 1rem !important;
+}
+
+.select2-results__option--highlighted {
+    background: var(--primary-blue) !important;
+    color: white !important;
+}
+
+/* ===================================
+   PERBAIKAN INPUT GROUP (Untuk Search)
+   =================================== */
+
+.input-group {
+    display: flex !important;
+    align-items: stretch !important;
+    height: 48px !important;
+}
+
+.input-group-text {
+    height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 2px solid #e2e8f0 !important;
+    border-right: none !important;
+    background: white !important;
+    border-radius: 12px 0 0 12px !important;
+    padding: 0.75rem 1rem !important;
+}
+
+.input-group .form-control {
+    border-left: none !important;
+    border-radius: 0 12px 12px 0 !important;
+}
+
+.input-group .select2-container {
+    flex: 1 !important;
+}
+
+.input-group .select2-container .select2-selection--single {
+    border-left: none !important;
+    border-radius: 0 12px 12px 0 !important;
+    height: 48px !important;
+}
+
+/* ===================================
+   PERBAIKAN SISWA FIELDS SECTION
+   =================================== */
+
+#siswa-fields {
+    padding: 1.5rem !important;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.03) 0%, rgba(59, 130, 246, 0.03) 100%) !important;
+    border-radius: 12px !important;
+    border: 2px solid rgba(37, 99, 235, 0.15) !important;
+    margin-top: 1rem !important;
+}
+
+#siswa-fields .row {
+    align-items: stretch !important;
+    margin: 0 -0.5rem !important;
+}
+
+#siswa-fields .col-md-8,
+#siswa-fields .col-md-4 {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+#siswa-fields .mb-3 {
+    margin-bottom: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+}
+
+#siswa-fields .form-label {
+    margin-bottom: 0.5rem !important;
+}
+
+/* Kelas input readonly styling */
+#kelas_siswa {
+    background-color: #f1f5f9 !important;
+    cursor: not-allowed !important;
+    font-weight: 500 !important;
+    color: #64748b !important;
+}
+
+/* ===================================
+   PERBAIKAN FILE INPUT
+   =================================== */
+
+input[type="file"].form-control {
+    padding: 0.5rem 1rem !important;
+    height: 48px !important;
+    line-height: 1.5 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+input[type="file"].form-control::-webkit-file-upload-button {
+    padding: 0.4rem 1rem !important;
+    margin-right: 1rem !important;
+    background: linear-gradient(135deg, var(--primary-blue), var(--light-blue)) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+}
+
+input[type="file"].form-control::-webkit-file-upload-button:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3) !important;
+}
+
+/* ===================================
+   PERBAIKAN IMAGE PREVIEW
+   =================================== */
+
+#imagePreview {
+    margin-top: 1rem !important;
+    padding: 1rem !important;
+    background: var(--bg-light) !important;
+    border-radius: 12px !important;
+    border: 2px dashed #e2e8f0 !important;
+    text-align: center !important;
+}
+
+#imagePreview img {
+    max-width: 200px !important;
+    height: auto !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+#imagePreview:empty {
+    display: none !important;
+}
+
+/* ===================================
+   PERBAIKAN RADIO BUTTONS
+   =================================== */
+
+.form-check {
+    padding: 0.75rem 1rem !important;
+    background: var(--bg-light) !important;
+    border-radius: 8px !important;
+    margin-bottom: 0.5rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.form-check:hover {
+    background: white !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+.form-check-input {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    margin-top: 0 !important;
+    cursor: pointer !important;
+}
+
+.form-check-label {
+    margin-left: 0.5rem !important;
+    cursor: pointer !important;
+    font-weight: 500 !important;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-blue) !important;
+    border-color: var(--primary-blue) !important;
+}
+
+/* ===================================
+   PERBAIKAN CHARACTER COUNT
+   =================================== */
+
+#charCount {
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    padding: 0.5rem !important;
+    background: var(--bg-light) !important;
+    border-radius: 8px !important;
+    display: inline-block !important;
+    margin-top: 0.5rem !important;
+}
+
+#charCount.text-danger {
+    color: var(--danger) !important;
+    background: rgba(239, 68, 68, 0.1) !important;
+}
+
+/* ===================================
+   PERBAIKAN BUTTONS
+   =================================== */
+
+.btn {
+    height: 48px !important;
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    transition: all 0.3s ease !important;
+    border: none !important;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: white !important;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3) !important;
+}
+
+.btn-secondary {
+    background: #6c757d !important;
+    color: white !important;
+}
+
+.btn-secondary:hover {
+    background: #5a6268 !important;
+    transform: translateY(-2px) !important;
+}
+
+.btn:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+/* ===================================
+   PERBAIKAN ALERT MESSAGES
+   =================================== */
+
+.alert {
+    border-radius: 12px !important;
+    padding: 1rem 1.5rem !important;
+    border: none !important;
+    margin-bottom: 1.5rem !important;
+}
+
+.alert-danger {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #dc2626 !important;
+}
+
+.alert-success {
+    background: rgba(16, 185, 129, 0.1) !important;
+    color: #059669 !important;
+}
+
+.alert ul {
+    margin-bottom: 0 !important;
+    padding-left: 1.5rem !important;
+}
+
+.alert li {
+    margin-bottom: 0.25rem !important;
+}
+
+/* ===================================
+   RESPONSIVE ADJUSTMENTS
+   =================================== */
+
+@media (max-width: 768px) {
+    #siswa-fields .col-md-8,
+    #siswa-fields .col-md-4 {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    #siswa-fields .col-md-4 {
+        margin-bottom: 0 !important;
+    }
+    
+    .btn {
+        width: 100% !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .mt-4 {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+}
+
+/* ===================================
+   PERBAIKAN HIDDEN CLASS
+   =================================== */
+
+.d-none {
+    display: none !important;
+}
+
+/* ===================================
+   PERBAIKAN UNTUK TINYMCE
+   =================================== */
+
+.tox-tinymce {
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+}
+
+.tox-tinymce:focus-within {
+    border-color: var(--primary-blue) !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+}
+
+/* ===================================
+   PERBAIKAN PLACEHOLDER
+   =================================== */
+
+.form-control::placeholder,
+.form-select option[value=""] {
+    color: #9ca3af !important;
+    font-style: italic !important;
+}
+
+/* ===================================
+   PERBAIKAN DISABLED STATE
+   =================================== */
+
+.form-control:disabled,
+.form-select:disabled {
+    background-color: #f8fafc !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    opacity: 0.7 !important;
 }
