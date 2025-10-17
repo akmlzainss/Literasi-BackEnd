@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Kategori;
+use App\Models\Artikel;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Models\LogAdmin;
@@ -113,21 +115,28 @@ class KategoriController extends Controller
         try {
             $request->validate([
                 'nama' => 'required|string|max:255|unique:kategori,nama,' . $id,
-                'deskripsi' => 'nullable|string', // ✅ fix: sekarang boleh kosong
+                'deskripsi' => 'nullable|string',
             ], [
                 'nama.unique' => 'Nama kategori sudah digunakan. Silakan gunakan nama lain.',
             ]);
 
             $kategori = Kategori::findOrFail($id);
+            $oldData = $kategori->toArray();
             $kategori->update([
                 'nama' => $request->nama,
                 'deskripsi' => $request->deskripsi,
             ]);
 
             $this->logSuccess('update', 'Mengedit kategori', $kategori->id, [
-                'nama' => $request->nama,
-                'deskripsi' => $request->deskripsi
+                'old' => $oldData,
+                'new' => [
+                    'nama' => $request->nama,
+                    'deskripsi' => $request->deskripsi
+                ]
             ]);
+
+            // Clear cache setelah update
+            Cache::forget("kategori_stats_{$kategori->id}");
 
             return redirect()->route('admin.kategori.index')
                              ->with('success', 'Data berhasil diedit.');
@@ -155,8 +164,12 @@ class KategoriController extends Controller
 
             $this->logSuccess('delete', 'Menghapus kategori', $kategori->id, [
                 'nama' => $kategori->nama,
-                'deskripsi' => $kategori->deskripsi
+                'deskripsi' => $kategori->deskripsi,
+                'artikel_count' => $kategori->artikel()->count()
             ]);
+
+            // Clear cache sebelum delete
+            Cache::forget("kategori_stats_{$id}");
 
             $kategori->delete();
 
@@ -168,26 +181,47 @@ class KategoriController extends Controller
                 'error' => $e->getMessage()
             ]);
             return redirect()->route('admin.kategori.index')
-                             ->with('error', 'Gagal menghapus kategori.');
+                             ->with('error', 'Gagal menghapus kategori. Pastikan tidak ada artikel yang terkait.');
         }
     }
 
+    /**
+     * ✅ FIXED: Optimized detail method dengan pagination & caching
+     */
     public function detail($id)
-    {
-        try {
-            $kategori = Kategori::with('artikel')->findOrFail($id);
-            return view('kategori.detail', compact('kategori'));
-        } catch (\Exception $e) {
-            Log::error('Error loading category detail: ' . $e->getMessage());
-            return redirect()->route('admin.kategori.index')
-                             ->with('error', 'Gagal memuat detail kategori.');
-        }
+{
+    try {
+        $kategori = Kategori::findOrFail($id);
+
+        // Cache stats 15 menit
+        $stats = Cache::remember("kategori_{$id}_stats", 900, function () use ($id) {
+            return [
+                'total' => Artikel::where('id_kategori', $id)->count(),
+                'disetujui' => Artikel::where('id_kategori', $id)->where('status', 'disetujui')->count(),
+            ];
+        });
+
+        // Pagination artikel dengan 10 item per halaman
+        $artikels = Artikel::with('siswa:id,nama')
+            ->where('id_kategori', $id)
+            ->latest()
+            ->paginate(10); // Ganti get() dengan paginate(10)
+
+        return view('kategori.detail', compact('kategori', 'stats', 'artikels'));
+    } catch (\Exception $e) {
+        Log::error('Error detail kategori: ' . $e->getMessage(), [
+            'kategori_id' => $id,
+            'trace' => $e->getTraceAsString()
+        ]);
+        return redirect()->route('admin.kategori.index')
+                         ->with('error', 'Gagal memuat detail kategori: ' . $e->getMessage());
     }
+}
 
     public function export()
     {
         try {
-            $kategoris = Kategori::all();
+            $kategoris = Kategori::withCount('artikel')->get();
 
             $this->logSuccess('export', 'Mengekspor data kategori', null, [
                 'total' => $kategoris->count()
@@ -201,13 +235,14 @@ class KategoriController extends Controller
 
             $callback = function () use ($kategoris) {
                 $file = fopen('php://output', 'w');
-                fputcsv($file, ['ID', 'Nama', 'Deskripsi', 'Dibuat Pada']);
+                fputcsv($file, ['ID', 'Nama', 'Deskripsi', 'Jumlah Artikel', 'Dibuat Pada']);
 
                 foreach ($kategoris as $kategori) {
                     fputcsv($file, [
                         $kategori->id,
                         $kategori->nama,
-                        $kategori->deskripsi,
+                        $kategori->deskripsi ?? '',
+                        $kategori->artikel_count,
                         $kategori->dibuat_pada,
                     ]);
                 }
@@ -247,6 +282,17 @@ class KategoriController extends Controller
 
     private function logError($jenis, $aksi, $referensiId = null, array $detail = [])
     {
-        $this->logSuccess($jenis, $aksi, $referensiId, $detail);
+        $adminId = Auth::guard('admin')->id();
+        if ($adminId) {
+            LogAdmin::create([
+                'id_admin' => $adminId,
+                'jenis_aksi' => $jenis,
+                'aksi' => $aksi . ' (ERROR)',
+                'referensi_tipe' => 'kategori',
+                'referensi_id' => $referensiId,
+                'detail' => json_encode($detail),
+                'dibuat_pada' => now(),
+            ]);
+        }
     }
 }

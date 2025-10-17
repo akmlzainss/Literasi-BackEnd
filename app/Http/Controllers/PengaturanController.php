@@ -172,10 +172,22 @@ class PengaturanController extends Controller
     // ----------------- Trash & Restore -----------------
     public function trash()
     {
-        $artikels = Artikel::onlyTrashed()->get();
-        $kategoris = Kategori::onlyTrashed()->get();
-        $siswas = Siswa::onlyTrashed()->get();
-        $penghargaan = Penghargaan::onlyTrashed()->get();
+        // Pagination untuk setiap tabel dengan 10 data per halaman
+        $artikels = Artikel::onlyTrashed()
+            ->orderBy('deleted_at', 'desc')
+            ->paginate(10, ['*'], 'artikel_page');
+        
+        $kategoris = Kategori::onlyTrashed()
+            ->orderBy('deleted_at', 'desc')
+            ->paginate(10, ['*'], 'kategori_page');
+        
+        $siswas = Siswa::onlyTrashed()
+            ->orderBy('deleted_at', 'desc')
+            ->paginate(10, ['*'], 'siswa_page');
+        
+        $penghargaan = Penghargaan::onlyTrashed()
+            ->orderBy('deleted_at', 'desc')
+            ->paginate(10, ['*'], 'penghargaan_page');
 
         return view('pengaturan.trash', compact('artikels', 'kategoris', 'siswas', 'penghargaan'));
     }

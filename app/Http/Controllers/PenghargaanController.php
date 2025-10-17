@@ -16,6 +16,11 @@ use Carbon\Carbon;
 
 class PenghargaanController extends Controller
 {
+    public function __construct()
+    {
+        date_default_timezone_set('Asia/Jakarta'); // Set zona waktu WIB
+    }
+
     /**
      * Tampilkan daftar penghargaan dengan filter & pagination
      */
@@ -23,93 +28,79 @@ class PenghargaanController extends Controller
     {
         Paginator::useBootstrapFive();
 
-        // bulan & tahun aktif
-        $currentMonth = $request->input('month', now()->format('Y-m'));
-        $currentMonthNumber = (int) date('m', strtotime($currentMonth));
-        $currentYear = (int) date('Y', strtotime($request->input('year', date('Y', strtotime($currentMonth)))));
+        $currentDate = now();
+        $currentMonth = $request->input('month', $currentDate->format('Y-m'));
+        $currentYear = (int) $request->input('year', $currentDate->year);
+        $currentMonthNumber = (int) $request->input('month_number', $currentDate->month);
         $activeTab = $request->input('active_tab', 'artikel');
 
-        // Perbarui currentMonth jika year di-override
         $currentMonth = sprintf('%d-%02d', $currentYear, $currentMonthNumber);
 
-        // Query untuk daftar pemenang bulan ini
-        $query = Penghargaan::with(['artikel', 'video', 'siswa', 'admin'])
+        $penghargaan = Penghargaan::with(['artikel', 'video', 'siswa', 'admin'])
             ->where('arsip', false)
-            ->where(DB::raw("DATE_FORMAT(bulan_tahun, '%Y-%m')"), $currentMonth);
-
-        if ($request->filled('search')) {
-            $query->where('deskripsi_penghargaan', 'like', '%' . $request->search . '%')
-                ->orWhereHas('siswa', function ($q) use ($request) {
-                    $q->where('nama', 'like', '%' . $request->search . '%');
-                });
-        }
-        if ($request->filled('jenis')) {
-            $query->where('jenis', $request->jenis);
-        }
-
-        $penghargaan = $query->latest('dibuat_pada')->get();
+            ->where(DB::raw("DATE_FORMAT(bulan_tahun, '%Y-%m')"), $currentMonth)
+            ->get();
         $totalPenghargaan = Penghargaan::where('arsip', false)->count();
 
-        // daftar tahun tersedia
-        $years = Artikel::where('status', 'disetujui')
-            ->whereNotNull('diterbitkan_pada')
-            ->select(DB::raw('YEAR(diterbitkan_pada) as year'))
-            ->distinct()
-            ->union(
-                Video::where('status', 'disetujui')
-                    ->whereNotNull('diterbitkan_pada')
-                    ->select(DB::raw('YEAR(diterbitkan_pada) as year'))
-            )
-            ->pluck('year')
-            ->sort()
-            ->values();
+        // Hitung minYear dan maxYear berdasarkan tanggal saat ini
+        $minYear = $currentDate->copy()->subYears(5)->year; // 2020
+        $maxYear = $currentDate->copy()->addYear()->year;   // 2026
 
-        $minYear = $years->min() ?? now()->subYears(5)->year;
-        $maxYear = $years->max() ?? now()->addYears(5)->year;
-
-        // artikel bulan ini
+        // Query artikel dengan fallback jika diterbitkan_pada null
         $artikelQuery = Artikel::where('status', 'disetujui')
-            ->whereNotNull('diterbitkan_pada')
-            ->whereMonth('diterbitkan_pada', $currentMonthNumber)
-            ->whereYear('diterbitkan_pada', $currentYear)
+            ->where(function ($query) use ($currentYear, $currentMonthNumber) {
+                $query->whereNotNull('diterbitkan_pada')
+                      ->whereYear('diterbitkan_pada', $currentYear)
+                      ->whereMonth('diterbitkan_pada', $currentMonthNumber)
+                      ->orWhere(function ($q) use ($currentYear, $currentMonthNumber) {
+                          $q->whereNull('diterbitkan_pada')
+                            ->whereYear('created_at', $currentYear)
+                            ->whereMonth('created_at', $currentMonthNumber);
+                      });
+            })
             ->with('siswa')
             ->leftJoin('rating_artikel', 'artikel.id', '=', 'rating_artikel.id_artikel')
-            ->select('artikel.*', DB::raw('AVG(rating_artikel.rating) as avg_rating'))
+            ->select('artikel.*', DB::raw('COALESCE(AVG(rating_artikel.rating), 0) as avg_rating'))
             ->groupBy('artikel.id');
-
         $artikel = $artikelQuery->orderByDesc('avg_rating')->get();
         $topArtikel = (clone $artikelQuery)->orderByDesc('avg_rating')->take(3)->get();
 
-        // video bulan ini
+        // Query video dengan fallback jika diterbitkan_pada null
         $videoQuery = Video::where('status', 'disetujui')
-            ->whereNotNull('diterbitkan_pada')
-            ->whereMonth('diterbitkan_pada', $currentMonthNumber)
-            ->whereYear('diterbitkan_pada', $currentYear)
+            ->where(function ($query) use ($currentYear, $currentMonthNumber) {
+                $query->whereNotNull('diterbitkan_pada')
+                      ->whereYear('diterbitkan_pada', $currentYear)
+                      ->whereMonth('diterbitkan_pada', $currentMonthNumber)
+                      ->orWhere(function ($q) use ($currentYear, $currentMonthNumber) {
+                          $q->whereNull('diterbitkan_pada')
+                            ->whereYear('created_at', $currentYear)
+                            ->whereMonth('created_at', $currentMonthNumber);
+                      });
+            })
             ->with('siswa')
             ->leftJoin('interaksi_video', 'videos.id', '=', 'interaksi_video.id_video')
-            ->select('videos.*', DB::raw('SUM(CASE WHEN interaksi_video.jenis = "like" THEN 1 ELSE 0 END) as jumlah_like'))
+            ->select('videos.*', DB::raw('COALESCE(SUM(CASE WHEN interaksi_video.jenis = "like" THEN 1 ELSE 0 END), 0) as jumlah_like'))
             ->groupBy('videos.id')
             ->orderByDesc('jumlah_like');
-
         $video = $videoQuery->get();
         $topVideo = (clone $videoQuery)->take(3)->get();
 
         $siswa = Siswa::all();
 
+        // Debug logging untuk verifikasi
+        \Log::info('Debug Penghargaan - ' . now()->format('Y-m-d H:i:s'), [
+            'artikel_count' => $artikel->count(),
+            'top_artikel_count' => $topArtikel->count(),
+            'video_count' => $video->count(),
+            'top_video_count' => $topVideo->count(),
+            'current_month' => $currentMonth,
+            'current_year' => $currentYear,
+            'current_month_number' => $currentMonthNumber
+        ]);
+
         return view('penghargaan.penghargaan', compact(
-            'penghargaan',
-            'totalPenghargaan',
-            'artikel',
-            'video',
-            'topArtikel',
-            'topVideo',
-            'siswa',
-            'currentMonth',
-            'currentMonthNumber',
-            'currentYear',
-            'minYear',
-            'maxYear',
-            'activeTab'
+            'penghargaan', 'totalPenghargaan', 'artikel', 'video', 'topArtikel', 'topVideo',
+            'currentMonth', 'currentYear', 'currentMonthNumber', 'minYear', 'maxYear', 'activeTab'
         ));
     }
 
@@ -130,8 +121,16 @@ class PenghargaanController extends Controller
         $errorMessage = null;
         if ($preSelectedType === 'artikel') {
             $topItems = Artikel::where('status', 'disetujui')
-                ->whereMonth('diterbitkan_pada', $monthNum)
-                ->whereYear('diterbitkan_pada', $year)
+                ->where(function ($query) use ($monthNum, $year) {
+                    $query->whereNotNull('diterbitkan_pada')
+                          ->whereMonth('diterbitkan_pada', $monthNum)
+                          ->whereYear('diterbitkan_pada', $year)
+                          ->orWhere(function ($q) use ($monthNum, $year) {
+                              $q->whereNull('diterbitkan_pada')
+                                ->whereMonth('created_at', $monthNum)
+                                ->whereYear('created_at', $year);
+                          });
+                })
                 ->leftJoin('rating_artikel', 'artikel.id', '=', 'rating_artikel.id_artikel')
                 ->leftJoin('siswa', 'artikel.id_siswa', '=', 'siswa.id')
                 ->select('artikel.*', 'siswa.nama as siswa_nama', 'siswa.kelas as siswa_kelas', DB::raw('AVG(rating_artikel.rating) as rating'))
@@ -146,15 +145,22 @@ class PenghargaanController extends Controller
                 return $item;
             });
 
-            // Cek apakah preSelectedId valid
             if ($preSelectedId && !$topItems->contains('id', $preSelectedId)) {
                 $errorMessage = 'Artikel yang dipilih tidak tersedia untuk bulan ini.';
-                $preSelectedId = null; // Reset preSelectedId jika tidak valid
+                $preSelectedId = null;
             }
         } else {
             $topItems = Video::where('status', 'disetujui')
-                ->whereMonth('diterbitkan_pada', $monthNum)
-                ->whereYear('diterbitkan_pada', $year)
+                ->where(function ($query) use ($monthNum, $year) {
+                    $query->whereNotNull('diterbitkan_pada')
+                          ->whereMonth('diterbitkan_pada', $monthNum)
+                          ->whereYear('diterbitkan_pada', $year)
+                          ->orWhere(function ($q) use ($monthNum, $year) {
+                              $q->whereNull('diterbitkan_pada')
+                                ->whereMonth('created_at', $monthNum)
+                                ->whereYear('created_at', $year);
+                          });
+                })
                 ->leftJoin('interaksi_video', 'videos.id', '=', 'interaksi_video.id_video')
                 ->leftJoin('siswa', 'videos.id_siswa', '=', 'siswa.id')
                 ->select('videos.*', 'siswa.nama as siswa_nama', 'siswa.kelas as siswa_kelas', DB::raw('SUM(CASE WHEN interaksi_video.jenis = "like" THEN 1 ELSE 0 END) as rating'))
@@ -169,10 +175,9 @@ class PenghargaanController extends Controller
                 return $item;
             });
 
-            // Cek apakah preSelectedId valid
             if ($preSelectedId && !$topItems->contains('id', $preSelectedId)) {
                 $errorMessage = 'Video yang dipilih tidak tersedia untuk bulan ini.';
-                $preSelectedId = null; // Reset preSelectedId jika tidak valid
+                $preSelectedId = null;
             }
         }
 
@@ -215,7 +220,6 @@ class PenghargaanController extends Controller
 
         $penghargaan = Penghargaan::create($penghargaanData);
 
-        // log & notif
         LogAdmin::create([
             'id_admin' => Auth::guard('admin')->id(),
             'jenis_aksi' => 'create',
@@ -273,18 +277,32 @@ class PenghargaanController extends Controller
 
         if ($type === 'artikel') {
             $itemsQuery = Artikel::where('status', 'disetujui')
-                ->whereNotNull('diterbitkan_pada')
-                ->whereMonth('diterbitkan_pada', $bulan)
-                ->whereYear('diterbitkan_pada', $tahun)
+                ->where(function ($query) use ($bulan, $tahun) {
+                    $query->whereNotNull('diterbitkan_pada')
+                          ->whereMonth('diterbitkan_pada', $bulan)
+                          ->whereYear('diterbitkan_pada', $tahun)
+                          ->orWhere(function ($q) use ($bulan, $tahun) {
+                              $q->whereNull('diterbitkan_pada')
+                                ->whereMonth('created_at', $bulan)
+                                ->whereYear('created_at', $tahun);
+                          });
+                })
                 ->with('siswa')
                 ->leftJoin('rating_artikel', 'artikel.id', '=', 'rating_artikel.id_artikel')
                 ->select('artikel.id', 'artikel.judul', 'artikel.gambar', DB::raw('AVG(rating_artikel.rating) as rating'))
                 ->groupBy('artikel.id');
         } else {
             $itemsQuery = Video::where('status', 'disetujui')
-                ->whereNotNull('diterbitkan_pada')
-                ->whereMonth('diterbitkan_pada', $bulan)
-                ->whereYear('diterbitkan_pada', $tahun)
+                ->where(function ($query) use ($bulan, $tahun) {
+                    $query->whereNotNull('diterbitkan_pada')
+                          ->whereMonth('diterbitkan_pada', $bulan)
+                          ->whereYear('diterbitkan_pada', $tahun)
+                          ->orWhere(function ($q) use ($bulan, $tahun) {
+                              $q->whereNull('diterbitkan_pada')
+                                ->whereMonth('created_at', $bulan)
+                                ->whereYear('created_at', $tahun);
+                          });
+                })
                 ->with('siswa')
                 ->leftJoin('interaksi_video', 'videos.id', '=', 'interaksi_video.id_video')
                 ->select('videos.id', 'videos.judul', 'videos.thumbnail_path', DB::raw('SUM(CASE WHEN interaksi_video.jenis = "like" THEN 1 ELSE 0 END) as rating'))
@@ -390,7 +408,7 @@ class PenghargaanController extends Controller
             ]);
         }
 
-        // hapus notifikasi terkait penghargaan ini
+        // Hapus notifikasi terkait penghargaan ini
         Notifikasi::where('referensi_tipe', 'penghargaan')
             ->where('referensi_id', $penghargaan->id)
             ->delete();
@@ -413,13 +431,29 @@ class PenghargaanController extends Controller
         $tahun = Carbon::parse($penghargaan->bulan_tahun)->year;
 
         $artikel = Artikel::where('status', 'disetujui')
-            ->whereMonth('diterbitkan_pada', $bulan)
-            ->whereYear('diterbitkan_pada', $tahun)
+            ->where(function ($query) use ($bulan, $tahun) {
+                $query->whereNotNull('diterbitkan_pada')
+                      ->whereMonth('diterbitkan_pada', $bulan)
+                      ->whereYear('diterbitkan_pada', $tahun)
+                      ->orWhere(function ($q) use ($bulan, $tahun) {
+                          $q->whereNull('diterbitkan_pada')
+                            ->whereMonth('created_at', $bulan)
+                            ->whereYear('created_at', $tahun);
+                      });
+            })
             ->get();
 
         $video = Video::where('status', 'disetujui')
-            ->whereMonth('diterbitkan_pada', $bulan)
-            ->whereYear('diterbitkan_pada', $tahun)
+            ->where(function ($query) use ($bulan, $tahun) {
+                $query->whereNotNull('diterbitkan_pada')
+                      ->whereMonth('diterbitkan_pada', $bulan)
+                      ->whereYear('diterbitkan_pada', $tahun)
+                      ->orWhere(function ($q) use ($bulan, $tahun) {
+                          $q->whereNull('diterbitkan_pada')
+                            ->whereMonth('created_at', $bulan)
+                            ->whereYear('created_at', $tahun);
+                      });
+            })
             ->get();
 
         $siswa = Siswa::all();
@@ -431,5 +465,116 @@ class PenghargaanController extends Controller
             'siswa',
             'selectedMonth'
         ));
+    }
+
+    /**
+     * Berikan penghargaan bulanan otomatis
+     */
+    public function autoAssignMonthlyAwards()
+    {
+        $currentMonth = now()->format('Y-m');
+        $previousMonth = now()->subMonth()->format('Y-m');
+
+        // Arsipkan penghargaan bulan sebelumnya
+        Penghargaan::where('bulan_tahun', 'like', $previousMonth . '%')
+            ->where('arsip', false)
+            ->update(['arsip' => true]);
+
+        // Ambil artikel dengan rating tertinggi
+        $topArtikel = Artikel::where('status', 'disetujui')
+            ->where(function ($query) {
+                $query->whereNotNull('diterbitkan_pada')
+                      ->whereMonth('diterbitkan_pada', now()->month)
+                      ->whereYear('diterbitkan_pada', now()->year)
+                      ->orWhere(function ($q) {
+                          $q->whereNull('diterbitkan_pada')
+                            ->whereMonth('created_at', now()->month)
+                            ->whereYear('created_at', now()->year);
+                      });
+            })
+            ->leftJoin('rating_artikel', 'artikel.id', '=', 'rating_artikel.id_artikel')
+            ->select('artikel.*', DB::raw('COALESCE(AVG(rating_artikel.rating), 0) as avg_rating'))
+            ->groupBy('artikel.id')
+            ->orderByDesc('avg_rating')
+            ->first();
+
+        // Ambil video dengan like terbanyak
+        $topVideo = Video::where('status', 'disetujui')
+            ->where(function ($query) {
+                $query->whereNotNull('diterbitkan_pada')
+                      ->whereMonth('diterbitkan_pada', now()->month)
+                      ->whereYear('diterbitkan_pada', now()->year)
+                      ->orWhere(function ($q) {
+                          $q->whereNull('diterbitkan_pada')
+                            ->whereMonth('created_at', now()->month)
+                            ->whereYear('created_at', now()->year);
+                      });
+            })
+            ->leftJoin('interaksi_video', 'videos.id', '=', 'interaksi_video.id_video')
+            ->select('videos.*', DB::raw('COALESCE(SUM(CASE WHEN interaksi_video.jenis = "like" THEN 1 ELSE 0 END), 0) as jumlah_like'))
+            ->groupBy('videos.id')
+            ->orderByDesc('jumlah_like')
+            ->first();
+
+        $adminId = Auth::guard('admin')->id() ?? 1;
+
+        if ($topArtikel && !Penghargaan::where('id_artikel', $topArtikel->id)->where('bulan_tahun', 'like', $currentMonth . '%')->exists()) {
+            $penghargaan = Penghargaan::create([
+                'id_siswa' => $topArtikel->id_siswa,
+                'id_admin' => $adminId,
+                'id_artikel' => $topArtikel->id,
+                'jenis' => 'bulanan',
+                'bulan_tahun' => now(),
+                'deskripsi_penghargaan' => 'Penghargaan Bulanan untuk Artikel dengan Rating Tertinggi',
+                'dibuat_pada' => now(),
+                'arsip' => false,
+            ]);
+            Notifikasi::create([
+                'id_siswa' => $topArtikel->id_siswa,
+                'id_admin' => $adminId,
+                'judul' => 'Penghargaan Baru',
+                'pesan' => 'Selamat! Anda menerima penghargaan bulanan untuk artikel terbaik.',
+                'jenis' => 'diberi_penghargaan',
+                'referensi_tipe' => 'penghargaan',
+                'referensi_id' => $penghargaan->id,
+                'sudah_dibaca' => false,
+                'dibuat_pada' => now(),
+            ]);
+        }
+
+        if ($topVideo && !Penghargaan::where('id_video', $topVideo->id)->where('bulan_tahun', 'like', $currentMonth . '%')->exists()) {
+            $penghargaan = Penghargaan::create([
+                'id_siswa' => $topVideo->id_siswa,
+                'id_admin' => $adminId,
+                'id_video' => $topVideo->id,
+                'jenis' => 'bulanan',
+                'bulan_tahun' => now(),
+                'deskripsi_penghargaan' => 'Penghargaan Bulanan untuk Video dengan Like Terbanyak',
+                'dibuat_pada' => now(),
+                'arsip' => false,
+            ]);
+            Notifikasi::create([
+                'id_siswa' => $topVideo->id_siswa,
+                'id_admin' => $adminId,
+                'judul' => 'Penghargaan Baru',
+                'pesan' => 'Selamat! Anda menerima penghargaan bulanan untuk video terbaik.',
+                'jenis' => 'diberi_penghargaan',
+                'referensi_tipe' => 'penghargaan',
+                'referensi_id' => $penghargaan->id,
+                'sudah_dibaca' => false,
+                'dibuat_pada' => now(),
+            ]);
+        }
+
+        LogAdmin::create([
+            'id_admin' => $adminId,
+            'jenis_aksi' => 'auto_assign',
+            'aksi' => 'Penghargaan bulanan otomatis diberikan untuk bulan ' . now()->translatedFormat('F Y'),
+            'referensi_tipe' => 'penghargaan',
+            'dibuat_pada' => now(),
+        ]);
+
+        return redirect()->route('admin.penghargaan.index')
+            ->with('success', 'Penghargaan bulanan otomatis diberikan.');
     }
 }

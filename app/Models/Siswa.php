@@ -12,7 +12,7 @@ class Siswa extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
-    protected $table = 'siswa'; 
+    protected $table = 'siswa';
     public $timestamps = true;
 
     protected $fillable = [
@@ -31,7 +31,10 @@ class Siswa extends Authenticatable
     ];
 
     protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'status_aktif' => 'boolean', // Optional tapi recommended
     ];
 
     /* =====================

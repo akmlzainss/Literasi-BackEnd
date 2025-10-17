@@ -26,20 +26,20 @@ class KelolaSiswaController extends Controller
     {
         $query = Siswa::query();
 
-      if ($request->filled('q')) {
-    $q = trim($request->input('q'));
-    $query->where(function ($sub) use ($q) {
-        $sub->where('nis', 'like', "%{$q}%")
-            ->orWhere('nama', 'like', "%{$q}%")
-            ->orWhere('email', 'like', "%{$q}%");
-            // HAPUS kelas dari pencarian bebas
-    });
-}
+        if ($request->filled('q')) {
+            $q = trim($request->input('q'));
+            $query->where(function ($sub) use ($q) {
+                $sub->where('nis', 'like', "%{$q}%")
+                    ->orWhere('nama', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%");
+                // HAPUS kelas dari pencarian bebas
+            });
+        }
 
-if ($request->filled('kelas')) {
-    $kelas = trim($request->input('kelas'));
-    $query->where('kelas', 'like', "%{$kelas}%"); 
-}
+        if ($request->filled('kelas')) {
+            $kelas = trim($request->input('kelas'));
+            $query->where('kelas', 'like', "%{$kelas}%");
+        }
 
 
         $sort = $request->input('sort', 'created_at_desc');
@@ -77,7 +77,6 @@ if ($request->filled('kelas')) {
                 'email' => $validated['email'],
                 'kelas' => strtoupper(trim($validated['kelas'])),
                 'password' => Hash::make($validated['password']),
-                'created_at' => now(),
             ]);
 
             $this->logAdmin('create', 'Menambahkan siswa baru', $siswa->id, [
@@ -105,7 +104,19 @@ if ($request->filled('kelas')) {
     public function show($nis)
     {
         try {
-            $siswa = Siswa::where('nis', $nis)->firstOrFail();
+            $siswa = Siswa::where('nis', $nis)
+                ->with(['artikel', 'video', 'penghargaan'])
+                ->firstOrFail();
+
+            // Fix timestamps null (sekali saja)
+            if (!$siswa->created_at) {
+                $siswa->created_at = now();
+            }
+            if (!$siswa->updated_at) {
+                $siswa->updated_at = now();
+            }
+            $siswa->saveQuietly(); // Save tanpa trigger events
+
             return view('siswa.detail', compact('siswa'));
         } catch (\Exception $e) {
             Log::error('Error loading siswa detail: ' . $e->getMessage());
