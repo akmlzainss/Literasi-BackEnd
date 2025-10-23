@@ -18,6 +18,7 @@ use App\Http\Controllers\Siswa\VideoController;
 use App\Http\Controllers\Siswa\VideoInteraksiController;
 use App\Http\Controllers\Siswa\VideoKomentarController;
 use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
+use App\Http\Controllers\VideoPersetujuanController;
 
 Route::get('/', fn() => redirect()->route('login'));
 
@@ -92,8 +93,12 @@ Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function ()
     Route::put('komentar/{komentar}', [ArtikelController::class, 'updateComment'])->name('komentar.update');
     Route::delete('komentar/{komentar}', [ArtikelController::class, 'destroyComment'])->name('komentar.destroy');
 
-    Route::get('/video/persetujuan', [App\Http\Controllers\VideoPersetujuanController::class, 'index'])->name('video.persetujuan');
-    Route::put('/video/{id}/persetujuan', [App\Http\Controllers\VideoPersetujuanController::class, 'update'])->name('video.update');
+    Route::get('/video/persetujuan', [VideoPersetujuanController::class, 'index'])->name('video.persetujuan');
+    Route::put('/video/{id}/persetujuan', [VideoPersetujuanController::class, 'update'])->name('video.update');
+    Route::delete('/video/persetujuan/{id}', [VideoPersetujuanController::class, 'destroy'])->name('video.destroy');
+    // Rute untuk pencarian dinamis dengan Select2
+    Route::get('/search-kategori', [VideoPersetujuanController::class, 'searchKategori'])->name('search.kategori');
+    Route::get('/search-siswa', [VideoPersetujuanController::class, 'searchSiswa'])->name('search.siswa');
 
     Route::resource('kategori', KategoriController::class)->except(['show']);
     Route::get('/kategori/export', [KategoriController::class, 'export'])->name('kategori.export');
@@ -127,4 +132,6 @@ Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function ()
         Route::get('/', [BackupController::class, 'index'])->name('index');
         Route::get('/all', [BackupController::class, 'backupAll'])->name('all');
     });
+
+    
 });

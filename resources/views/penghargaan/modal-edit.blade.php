@@ -9,29 +9,30 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
                 <div class="modal-body">
+                    {{-- ✅ FIXED: ALL name + id ATTRIBUTES --}}
                     <input type="hidden" name="id" id="edit_id">
                     <input type="hidden" name="type" id="edit_type">
+                    <input type="hidden" name="_method" value="PUT">
 
-                    {{-- Konten Pilihan (Artikel/Video) --}}
+                    {{-- Konten Pilihan --}}
                     <div class="mb-3">
                         <label for="edit_id_item" class="form-label" id="editItemLabel">Pilih Konten</label>
-                        <select name="id_item" id="edit_id_item" class="form-control">
+                        <select name="id_item" id="edit_id_item" class="form-control" required>
                             <option value="">-- Pilih Konten --</option>
-                            {{-- Opsi akan diisi oleh JavaScript --}}
                         </select>
                     </div>
 
-                    {{-- Siswa (Otomatis terisi) --}}
+                    {{-- Siswa --}}
                     <div class="mb-3">
                         <label for="edit_nama_siswa" class="form-label">Siswa</label>
-                        <input type="text" id="edit_nama_siswa" class="form-control" readonly>
-                        <input type="hidden" name="id_siswa" id="edit_id_siswa">
+                        <input type="text" name="nama_siswa" id="edit_nama_siswa" class="form-control" readonly required>
+                        <input type="hidden" name="id_siswa" id="edit_id_siswa" required>
                     </div>
                     
                     {{-- Bulan & Tahun --}}
                     <div class="mb-3">
                         <label for="edit_bulan_tahun" class="form-label">Bulan dan Tahun</label>
-                        <input type="date" name="bulan_tahun" id="edit_bulan_tahun" class="form-control" required>
+                        <input type="month" name="bulan_tahun" id="edit_bulan_tahun" class="form-control" required>
                     </div>
 
                     {{-- Jenis --}}
