@@ -400,6 +400,8 @@
         <!-- Content Area -->
         <section class="content-area">
             @yield('content')
+            @yield('additional_css')
+
         </section>
 
         <!-- Footer -->

@@ -1102,3 +1102,39 @@ select:focus-visible {
     display: flex;
     align-items: center;
 }
+
+
+/* ✅ NEW: WINNERS CATEGORY TABS */
+.winners-tabs .nav-link {
+    padding: 0.75rem 1.5rem;
+    border: 1px solid #dee2e6;
+    margin: 0 0.25rem;
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.winners-tabs .nav-link.active {
+    background-color: #0d6efd;
+    border-color: #0d6efd #dee2e6 #dee2e6;
+    color: white;
+}
+
+.winners-tab-content {
+    border: 1px solid #dee2e6;
+    border-top: none;
+    padding: 1.5rem;
+    background: #f8f9fa;
+}
+
+/* KATEGORI COLORS */
+.artikel-winner .winner-avatar {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+
+.video-winner .winner-avatar {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+}
+
+.winner-description small {
+    display: block;
+    margin-top: 0.25rem;
+}
