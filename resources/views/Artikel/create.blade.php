@@ -63,13 +63,13 @@
                             <!-- Isi Artikel -->
                             <div class="mb-3">
                                 <label for="isi" class="form-label">
-                                    <i class="fas fa-align-left me-2"></i>Isi Artikel <span class="text-danger">*</span>
-                                </label>
-                                <textarea name="isi"
-                                          id="tambah_isi"
-                                          class="form-control"
-                                          rows="10"
-                                          required>{{ old('isi') }}</textarea>
+    <i class="fas fa-align-left me-2"></i>Isi Artikel <span class="text-danger">*</span>
+</label>
+<textarea name="isi"
+          id="isi"
+          class="form-control"
+          rows="10"
+          required>{{ old('isi') }}</textarea>
                                 <div id="charCount" class="text-muted mt-1" style="font-size: 0.9em;">
                                     0/3000
                                 </div>
@@ -279,29 +279,34 @@
 
 @section('scripts')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.tiny.cloud/1/4xazwn7uf3t198xvx4jq99bmdaj364wz6x88joubmdqdtlrn/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script src="https://cdn.tiny.cloud/1/4xazwn7uf3t198xvx4jq99bmdaj364wz6x88joubmdqdtlrn/tinymce/6/tinymce.min.js"
+        referrerpolicy="origin"></script>
     <script>
         $(document).ready(function () {
             // ===================================
             // Initialize TinyMCE
             // ===================================
             tinymce.init({
-                selector: '#tambah_isi',
+                selector: '#isi',
                 height: 500,
-                plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount',
+                plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount',
                 toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
-                setup: function (editor) {
+                setup: function(editor) {
                     const updateCharCount = () => {
-                        const charCount = editor.getContent({ format: 'text' }).length;
+                        const charCount = editor.getContent({
+                            format: 'text'
+                        }).length;
                         $('#charCount').text(`${charCount}/3000`);
                         $('#charCount').css('color', charCount > 3000 ? 'red' : 'inherit');
                     };
-                    editor.on('keydown', function (e) {
-                        const charCount = editor.getContent({ format: 'text' }).length;
-                        if (charCount >= 3000 && e.keyCode !== 8 && e.keyCode !== 46) {
-                            e.preventDefault();
-                        }
+                    editor.on('keydown', function(e) {
+                        const charCount = editor.getContent({
+                            format: 'text'
+                        }).length;
+                        if (charCount >= 3000 && e.keyCode !== 8 && e.keyCode !== 46) e
+                            .preventDefault();
                     });
                     editor.on('input change', updateCharCount);
                     editor.on('init', updateCharCount);

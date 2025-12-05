@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Siswa;
 use App\Models\Artikel;
 use App\Models\Kategori;
-use App\Models\Video; // Added Video model
+use App\Models\Video;
 use App\Models\LogAdmin;
 use Illuminate\Pagination\Paginator;
 use Carbon\Carbon;
@@ -22,13 +22,15 @@ class DashboardController extends Controller
 
         $totalArtikel  = Artikel::count();
         $totalKategori = Kategori::count();
-        $totalVideo    = Video::count(); // Replaced Penghargaan with Video
+        $totalVideo    = Video::count();
         $totalSiswa    = Siswa::count();
 
-        // Paginate 5 log per halaman (pakai created_at)
+        // Ambil 6 log terakhir saja (tanpa pagination)
         $logs = LogAdmin::with('admin')
-            ->orderByDesc('created_at')
-            ->paginate(5);
+    ->orderByDesc('created_at')
+    ->limit(7)
+    ->get();
+
 
         // Data untuk chart
         $chartData    = $this->getChartData();
@@ -38,7 +40,7 @@ class DashboardController extends Controller
         return view('admin.dashboard', [
             'artikelCount'  => $totalArtikel,
             'kategoriCount' => $totalKategori,
-            'videoCount'    => $totalVideo, // Updated key
+            'videoCount'    => $totalVideo,
             'siswaCount'    => $totalSiswa,
             'logs'          => $logs,
             'chartData'     => $chartData,
@@ -54,12 +56,9 @@ class DashboardController extends Controller
     {
         Paginator::useBootstrapFive();
 
-        // Ambil data khusus untuk siswa
         $totalArtikelSiswa     = Artikel::where('id_siswa', auth('siswa')->id())->count();
         $totalPenghargaanSiswa = \App\Models\Penghargaan::where('id_siswa', auth('siswa')->id())->count();
 
-
-        // Artikel terbaru untuk ditampilkan di dashboard siswa
         $artikelTerbaru = Artikel::latest()->take(5)->get();
 
         return view('web_siswa.dashboard', [
@@ -91,7 +90,7 @@ class DashboardController extends Controller
             'categories'    => [
                 Artikel::count(),
                 Kategori::count(),
-                Video::count(), // Replaced Penghargaan with Video
+                Video::count(),
                 Siswa::count(),
             ],
         ];
@@ -104,7 +103,7 @@ class DashboardController extends Controller
             'data'   => [
                 Artikel::count(),
                 Kategori::count(),
-                Video::count(), // Replaced Penghargaan with Video
+                Video::count(),
                 Siswa::count(),
             ],
         ];
@@ -129,7 +128,7 @@ class DashboardController extends Controller
             $activityCount = LogAdmin::whereDate('created_at', $date->format('Y-m-d'))->count();
 
             if ($activityCount == 0 && $i <= 2) {
-                $activityCount = rand(1, 8); // Dummy data for recent days
+                $activityCount = rand(1, 8);
             }
 
             $activities[] = $activityCount;
