@@ -105,16 +105,16 @@
         </div>
 
         <!-- Activity Log Section -->
-        <div class="row g-4 mt-4">
+        <div class="row g-4 mt-4 mb-0">
             <div class="col-12">
-                <div class="card enhanced-card" data-aos="fade-up">
+                <div class="card enhanced-card" data-aos="fade-up" style="margin-bottom: 0;">
                     <div class="card-header glass-effect activity-header">
                         <div class="activity-header-title">
-                            <i class="fas fa-clock me-2"></i>
-                            <span class="fw-bold">Aktivitas Admin</span>
+                            <i class="fas fa-history me-2"></i>
+                            <span class="fw-bold">Aktivitas Terbaru (7 Terakhir)</span>
                         </div>
                     </div>
-                    <div class="card-body p-0">
+                    <div class="card-body p-0" style="margin-bottom: 0; padding-bottom: 0;">
                         <!-- Activity Table Header -->
                         <div class="activity-table-header row g-0">
                             <div class="col-5">
@@ -132,21 +132,107 @@
                                     <i class="fas fa-calendar-alt me-2 text-info"></i> Tanggal
                                 </div>
                             </div>
+                            <div class="col-2">
+                                <div class="activity-column-header">
+                                    <i class="fas fa-flag me-2 text-warning"></i> Status
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Activity List -->
-                        <div class="activity-list">
+                        <div class="activity-list" style="margin-bottom: 0; padding-bottom: 0;">
                             @forelse ($logs as $log)
+                                @php
+                                    // Determine icon and color based on action type
+                                    $iconClass = 'fas fa-circle';
+                                    $colorClass = 'success-gradient';
+
+                                    if (
+                                        stripos($log->jenis_aksi, 'create') !== false ||
+                                        stripos($log->aksi, 'tambah') !== false
+                                    ) {
+                                        $iconClass = 'fas fa-plus';
+                                        $colorClass = 'success-gradient';
+                                    } elseif (
+                                        stripos($log->jenis_aksi, 'update') !== false ||
+                                        stripos($log->aksi, 'edit') !== false ||
+                                        stripos($log->aksi, 'ubah') !== false
+                                    ) {
+                                        $iconClass = 'fas fa-edit';
+                                        $colorClass = 'warning-gradient';
+                                    } elseif (
+                                        stripos($log->jenis_aksi, 'delete') !== false ||
+                                        stripos($log->aksi, 'hapus') !== false
+                                    ) {
+                                        $iconClass = 'fas fa-trash';
+                                        $colorClass = 'danger-gradient';
+                                    } elseif (
+                                        stripos($log->jenis_aksi, 'login') !== false ||
+                                        stripos($log->aksi, 'masuk') !== false
+                                    ) {
+                                        $iconClass = 'fas fa-sign-in-alt';
+                                        $colorClass = 'info-gradient';
+                                    } elseif (
+                                        stripos($log->jenis_aksi, 'logout') !== false ||
+                                        stripos($log->aksi, 'keluar') !== false
+                                    ) {
+                                        $iconClass = 'fas fa-sign-out-alt';
+                                        $colorClass = 'secondary-gradient';
+                                    } elseif (
+                                        stripos($log->jenis_aksi, 'export') !== false ||
+                                        stripos($log->aksi, 'ekspor') !== false
+                                    ) {
+                                        $iconClass = 'fas fa-file-export';
+                                        $colorClass = 'purple-gradient';
+                                    } elseif (
+                                        stripos($log->jenis_aksi, 'import') !== false ||
+                                        stripos($log->aksi, 'impor') !== false
+                                    ) {
+                                        $iconClass = 'fas fa-file-import';
+                                        $colorClass = 'teal-gradient';
+                                    } elseif (
+                                        stripos($log->aksi, 'menyetujui') !== false ||
+                                        stripos($log->aksi, 'disetujui') !== false
+                                    ) {
+                                        $iconClass = 'fas fa-check-circle';
+                                        $colorClass = 'success-gradient';
+                                    } elseif (
+                                        stripos($log->aksi, 'menolak') !== false ||
+                                        stripos($log->aksi, 'ditolak') !== false
+                                    ) {
+                                        $iconClass = 'fas fa-times-circle';
+                                        $colorClass = 'danger-gradient';
+                                    }
+
+                                    // Status badge
+                                    $statusBadge = 'Berhasil';
+                                    $statusColor = 'success';
+                                    if (stripos($log->jenis_aksi, 'gagal') !== false) {
+                                        $statusBadge = 'Gagal';
+                                        $statusColor = 'danger';
+                                    }
+                                @endphp
+
                                 <div class="activity-row row g-0 align-items-center" data-aos="fade-up"
-                                     data-aos-delay="{{ ($loop->index + 1) * 100 }}">
+                                    data-aos-delay="{{ ($loop->index + 1) * 50 }}" style="@if($loop->last) margin-bottom: 0; padding-bottom: 1.5rem; @endif">
                                     <div class="col-5">
                                         <div class="activity-info">
-                                            <div class="activity-icon-new success-gradient">
-                                                <i class="fas fa-plus"></i>
+                                            <div class="activity-icon-new {{ $colorClass }}">
+                                                <i class="{{ $iconClass }}"></i>
                                             </div>
                                             <div class="activity-details">
                                                 <div class="activity-name">{{ $log->aksi }}</div>
-                                                <div class="activity-desc">{{ $log->detail['nama'] ?? 'Tidak ada detail' }}</div>
+                                                <div class="activity-desc text-muted small">
+                                                    @php
+                                                        $detail = is_array($log->detail)
+                                                            ? $log->detail
+                                                            : json_decode($log->detail, true);
+                                                        $desc = $detail['nama'] ?? ($detail['judul'] ?? null);
+                                                    @endphp
+
+                                                    {{ $desc ? $desc : '—' }}
+                                                </div>
+
                                             </div>
                                         </div>
                                     </div>
@@ -156,7 +242,7 @@
                                                 <i class="fas fa-user"></i>
                                             </div>
                                             <div class="user-details">
-                                                <div class="user-name">{{ $log->admin->nama_pengguna ?? 'Admin tidak ditemukan' }}</div>
+                                                <div class="user-name">{{ $log->admin->nama_pengguna ?? 'Admin' }}</div>
                                                 <div class="user-email">{{ $log->admin->email ?? '-' }}</div>
                                             </div>
                                         </div>
@@ -164,22 +250,28 @@
                                     <div class="col-2">
                                         <div class="date-info">
                                             <div class="date-main">{{ optional($log->created_at)->format('d M Y') }}</div>
-                                            <div class="date-time">{{ optional($log->created_at)->format('H:i') }} WIB</div>
+                                            <div class="date-time">{{ optional($log->created_at)->format('H:i') }} WIB
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="status-badge-wrapper">
+                                            <span class="status-badge badge-{{ $statusColor }}">
+                                                <i
+                                                    class="fas fa-{{ $statusColor == 'success' ? 'check' : 'times' }} me-1"></i>
+                                                {{ $statusBadge }}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
                             @empty
-                                <div class="activity-row">
-                                    <div class="col-12 text-center py-3">
-                                        Tidak ada aktivitas terbaru.
+                                <div class="activity-row" style="margin-bottom: 0;">
+                                    <div class="col-12 text-center py-4">
+                                        <i class="fas fa-inbox fa-3x text-muted mb-3 opacity-50"></i>
+                                        <p class="text-muted mb-0">Tidak ada aktivitas terbaru.</p>
                                     </div>
                                 </div>
                             @endforelse
-                        </div>
-
-                        <!-- Pagination -->
-                        <div class="mt-3">
-                            {{ $logs->links() }}
                         </div>
                     </div>
                 </div>
@@ -241,10 +333,7 @@
                 activityData: @json($activityData ?? [])
             };
 
-            // Debugging
-            console.log('Chart Data:', chartData);
-
-            // Bar Chart - Statistik berdasarkan kategori/data
+            // Bar Chart
             const ctxStatistik = document.getElementById('chartStatistik').getContext('2d');
             new Chart(ctxStatistik, {
                 type: 'bar',
@@ -255,7 +344,8 @@
                     datasets: [{
                         label: 'Jumlah Data',
                         data: chartData.categories && chartData.categories.length > 0 ? chartData.categories : [
-                            {{ $artikelCount }}, {{ $kategoriCount }}, {{ $videoCount }}, {{ $siswaCount }}
+                            {{ $artikelCount }}, {{ $kategoriCount }}, {{ $videoCount }},
+                            {{ $siswaCount }}
                         ],
                         backgroundColor: [
                             'rgba(37, 99, 235, 0.8)',
@@ -307,7 +397,7 @@
                 }
             });
 
-            // Pie Chart - Distribusi data
+            // Pie Chart
             const ctxPie = document.getElementById('pieChart').getContext('2d');
             new Chart(ctxPie, {
                 type: 'doughnut',
@@ -317,7 +407,8 @@
                     ],
                     datasets: [{
                         data: chartData.statsData && chartData.statsData.data ? chartData.statsData.data : [
-                            {{ $artikelCount }}, {{ $kategoriCount }}, {{ $videoCount }}, {{ $siswaCount }}
+                            {{ $artikelCount }}, {{ $kategoriCount }}, {{ $videoCount }},
+                            {{ $siswaCount }}
                         ],
                         backgroundColor: [
                             'rgba(37, 99, 235, 0.8)',
@@ -355,19 +446,21 @@
                 }
             });
 
-            // Line Chart - Trend aktivitas 7 hari terakhir
+            // Line Chart
             const ctxLine = document.getElementById('lineChart').getContext('2d');
             new Chart(ctxLine, {
                 type: 'line',
                 data: {
                     labels: chartData.activityData && chartData.activityData.labels ? chartData.activityData.labels : [
-                        '6 hari lalu', '5 hari lalu', '4 hari lalu', '3 hari lalu', '2 hari lalu', 'Kemarin', 'Hari ini'
+                        '6 hari lalu', '5 hari lalu', '4 hari lalu', '3 hari lalu', '2 hari lalu', 'Kemarin',
+                        'Hari ini'
                     ],
                     datasets: [{
                         label: 'Aktivitas Harian',
-                        data: chartData.activityData && chartData.activityData.data ? chartData.activityData.data : [
-                            2, 5, 3, 8, 4, 6, 7
-                        ],
+                        data: chartData.activityData && chartData.activityData.data ? chartData.activityData
+                            .data : [
+                                2, 5, 3, 8, 4, 6, 7
+                            ],
                         fill: true,
                         backgroundColor: 'rgba(37, 99, 235, 0.1)',
                         borderColor: 'rgba(37, 99, 235, 1)',

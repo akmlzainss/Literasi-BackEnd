@@ -37,7 +37,7 @@
 
                         {{-- Form --}}
                         <form action="{{ route('admin.artikel.update', $artikel->id) }}" method="POST"
-                              enctype="multipart/form-data" id="edit-artikel-form">
+                            enctype="multipart/form-data" id="edit-artikel-form">
                             @csrf
                             @method('PUT')
 
@@ -47,8 +47,7 @@
                                     <i class="fas fa-heading me-2"></i>Judul Artikel <span class="text-danger">*</span>
                                 </label>
                                 <input type="text" name="judul" id="judul" class="form-control"
-                                       placeholder="Masukkan judul artikel..."
-                                       value="{{ old('judul', $artikel->judul) }}" required>
+                                    placeholder="Masukkan judul artikel..." value="{{ old('judul', $artikel->judul) }}" required>
                                 @error('judul')
                                     <div class="alert alert-danger mt-2">{{ $message }}</div>
                                 @enderror
@@ -56,7 +55,7 @@
 
                             {{-- Isi Artikel --}}
                             <div class="mb-3">
-                                <label for="isi" class="form-label">
+                                <label for="edit_isi" class="form-label">
                                     <i class="fas fa-align-left me-2"></i>Isi Artikel <span class="text-danger">*</span>
                                 </label>
                                 <textarea name="isi" id="edit_isi" class="form-control" rows="10" required>{{ old('isi', $artikel->isi) }}</textarea>
@@ -75,9 +74,9 @@
                                 <div id="imagePreview" class="mt-2">
                                     @if ($artikel->gambar)
                                         <div class="text-center">
-                                            <img src="{{ asset('storage/' . $artikel->gambar) }}" 
-                                                 style="max-width: 100%; max-height: 250px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"
-                                                 alt="Current Image">
+                                            <img src="{{ asset('storage/' . $artikel->gambar) }}"
+                                                style="max-width: 100%; max-height: 250px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"
+                                                alt="Current Image">
                                             <p class="mt-2 text-muted small">
                                                 <i class="fas fa-info-circle me-1"></i>Gambar saat ini
                                             </p>
@@ -110,21 +109,21 @@
 
                             {{-- Penulis --}}
                             <div class="mb-3">
-                                <label class="form-label">
+                                <label class="form-label d-block">
                                     <i class="fas fa-user-edit me-2"></i>Penulis Artikel <span class="text-danger">*</span>
                                 </label>
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="penulis_type" id="penulis_admin"
-                                           value="admin"
-                                           {{ old('penulis_type', $artikel->penulis_type) == 'admin' ? 'checked' : '' }}>
+                                        value="admin"
+                                        {{ old('penulis_type', $artikel->penulis_type) == 'admin' ? 'checked' : '' }}>
                                     <label class="form-check-label" for="penulis_admin">
                                         <i class="fas fa-user-shield me-2"></i>Admin
                                     </label>
                                 </div>
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="penulis_type" id="penulis_siswa"
-                                           value="siswa"
-                                           {{ old('penulis_type', $artikel->penulis_type) == 'siswa' ? 'checked' : '' }}>
+                                        value="siswa"
+                                        {{ old('penulis_type', $artikel->penulis_type) == 'siswa' ? 'checked' : '' }}>
                                     <label class="form-check-label" for="penulis_siswa">
                                         <i class="fas fa-user-graduate me-2"></i>Siswa
                                     </label>
@@ -135,7 +134,8 @@
                             </div>
 
                             {{-- Siswa Fields --}}
-                            <div id="siswa-fields" class="{{ old('penulis_type', $artikel->penulis_type) == 'siswa' ? '' : 'd-none' }}">
+                            <div id="siswa-fields"
+                                class="{{ old('penulis_type', $artikel->penulis_type) == 'siswa' ? '' : 'd-none' }}">
                                 <div class="row">
                                     <div class="col-md-8">
                                         <div class="mb-3">
@@ -162,9 +162,8 @@
                                                 <i class="fas fa-school me-2"></i>Kelas
                                             </label>
                                             <input type="text" id="kelas_siswa" class="form-control"
-                                                   value="{{ old('kelas_siswa', $artikel->siswa->kelas ?? '') }}" 
-                                                   readonly
-                                                   placeholder="Auto terisi">
+                                                value="{{ old('kelas_siswa', $artikel->siswa->kelas ?? '') }}" readonly
+                                                placeholder="Auto terisi">
                                         </div>
                                     </div>
                                 </div>
@@ -204,12 +203,12 @@
 
                             {{-- Alasan Penolakan --}}
                             <div id="alasan-penolakan-field"
-                                 class="mb-3 {{ old('status', $artikel->status) == 'ditolak' ? '' : 'd-none' }}">
+                                class="mb-3 {{ old('status', $artikel->status) == 'ditolak' ? '' : 'd-none' }}">
                                 <label for="alasan_penolakan" class="form-label">
                                     <i class="fas fa-exclamation-triangle me-2"></i>Alasan Penolakan
                                 </label>
                                 <textarea name="alasan_penolakan" id="alasan_penolakan" class="form-control" rows="3"
-                                          placeholder="Tuliskan alasan penolakan artikel...">{{ old('alasan_penolakan', $artikel->alasan_penolakan) }}</textarea>
+                                    placeholder="Tuliskan alasan penolakan artikel...">{{ old('alasan_penolakan', $artikel->alasan_penolakan) }}</textarea>
                                 @error('alasan_penolakan')
                                     <div class="alert alert-danger mt-2">{{ $message }}</div>
                                 @enderror
@@ -223,7 +222,8 @@
                                 <select name="rating" id="rating" class="form-select">
                                     <option value="">Belum ada</option>
                                     @for ($i = 1; $i <= 5; $i++)
-                                        <option value="{{ $i }}" {{ old('rating', $artikel->nilai_rata_rata) == $i ? 'selected' : '' }}>⭐ {{ $i }}</option>
+                                        <option value="{{ $i }}"
+                                            {{ old('rating', $artikel->nilai_rata_rata) == $i ? 'selected' : '' }}>⭐ {{ $i }}</option>
                                     @endfor
                                 </select>
                             </div>
@@ -245,10 +245,12 @@
     </div>
 @endsection
 
+
 @section('scripts')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.tiny.cloud/1/4xazwn7uf3t198xvx4jq99bmdaj364wz6x88joubmdqdtlrn/tinymce/5/tinymce.min.js"
-            referrerpolicy="origin"></script>
+    <script src="https://cdn.tiny.cloud/1/4xazwn7uf3t198xvx4jq99bmdaj364wz6x88joubmdqdtlrn/tinymce/6/tinymce.min.js"
+        referrerpolicy="origin"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
@@ -259,28 +261,34 @@
             tinymce.init({
                 selector: '#edit_isi',
                 height: 500,
-                plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount',
+                plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount',
                 toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
                 setup: function(editor) {
                     const updateCharCount = () => {
-                        const charCount = editor.getContent({ format: 'text' }).length;
+                        const charCount = editor.getContent({
+                            format: 'text'
+                        }).length;
                         $('#charCount').text(`${charCount}/3000`);
                         $('#charCount').css('color', charCount > 3000 ? 'red' : 'inherit');
                     };
                     editor.on('keydown', function(e) {
-                        const charCount = editor.getContent({ format: 'text' }).length;
-                        if (charCount >= 3000 && e.keyCode !== 8 && e.keyCode !== 46) e.preventDefault();
+                        const charCount = editor.getContent({
+                            format: 'text'
+                        }).length;
+                        if (charCount >= 3000 && e.keyCode !== 8 && e.keyCode !== 46) e
+                            .preventDefault();
                     });
                     editor.on('input change', updateCharCount);
                     editor.on('init', updateCharCount);
                 }
             });
 
+
             // ===================================
             // Initialize Select2 for Category
             // ===================================
-            $('#id_kategori').select2({ 
-                placeholder: 'Pilih Kategori', 
+            $('#id_kategori').select2({
+                placeholder: 'Pilih Kategori',
                 allowClear: true,
                 width: '100%',
                 minimumResultsForSearch: Infinity
@@ -299,14 +307,14 @@
                     dataType: 'json',
                     delay: 300,
                     data: function(params) {
-                        return { 
-                            term: params.term || '', 
-                            page: params.page || 1 
+                        return {
+                            term: params.term || '',
+                            page: params.page || 1
                         };
                     },
                     processResults: function(data, params) {
                         params.page = params.page || 1;
-                        return { 
+                        return {
                             results: data.map(function(item) {
                                 return {
                                     id: item.id,
@@ -314,7 +322,9 @@
                                     kelas: item.kelas
                                 };
                             }),
-                            pagination: { more: data.length === 10 } 
+                            pagination: {
+                                more: data.length === 10
+                            }
                         };
                     },
                     cache: true
@@ -340,10 +350,22 @@
             if (penulisType === 'siswa' && siswaId) {
                 $.ajax({
                     url: '{{ route('admin.search.siswa') }}',
-                    data: { term: siswaId },
+                    data: {
+                        term: siswaId
+                    },
                     dataType: 'json',
                     success: function(data) {
-                        const siswa = data.find(item => item.id == siswaId);
+                        let siswa = null;
+
+                        // Jika data adalah array
+                        if (Array.isArray(data)) {
+                            siswa = data.find(item => item.id == siswaId);
+                        }
+                        // Jika data adalah objek tunggal
+                        else if (data && typeof data === 'object') {
+                            siswa = data.id == siswaId ? data : null;
+                        }
+
                         if (siswa) {
                             const option = new Option(siswa.text, siswa.id, true, true);
                             option.kelas = siswa.kelas;
@@ -359,7 +381,7 @@
             // ===================================
             $('input[name="penulis_type"]').on('change', function() {
                 const isSiswa = this.value === 'siswa';
-                
+
                 if (isSiswa) {
                     $('#siswa-fields').removeClass('d-none').hide().slideDown(400);
                     $('#id_siswa').prop('required', true);
@@ -378,7 +400,7 @@
             $idSiswa.on('select2:select', function(e) {
                 const data = e.params.data;
                 $('#kelas_siswa').val(data.kelas || '-').addClass('text-success');
-                
+
                 // Animasi feedback
                 $('#kelas_siswa').css('background-color', '#d1fae5');
                 setTimeout(function() {
@@ -395,7 +417,7 @@
             // ===================================
             $('#status').on('change', function() {
                 const isDitolak = $(this).val() === 'ditolak';
-                
+
                 if (isDitolak) {
                     $('#alasan-penolakan-field').removeClass('d-none').hide().slideDown(400);
                     $('#alasan_penolakan').prop('required', true);
@@ -414,10 +436,10 @@
             @if ($artikel->gambar)
                 initialImagePreview = '{{ asset('storage/' . $artikel->gambar) }}';
             @endif
-            
+
             $('#gambar').on('change', function(e) {
                 const file = e.target.files[0];
-                
+
                 if (file) {
                     // Validasi tipe file
                     if (!file.type.match('image.*')) {
@@ -425,14 +447,14 @@
                         $(this).val('');
                         return;
                     }
-                    
+
                     // Validasi ukuran (max 2MB)
                     if (file.size > 2 * 1024 * 1024) {
                         alert('Ukuran gambar maksimal 2MB!');
                         $(this).val('');
                         return;
                     }
-                    
+
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         $('#imagePreview').html(`
@@ -478,7 +500,8 @@
                 const submitBtn = $('#submitBtn');
                 const originalText = submitBtn.html();
 
-                submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Menyimpan...').prop('disabled', true);
+                submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Menyimpan...').prop('disabled',
+                    true);
 
                 $.ajax({
                     url: $(this).attr('action'),
@@ -491,10 +514,13 @@
                         setTimeout(() => window.location.href = response.redirect, 1500);
                     },
                     error: function(xhr) {
-                        showAlert('error', xhr.responseJSON?.message || 'Gagal memperbarui artikel.');
+                        showAlert('error', xhr.responseJSON?.message ||
+                            'Gagal memperbarui artikel.');
                         if (xhr.responseJSON?.errors) {
                             $.each(xhr.responseJSON.errors, function(key, error) {
-                                $(`[name="${key}"]`).after(`<div class="alert alert-danger mt-2">${error[0]}</div>`);
+                                $(`[name="${key}"]`).after(
+                                    `<div class="alert alert-danger mt-2">${error[0]}</div>`
+                                );
                             });
                         }
                     },
