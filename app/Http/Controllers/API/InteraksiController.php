@@ -14,7 +14,7 @@ class InteraksiController extends Controller
     public function toggleInteraksi(Request $request, Artikel $artikel)
     {
         $request->validate(['jenis' => 'required|in:suka,bookmark']);
-        
+
         $siswa = $request->user();
         $jenis = $request->jenis;
 
@@ -26,8 +26,8 @@ class InteraksiController extends Controller
         if ($interaksi) {
             $interaksi->delete();
             return response()->json(['message' => ucfirst($jenis) . ' dihapus.']);
-        } 
-        
+        }
+
         InteraksiArtikel::create([
             'id_artikel' => $artikel->id,
             'id_siswa' => $siswa->id,
@@ -44,7 +44,7 @@ class InteraksiController extends Controller
                 'referensi_id' => $artikel->id,
             ]);
         }
-        
+
         return response()->json(['message' => 'Artikel berhasil di-' . $jenis . '.']);
     }
 
@@ -58,7 +58,7 @@ class InteraksiController extends Controller
             ['id_artikel' => $artikel->id, 'id_siswa' => $siswa->id],
             ['rating' => $request->rating]
         );
-        
+
         if ($artikel->id_siswa !== $siswa->id) {
             Notifikasi::create([
                 'id_siswa' => $artikel->id_siswa,
@@ -69,7 +69,7 @@ class InteraksiController extends Controller
                 'referensi_id' => $artikel->id,
             ]);
         }
-        
+
         return response()->json(['message' => 'Rating berhasil diberikan.']);
     }
 
@@ -77,16 +77,16 @@ class InteraksiController extends Controller
     {
         $request->validate(['jenis' => 'required|in:suka,bookmark']);
         $siswa = $request->user();
-        
+
         $artikelIds = InteraksiArtikel::where('id_siswa', $siswa->id)
             ->where('jenis', $request->jenis)
             ->pluck('id_artikel');
-            
+
         $artikels = Artikel::whereIn('id', $artikelIds)
             ->with(['siswa:id,nama', 'kategori:id,nama'])
             ->latest()
             ->get();
-            
+
         return response()->json($artikels);
     }
 }

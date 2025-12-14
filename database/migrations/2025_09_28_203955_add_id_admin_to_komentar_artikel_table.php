@@ -9,8 +9,10 @@ class AddIdAdminToKomentarArtikelTable extends Migration
     public function up()
     {
         Schema::table('komentar_artikel', function (Blueprint $table) {
-            $table->unsignedBigInteger('id_admin')->nullable()->after('id_siswa');
-            $table->foreign('id_admin')->references('id')->on('admin')->onDelete('set null');
+            if (!Schema::hasColumn('komentar_artikel', 'id_admin')) {
+                $table->unsignedBigInteger('id_admin')->nullable()->after('id_siswa');
+                $table->foreign('id_admin')->references('id')->on('admin')->onDelete('set null');
+            }
         });
     }
 

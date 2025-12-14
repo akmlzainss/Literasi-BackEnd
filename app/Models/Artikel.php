@@ -21,15 +21,12 @@ class Artikel extends Model
         'isi',
         'gambar',
         'penulis_type',
-        'jenis',
         'status',
         'alasan_penolakan',
         'diterbitkan_pada',
         'jumlah_dilihat',
         'jumlah_suka',
         'nilai_rata_rata',
-        'riwayat_persetujuan',
-        'usulan_kategori',
     ];
 
     protected $casts = [
@@ -37,7 +34,6 @@ class Artikel extends Model
         'created_at'          => 'datetime',
         'updated_at'          => 'datetime',
         'deleted_at'          => 'datetime',
-        'riwayat_persetujuan' => 'array',
         'jumlah_dilihat'      => 'integer'
     ];
 
@@ -105,7 +101,7 @@ class Artikel extends Model
     {
         return $query->where(function ($q) use ($search) {
             $q->where('judul', 'like', "%$search%")
-              ->orWhere('isi', 'like', "%$search%");
+                ->orWhere('konten', 'like', "%$search%");
         });
     }
 

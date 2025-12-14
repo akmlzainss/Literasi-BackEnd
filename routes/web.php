@@ -1,16 +1,17 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AdminAuthController;
-use App\Http\Controllers\ArtikelController;
-use App\Http\Controllers\KomentarController;
-use App\Http\Controllers\KategoriController;
-use App\Http\Controllers\KelolaSiswaController;
-use App\Http\Controllers\PenghargaanController;
-use App\Http\Controllers\PengaturanController;
-use App\Http\Controllers\BackupController;
-use App\Http\Controllers\LogAdminController;
-use App\Http\Controllers\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Siswa\SiswaAuthController;
+use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\Admin\ArtikelController;
+use App\Http\Controllers\Admin\KomentarController;
+use App\Http\Controllers\Admin\KategoriController;
+use App\Http\Controllers\Admin\KelolaSiswaController;
+use App\Http\Controllers\Admin\PenghargaanController;
+use App\Http\Controllers\Admin\PengaturanController;
+use App\Http\Controllers\Admin\BackupController;
+use App\Http\Controllers\Admin\LogAdminController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Siswa\SiswaArtikelController;
 use App\Http\Controllers\Siswa\NotifikasiController;
 use App\Http\Controllers\Siswa\ProfilController;
@@ -18,15 +19,24 @@ use App\Http\Controllers\Siswa\VideoController;
 use App\Http\Controllers\Siswa\VideoInteraksiController;
 use App\Http\Controllers\Siswa\VideoKomentarController;
 use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
-use App\Http\Controllers\VideoPersetujuanController;
+use App\Http\Controllers\Admin\VideoPersetujuanController;
 
-Route::get('/', fn() => redirect()->route('login'));
+Route::get('/', fn() => redirect()->route('siswa.login'));
 
+// Routes untuk Siswa (Login & Register)
 Route::middleware(['guest'])->group(function () {
-    Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [AdminAuthController::class, 'login'])->name('login.submit');
-    Route::get('/register', [AdminAuthController::class, 'showLoginForm'])->name('register'); // Menampilkan form register
-    Route::post('/register', [AdminAuthController::class, 'register'])->name('register.submit'); // Proses registrasi
+    Route::get('/login', [SiswaAuthController::class, 'showLoginForm'])->name('siswa.login');
+    Route::post('/login', [SiswaAuthController::class, 'login'])->name('siswa.login.submit');
+    Route::post('/register', [SiswaAuthController::class, 'register'])->name('siswa.register.submit');
+
+    // Redirect old routes
+    Route::get('/register', fn() => redirect()->route('siswa.login'));
+});
+
+// Routes untuk Admin (Login saja)
+Route::middleware(['guest:admin'])->prefix('admin')->group(function () {
+    Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
+    Route::post('/login', [AdminAuthController::class, 'adminLogin'])->name('admin.login.submit');
 });
 
 // ==========================
@@ -41,7 +51,7 @@ Route::name('artikel-siswa.')->group(function () {
 // RUTE KHUSUS SISWA (memerlukan login siswa)
 // ===================================================================
 Route::middleware(['auth:siswa'])->group(function () {
-    Route::post('/siswa/logout', [AdminAuthController::class, 'logoutSiswa'])->name('logout-siswa');
+    Route::post('/siswa/logout', [SiswaAuthController::class, 'logout'])->name('logout-siswa');
     Route::get('/dashboard-siswa', [SiswaDashboardController::class, 'indexSiswa'])->name('dashboard-siswa');
 
     // Rute Interaksi & Komentar
@@ -67,6 +77,9 @@ Route::middleware(['auth:siswa'])->group(function () {
 
     // Notifikasi & Profil Siswa
     Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
+    Route::post('/notifikasi/mark-read', [NotifikasiController::class, 'markAsRead'])->name('notifikasi.mark-read');
+    Route::get('/notifikasi/unread-count', [NotifikasiController::class, 'getUnreadCount'])->name('notifikasi.unread-count');
+    Route::get('/notifikasi/recent', [NotifikasiController::class, 'getRecent'])->name('notifikasi.recent');
     Route::get('/profil', [ProfilController::class, 'show'])->name('profil.show');
     Route::post('/profil/update', [ProfilController::class, 'update'])->name('profil.update');
     Route::post('/profil/update-password', [ProfilController::class, 'updatePassword'])->name('profil.update-password');
@@ -132,6 +145,4 @@ Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function ()
         Route::get('/', [BackupController::class, 'index'])->name('index');
         Route::get('/all', [BackupController::class, 'backupAll'])->name('all');
     });
-
-    
 });

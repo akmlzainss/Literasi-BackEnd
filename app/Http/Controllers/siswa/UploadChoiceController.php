@@ -26,6 +26,6 @@ class UploadChoiceController extends Controller
             'userVideos' => Auth::guard('siswa')->check() ? Auth::guard('siswa')->user()->video()->count() : 0,
         ];
 
-        return view('siswa-web-artikel.upload-choice', $data);
+        return view('siswa.artikel.upload-choice', $data);
     }
 }

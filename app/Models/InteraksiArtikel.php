@@ -10,17 +10,13 @@ class InteraksiArtikel extends Model
     protected $primaryKey = 'id';
 
     /**
-     * PERBAIKAN: Beri tahu Laravel untuk menggunakan 'dibuat_pada'
-     * dan nonaktifkan 'updated_at'.
+     * PERBAIKAN: Table tidak memiliki timestamps
      */
-    const CREATED_AT = 'dibuat_pada';
-    const UPDATED_AT = null;
+    public $timestamps = false;
 
-    // Pastikan timestamps tetap aktif (true adalah default)
-    public $timestamps = true;
-
-    // 'dibuat_pada' tidak perlu ada di fillable karena akan diisi otomatis oleh Laravel
     protected $fillable = ['id_artikel', 'id_siswa', 'jenis'];
+
+    protected $casts = [];
 
     public function artikel()
     {

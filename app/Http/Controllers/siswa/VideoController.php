@@ -47,7 +47,7 @@ class VideoController extends Controller
 
         $videos = $query->paginate(12)->appends($request->query());
 
-        return view('siswa-web-video.index', compact('videos'));
+        return view('siswa.video.index', compact('videos'));
     }
 
     /**
@@ -56,7 +56,7 @@ class VideoController extends Controller
     public function tiktokView()
     {
         $videos = Video::where('status', 'disetujui')->with('siswa')->latest()->get();
-        return view('siswa-web-video.tiktok', compact('videos'));
+        return view('siswa.video.tiktok', compact('videos'));
     }
 
     /**
@@ -65,7 +65,7 @@ class VideoController extends Controller
     public function create()
     {
         $kategoris = Kategori::orderBy('nama')->get();
-        return view('siswa-web-video.create', compact('kategoris'));
+        return view('siswa.video.create', compact('kategoris'));
     }
     public function profil()
     {
