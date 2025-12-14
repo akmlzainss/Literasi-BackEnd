@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Dashboard Admin')
 
@@ -214,7 +214,8 @@
                                 @endphp
 
                                 <div class="activity-row row g-0 align-items-center" data-aos="fade-up"
-                                    data-aos-delay="{{ ($loop->index + 1) * 50 }}" style="@if($loop->last) margin-bottom: 0; padding-bottom: 1.5rem; @endif">
+                                    data-aos-delay="{{ ($loop->index + 1) * 50 }}"
+                                    style="@if ($loop->last) margin-bottom: 0; padding-bottom: 1.5rem; @endif">
                                     <div class="col-5">
                                         <div class="activity-info">
                                             <div class="activity-icon-new {{ $colorClass }}">

@@ -40,7 +40,7 @@ class SiswaArtikelController extends Controller
         }
 
         $artikels = $query->with(['siswa', 'kategori'])->paginate(12);
-        return view('siswa-web-artikel.artikel', compact('artikels'));
+        return view('siswa.artikel.artikel', compact('artikels'));
     }
 
     public function show($id)
@@ -56,7 +56,7 @@ class SiswaArtikelController extends Controller
             'kategori',
             'ratingArtikel',
             'komentarArtikel' => function ($query) {
-                $query->whereNull('id_komentar_parent')->with('siswa', 'admin', 'replies.siswa', 'replies.admin')->latest();
+                $query->whereNull('id_komentar_parent')->with('siswa', 'admin', 'replies.siswa', 'replies.admin')->orderBy('dibuat_pada', 'desc');
             }
         ])->findOrFail($id);
 
@@ -78,18 +78,18 @@ class SiswaArtikelController extends Controller
         $userHasLiked = InteraksiArtikel::where('id_artikel', $id)->where('id_siswa', $siswaId)->where('jenis', 'suka')->exists();
         $userHasBookmarked = InteraksiArtikel::where('id_artikel', $id)->where('id_siswa', $siswaId)->where('jenis', 'bookmark')->exists();
 
-        return view('siswa-web-artikel.artikel-detail', compact('konten', 'userRating', 'userHasLiked', 'userHasBookmarked'));
+        return view('siswa.artikel.artikel-detail', compact('konten', 'userRating', 'userHasLiked', 'userHasBookmarked'));
     }
 
     public function showUploadChoice()
     {
-        return view('siswa-web-artikel.upload-choice');
+        return view('siswa.artikel.upload-choice');
     }
 
     public function createArtikel()
     {
         $kategoris = Kategori::orderBy('nama')->get();
-        return view('siswa-web-artikel.create-artikel', compact('kategoris'));
+        return view('siswa.artikel.create-artikel', compact('kategoris'));
     }
 
     public function storeArtikel(Request $request)
@@ -129,7 +129,7 @@ class SiswaArtikelController extends Controller
                 'id_kategori' => $idKategori,
                 'usulan_kategori' => $request->filled('usulan_kategori') ? $request->usulan_kategori : null,
                 'judul' => $request->judul,
-                'isi' => strip_tags($request->isi, '<p><br><strong><em><ul><ol><li><h1><h2><h3><a>'),
+                'isi' => strip_tags($request->konten, '<p><br><strong><em><ul><ol><li><h1><h2><h3><a>'),
                 'gambar' => $gambarPath,
                 'penulis_type' => 'siswa',
                 'jenis' => $request->jenis,
@@ -197,7 +197,7 @@ class SiswaArtikelController extends Controller
                 ];
 
                 if ($newKomentar) {
-                    $data['new_comment_html'] = view('partials.komentar', ['komentar' => $newKomentar, 'konten' => $artikel])->render();
+                    $data['new_comment_html'] = view('partials.komentar', ['komentar' => $newKomentar, 'isi' => $artikel])->render();
                 }
                 return response()->json($data);
             }

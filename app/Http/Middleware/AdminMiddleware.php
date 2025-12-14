@@ -14,6 +14,6 @@ class AdminMiddleware
             return $next($request);
         }
 
-        return redirect()->route('login')->with('error', 'Anda harus login sebagai admin untuk mengakses halaman ini.');
+        return redirect()->route('admin.login')->with('error', 'Anda harus login sebagai admin untuk mengakses halaman ini.');
     }
 }

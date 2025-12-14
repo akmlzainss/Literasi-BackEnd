@@ -9,7 +9,7 @@ class UpdateArtikelTableAddPenulisTypeAndNullableIdSiswa extends Migration
     public function up()
     {
         Schema::table('artikel', function (Blueprint $table) {
-            $table->enum('penulis_type', ['admin', 'siswa'])->after('isi');
+            $table->enum('penulis_type', ['admin', 'siswa'])->after('konten');
             $table->unsignedBigInteger('siswa_id')->nullable()->change();
         });
     }

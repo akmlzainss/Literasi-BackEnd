@@ -14,6 +14,6 @@ class SiswaMiddleware
             return $next($request);
         }
 
-        return redirect()->route('login')->with('error', 'Anda harus login sebagai siswa untuk mengakses halaman ini.');
+        return redirect()->route('siswa.login')->with('error', 'Anda harus login sebagai siswa untuk mengakses halaman ini.');
     }
 }

@@ -15,14 +15,15 @@ class BackupAllExport implements WithMultipleSheets
     {
         return [
             'Artikel' => new class implements FromCollection, WithHeadings, WithStyles {
-                public function collection() {
+                public function collection()
+                {
                     return DB::table('artikel')->select(
                         'id',
                         'id_siswa',
                         'id_kategori',
                         'judul',
                         'gambar',
-                        'isi',
+                        'konten',
                         'penulis_type',
                         'jenis',
                         'status',
@@ -39,14 +40,15 @@ class BackupAllExport implements WithMultipleSheets
                     )->get();
                 }
 
-                public function headings(): array {
+                public function headings(): array
+                {
                     return [
                         'ID',
                         'ID Siswa',
                         'ID Kategori',
                         'Judul',
                         'Gambar',
-                        'Isi',
+                        'Konten',
                         'Penulis Type',
                         'Jenis',
                         'Status',
@@ -63,16 +65,18 @@ class BackupAllExport implements WithMultipleSheets
                     ];
                 }
 
-                public function styles(Worksheet $sheet) {
+                public function styles(Worksheet $sheet)
+                {
                     $sheet->getStyle('A1:S1')->getFont()->setBold(true);
-                    foreach(range('A','S') as $col) {
+                    foreach (range('A', 'S') as $col) {
                         $sheet->getColumnDimension($col)->setAutoSize(true);
                     }
                 }
             },
 
             'Kategori' => new class implements FromCollection, WithHeadings, WithStyles {
-                public function collection() {
+                public function collection()
+                {
                     return DB::table('kategori')->select(
                         'id',
                         'nama',
@@ -82,20 +86,23 @@ class BackupAllExport implements WithMultipleSheets
                     )->get();
                 }
 
-                public function headings(): array {
+                public function headings(): array
+                {
                     return ['ID', 'Nama', 'Deskripsi', 'Dibuat Pada', 'Deleted At'];
                 }
 
-                public function styles(Worksheet $sheet) {
+                public function styles(Worksheet $sheet)
+                {
                     $sheet->getStyle('A1:E1')->getFont()->setBold(true);
-                    foreach(range('A','E') as $col) {
+                    foreach (range('A', 'E') as $col) {
                         $sheet->getColumnDimension($col)->setAutoSize(true);
                     }
                 }
             },
 
             'Siswa' => new class implements FromCollection, WithHeadings, WithStyles {
-                public function collection() {
+                public function collection()
+                {
                     return DB::table('siswa')->select(
                         'id',
                         'nis',
@@ -110,7 +117,8 @@ class BackupAllExport implements WithMultipleSheets
                     )->get();
                 }
 
-                public function headings(): array {
+                public function headings(): array
+                {
                     return [
                         'ID',
                         'NIS',
@@ -125,16 +133,18 @@ class BackupAllExport implements WithMultipleSheets
                     ];
                 }
 
-                public function styles(Worksheet $sheet) {
+                public function styles(Worksheet $sheet)
+                {
                     $sheet->getStyle('A1:J1')->getFont()->setBold(true);
-                    foreach(range('A','J') as $col) {
+                    foreach (range('A', 'J') as $col) {
                         $sheet->getColumnDimension($col)->setAutoSize(true);
                     }
                 }
             },
 
             'Penghargaan' => new class implements FromCollection, WithHeadings, WithStyles {
-                public function collection() {
+                public function collection()
+                {
                     return DB::table('penghargaan')->select(
                         'id',
                         'id_artikel',
@@ -148,7 +158,8 @@ class BackupAllExport implements WithMultipleSheets
                     )->get();
                 }
 
-                public function headings(): array {
+                public function headings(): array
+                {
                     return [
                         'ID',
                         'ID Artikel',
@@ -162,9 +173,10 @@ class BackupAllExport implements WithMultipleSheets
                     ];
                 }
 
-                public function styles(Worksheet $sheet) {
+                public function styles(Worksheet $sheet)
+                {
                     $sheet->getStyle('A1:I1')->getFont()->setBold(true);
-                    foreach(range('A','I') as $col) {
+                    foreach (range('A', 'I') as $col) {
                         $sheet->getColumnDimension($col)->setAutoSize(true);
                     }
                 }

@@ -1,12 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register Siswa - Sistem Literasi Akhlak</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('images/logo_sekolah.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/logo_sekolah.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo_sekolah.png') }}">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
+
 <body>
     <div class="container d-flex justify-content-center align-items-center min-vh-100">
         <div class="auth-card fade-in">
@@ -24,7 +32,9 @@
                             <span class="input-group-text bg-white border-end-0">
                                 <i class="fas fa-user text-muted"></i>
                             </span>
-                            <input type="text" name="nama" id="nama" class="form-control search-input border-start-0" placeholder="Masukkan nama lengkap" required value="{{ old('nama') }}">
+                            <input type="text" name="nama" id="nama"
+                                class="form-control search-input border-start-0" placeholder="Masukkan nama lengkap"
+                                required value="{{ old('nama') }}">
                         </div>
                         @error('nama')
                             <div class="text-danger mt-1" style="font-size: 0.85rem;">{{ $message }}</div>
@@ -36,7 +46,9 @@
                             <span class="input-group-text bg-white border-end-0">
                                 <i class="fas fa-id-card text-muted"></i>
                             </span>
-                            <input type="text" name="nis" id="nis" class="form-control search-input border-start-0" placeholder="Masukkan NIS" required value="{{ old('nis') }}">
+                            <input type="text" name="nis" id="nis"
+                                class="form-control search-input border-start-0" placeholder="Masukkan NIS" required
+                                value="{{ old('nis') }}">
                         </div>
                         @error('nis')
                             <div class="text-danger mt-1" style="font-size: 0.85rem;">{{ $message }}</div>
@@ -48,7 +60,9 @@
                             <span class="input-group-text bg-white border-end-0">
                                 <i class="fas fa-graduation-cap text-muted"></i>
                             </span>
-                            <input type="text" name="kelas" id="kelas" class="form-control search-input border-start-0" placeholder="Masukkan kelas" required value="{{ old('kelas') }}">
+                            <input type="text" name="kelas" id="kelas"
+                                class="form-control search-input border-start-0" placeholder="Masukkan kelas" required
+                                value="{{ old('kelas') }}">
                         </div>
                         @error('kelas')
                             <div class="text-danger mt-1" style="font-size: 0.85rem;">{{ $message }}</div>
@@ -60,7 +74,9 @@
                             <span class="input-group-text bg-white border-end-0">
                                 <i class="fas fa-envelope text-muted"></i>
                             </span>
-                            <input type="email" name="email" id="email" class="form-control search-input border-start-0" placeholder="Masukkan email" required value="{{ old('email') }}">
+                            <input type="email" name="email" id="email"
+                                class="form-control search-input border-start-0" placeholder="Masukkan email" required
+                                value="{{ old('email') }}">
                         </div>
                         @error('email')
                             <div class="text-danger mt-1" style="font-size: 0.85rem;">{{ $message }}</div>
@@ -72,7 +88,9 @@
                             <span class="input-group-text bg-white border-end-0">
                                 <i class="fas fa-lock text-muted"></i>
                             </span>
-                            <input type="password" name="password" id="password" class="form-control search-input border-start-0" placeholder="Masukkan password" required>
+                            <input type="password" name="password" id="password"
+                                class="form-control search-input border-start-0" placeholder="Masukkan password"
+                                required>
                         </div>
                         @error('password')
                             <div class="text-danger mt-1" style="font-size: 0.85rem;">{{ $message }}</div>
@@ -84,7 +102,9 @@
                             <span class="input-group-text bg-white border-end-0">
                                 <i class="fas fa-lock text-muted"></i>
                             </span>
-                            <input type="password" name="password_confirmation" id="password_confirmation" class="form-control search-input border-start-0" placeholder="Konfirmasi password" required>
+                            <input type="password" name="password_confirmation" id="password_confirmation"
+                                class="form-control search-input border-start-0" placeholder="Konfirmasi password"
+                                required>
                         </div>
                         @error('password_confirmation')
                             <div class="text-danger mt-1" style="font-size: 0.85rem;">{{ $message }}</div>
@@ -92,7 +112,8 @@
                     </div>
                     <div class="mb-3 form-check">
                         <input type="checkbox" name="terms" id="terms" class="form-check-input" required>
-                        <label for="terms" class="form-check-label">Saya setuju dengan <a href="#">Syarat & Ketentuan</a></label>
+                        <label for="terms" class="form-check-label">Saya setuju dengan <a href="#">Syarat &
+                                Ketentuan</a></label>
                         @error('terms')
                             <div class="text-danger mt-1" style="font-size: 0.85rem;">{{ $message }}</div>
                         @enderror
@@ -102,7 +123,15 @@
                 <div class="text-center mt-3">
                     <a href="{{ route('login') }}" class="btn btn-outline-custom">Kembali ke Login</a>
                 </div>
-                @if ($errors->any() && !$errors->has('nama') && !$errors->has('nis') && !$errors->has('kelas') && !$errors->has('email') && !$errors->has('password') && !$errors->has('password_confirmation') && !$errors->has('terms'))
+                @if (
+                    $errors->any() &&
+                        !$errors->has('nama') &&
+                        !$errors->has('nis') &&
+                        !$errors->has('kelas') &&
+                        !$errors->has('email') &&
+                        !$errors->has('password') &&
+                        !$errors->has('password_confirmation') &&
+                        !$errors->has('terms'))
                     <div class="alert alert-danger mt-3" role="alert">
                         {{ $errors->first() }}
                     </div>
@@ -247,6 +276,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -283,4 +313,5 @@
         });
     </script>
 </body>
+
 </html>

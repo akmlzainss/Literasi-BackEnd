@@ -20,7 +20,7 @@ class ProfilController extends Controller
     {
         try {
             $siswa = Auth::guard('siswa')->user();
-            
+
             if (!$siswa) {
                 return redirect()->route('siswa.login')->with('error', 'Anda harus login terlebih dahulu.');
             }
@@ -48,7 +48,7 @@ class ProfilController extends Controller
             })->latest()->get();
             // =======================================================
 
-            return view('web_siswa.profil', compact(
+            return view('siswa.profil', compact(
                 'siswa',
                 'videoDisukai',
                 'videoDisimpan',
@@ -68,7 +68,7 @@ class ProfilController extends Controller
     {
         try {
             $siswa = Auth::guard('siswa')->user();
-            
+
             if (!$siswa) {
                 return redirect()->route('siswa.login')->with('error', 'Anda harus login terlebih dahulu.');
             }
@@ -109,7 +109,7 @@ class ProfilController extends Controller
     {
         try {
             $siswa = Auth::guard('siswa')->user();
-            
+
             if (!$siswa) {
                 return redirect()->route('siswa.login')->with('error', 'Anda harus login terlebih dahulu.');
             }

@@ -14,12 +14,14 @@ return new class extends Migration
     public function up()
     {
         Schema::table('artikel', function (Blueprint $table) {
-            // 1. Tambahkan kolom updated_at terlebih dahulu.
-            //    Kita letakkan setelah 'diterbitkan_pada' agar posisinya rapi.
-            $table->timestamp('updated_at')->nullable()->after('diterbitkan_pada');
+            // Check if columns exist before modifying
+            if (!Schema::hasColumn('artikel', 'updated_at')) {
+                $table->timestamp('updated_at')->nullable();
+            }
 
-            // 2. Baru ganti nama kolom 'dibuat_pada' menjadi 'created_at'.
-            $table->renameColumn('dibuat_pada', 'created_at');
+            if (Schema::hasColumn('artikel', 'dibuat_pada') && !Schema::hasColumn('artikel', 'created_at')) {
+                $table->renameColumn('dibuat_pada', 'created_at');
+            }
         });
     }
 

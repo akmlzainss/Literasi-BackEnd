@@ -9,8 +9,10 @@ return new class extends Migration
     public function up()
     {
         Schema::table('komentar_artikel', function (Blueprint $table) {
-            // Mengubah nama kolom dari 'id_artikel' menjadi 'artikel_id'
-            $table->renameColumn('id_artikel', 'artikel_id');
+            // Check if columns exist before renaming
+            if (Schema::hasColumn('komentar_artikel', 'id_artikel') && !Schema::hasColumn('komentar_artikel', 'artikel_id')) {
+                $table->renameColumn('id_artikel', 'artikel_id');
+            }
         });
     }
 
