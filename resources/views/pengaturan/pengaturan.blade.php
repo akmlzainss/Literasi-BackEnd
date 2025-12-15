@@ -19,10 +19,7 @@
                 <div class="profile-info">
                     <h1 class="page-title">{{ auth()->guard('admin')->user()->nama_pengguna ?? 'Admin' }}</h1>
                     <p class="page-subtitle">{{ auth()->guard('admin')->check() ? 'Administrator Sistem Literasi Akhlak' : 'Silakan login' }}</p>
-                    <div class="status-badge">
-                        <i class="fas fa-circle"></i>
-                        <span>{{ auth()->guard('admin')->user()->status_aktif == 1 ? 'Online' : 'Offline' }}</span>
-                    </div>
+                    
                 </div>
             </div>
             <div class="action-buttons">
@@ -204,16 +201,7 @@
                                 <div class="security-value">{{ $ipAddress ?? 'Tidak diketahui' }}</div>
                             </div>
                         </div>
-                        <div class="security-item">
-                            <i class="fas fa-wifi text-secondary me-2"></i>
-                            <div class="security-info">
-                                <div class="security-label">Status Koneksi:</div>
-                                <div class="security-value">
-                                    <span class="connection-status {{ $isOnline ?? false ? 'online' : 'offline' }}">
-                                        <i class="fas fa-circle me-1"></i> {{ $isOnline ?? false ? 'Online' : 'Offline' }}
-                                    </span>
-                                </div>
-                            </div>
+                       
                         </div>
                     </div>
                 </div>
