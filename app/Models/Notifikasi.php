@@ -8,7 +8,7 @@ class Notifikasi extends Model
 {
     protected $table = 'notifikasi';
     protected $primaryKey = 'id';
-    public $timestamps = true; // Aktifkan timestamps
+    public $timestamps = false; // Table tidak punya updated_at
 
     protected $fillable = [
         'id_siswa',

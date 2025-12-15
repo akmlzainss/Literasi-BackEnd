@@ -45,10 +45,10 @@
     </div>
 
     <!-- Include Modal Tambah -->
-    @include('kategori.tambah-modal')
+    @include('admin.kategori.tambah-modal')
 
     <!-- Include Modal Edit -->
-    @include('kategori.edit-modal')
+    @include('admin.kategori.edit-modal')
 
     <!-- Main Card -->
     <div class="main-card">
