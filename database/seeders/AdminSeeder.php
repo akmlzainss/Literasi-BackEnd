@@ -37,5 +37,14 @@ class AdminSeeder extends Seeder
                 'status_aktif' => true,
             ]
         );
+
+        Admin::firstOrCreate(
+            ['email' => 'admin3@example.com'],
+            [
+                'nama_pengguna' => 'admin3',
+                'password' => Hash::make('admin1234'),
+                'status_aktif' => true,
+            ]
+        );
     }
 }

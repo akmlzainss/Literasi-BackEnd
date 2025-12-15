@@ -1,8 +1,9 @@
 <?php
 
+namespace App\Http\Controllers\Admin;
+
 use App\Http\Controllers\Controller;
 
-namespace App\Http\Controllers\Admin;
 
 use App\Exports\BackupAllExport;
 use App\Models\Siswa;

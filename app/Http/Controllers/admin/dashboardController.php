@@ -1,8 +1,9 @@
 <?php
 
-use App\Http\Controllers\Controller;
 
 namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\Siswa;
 use App\Models\Artikel;

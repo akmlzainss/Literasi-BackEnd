@@ -66,8 +66,8 @@
         </div>
     </div>
 
-    @include('penghargaan.modal-edit')
-    @include('penghargaan.modal-confirm-pilih')
+    @include('admin.penghargaan.modal-edit')
+    @include('admin.penghargaan.modal-confirm-pilih')
 
     <div class="main-card">
         <div class="card-header-custom">

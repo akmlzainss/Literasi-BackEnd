@@ -22,9 +22,9 @@
         </div>
     </div>
 
-    @include('siswa.modal_import')
-    @include('siswa.edit')
-    @include('siswa.create')
+    @include('admin.siswa.modal_import')
+    @include('admin.siswa.edit')
+    @include('admin.siswa.create')
 
     <!-- Delete Student Modal -->
     <div class="modal fade" id="deleteStudentModal" tabindex="-1" aria-labelledby="deleteStudentModalLabel"
