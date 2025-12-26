@@ -121,7 +121,7 @@
                     <button type="submit" class="btn btn-primary-custom w-100">Register</button>
                 </form>
                 <div class="text-center mt-3">
-                    <a href="{{ route('login') }}" class="btn btn-outline-custom">Kembali ke Login</a>
+                    <a href="{{ route('siswa.login') }}" class="btn btn-outline-custom">Kembali ke Login</a>
                 </div>
                 @if (
                     $errors->any() &&

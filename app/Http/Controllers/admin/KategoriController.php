@@ -77,7 +77,6 @@ class KategoriController extends Controller
                         'nama' => $request->nama,
                         'deskripsi' => $request->deskripsi
                     ]),
-                    'dibuat_pada' => now(),
                 ]);
             }
 
@@ -278,7 +277,6 @@ class KategoriController extends Controller
                 'referensi_tipe' => 'kategori',
                 'referensi_id' => $referensiId,
                 'detail' => json_encode($detail),
-                'dibuat_pada' => now(),
             ]);
         }
     }
@@ -294,7 +292,6 @@ class KategoriController extends Controller
                 'referensi_tipe' => 'kategori',
                 'referensi_id' => $referensiId,
                 'detail' => json_encode($detail),
-                'dibuat_pada' => now(),
             ]);
         }
     }

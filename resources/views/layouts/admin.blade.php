@@ -398,6 +398,11 @@
                         <i class="fas fa-user-graduate nav-icon"></i>
                         <span class="nav-text">Siswa</span>
                     </a>
+                    <a href="{{ route('admin.artikel.status', ['status' => 'disetujui']) }}"
+                        class="nav-link {{ Request::is('admin/artikel/status/*') && request('status') != 'menunggu' ? 'active' : '' }}">
+                        <i class="fas fa-comments nav-icon"></i>
+                        <span class="nav-text">Moderasi Komentar</span>
+                    </a>
                 </div>
             </div>
             <div class="nav-item">

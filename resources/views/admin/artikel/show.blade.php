@@ -18,6 +18,14 @@
                 <a href="{{ route('admin.artikel.edit', $artikel->id) }}" class="btn btn-primary-custom">
                     <i class="fas fa-edit me-2"></i>Edit Artikel
                 </a>
+                @if ($artikel->status === 'menunggu')
+                    <button type="button" class="btn btn-success no-loading" data-bs-toggle="modal" data-bs-target="#approveModal">
+                        <i class="fas fa-check me-2"></i>Setujui Artikel
+                    </button>
+                    <button type="button" class="btn btn-warning no-loading" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                        <i class="fas fa-times me-2"></i>Tolak Artikel
+                    </button>
+                @endif
                 <form action="{{ route('admin.artikel.destroy', $artikel->id) }}" method="POST" style="display:inline;"
                     id="deleteForm_{{ $artikel->id }}">
                     @csrf
@@ -225,13 +233,82 @@
                     <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">
                         <i class="fas fa-times me-1"></i>Batal
                     </button>
-                    <button type="button" class="btn btn-danger-custom no-loading" id="confirmDeleteCommentBtn">
-                        <i class="fas fa-trash me-1"></i>Hapus
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Approve Article -->
+    @if (isset($artikel) && $artikel->status === 'menunggu')
+    <div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="approveModalLabel">
+                        <i class="fas fa-check-circle me-2"></i>Setujui Artikel
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <p class="fs-5">Apakah Anda yakin ingin menyetujui artikel ini?</p>
+                    <p class="text-muted">Artikel akan dipublikasikan dan dapat dilihat oleh semua pengguna.</p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Batal
                     </button>
+                    <form action="{{ route('admin.artikel.approve', $artikel->id) }}" method="POST" id="approveForm">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit" class="btn btn-success" id="confirmApproveBtn">
+                            <i class="fas fa-check me-1"></i>Ya, Setujui
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Modal Reject Article -->
+    <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="rejectModalLabel">
+                        <i class="fas fa-times-circle me-2"></i>Tolak Artikel
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ route('admin.artikel.reject', $artikel->id) }}" method="POST" id="rejectForm">
+                    @csrf
+                    @method('PATCH')
+                    <div class="modal-body py-4">
+                        <div class="text-center mb-3">
+                            <i class="fas fa-times-circle fa-3x text-warning mb-3"></i>
+                            <p class="fs-5">Apakah Anda yakin ingin menolak artikel ini?</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="alasan_penolakan" class="form-label fw-bold">
+                                <i class="fas fa-comment-alt me-1"></i>Alasan Penolakan <span class="text-danger">*</span>
+                            </label>
+                            <textarea name="alasan_penolakan" id="alasan_penolakan" class="form-control" rows="4" 
+                                placeholder="Berikan alasan penolakan yang jelas agar siswa dapat memperbaiki artikelnya..." required></textarea>
+                            <small class="text-muted">Alasan ini akan dikirimkan kepada siswa melalui notifikasi.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>Batal
+                        </button>
+                        <button type="submit" class="btn btn-warning" id="confirmRejectBtn">
+                            <i class="fas fa-times me-1"></i>Ya, Tolak Artikel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
 @endsection
 
 @section('scripts')

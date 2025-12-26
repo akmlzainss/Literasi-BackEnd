@@ -1,138 +1,100 @@
-<div class="komentar-item mb-4" id="komentar-{{ $komentar->id }}" data-created-at="{{ $komentar->dibuat_pada ? $komentar->dibuat_pada->toIso8601String() : now()->toIso8601String() }}">
-    <div class="d-flex align-items-start">
-        <div class="author-avatar-siswa flex-shrink-0 me-3">
-            {{ strtoupper(substr($komentar->siswa->nama ?? ($komentar->admin->nama ?? 'U'), 0, 2)) }}
-        </div>
+{{-- Instagram-style Comment Item --}}
+@php
+    $isReply = isset($isReply) && $isReply;
+    $authorName = $komentar->siswa->nama ?? ($komentar->admin->nama ?? 'U');
+    $authorPhoto = $komentar->siswa->foto_profil ?? null;
+@endphp
 
-        <div class="komentar-body w-100">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="name fw-semibold">
-                        {{ $komentar->siswa->nama ?? ($komentar->admin->nama ?? 'Pengguna') }}
+<div class="komentar-item {{ $isReply ? 'reply-item' : 'parent-item' }}" 
+     id="komentar-{{ $komentar->id }}" 
+     data-parent-id="{{ $komentar->id_komentar_parent ?? '' }}"
+     data-created-at="{{ $komentar->dibuat_pada ? $komentar->dibuat_pada->toIso8601String() : now()->toIso8601String() }}">
+    <div class="d-flex align-items-start">
+        @if($authorPhoto)
+            <img src="{{ asset('storage/' . $authorPhoto) }}" alt="{{ $authorName }}" class="comment-avatar flex-shrink-0 me-3">
+        @else
+            <div class="comment-avatar-placeholder flex-shrink-0 me-3">
+                {{ strtoupper(substr($authorName, 0, 1)) }}
+            </div>
+        @endif
+
+        <div class="komentar-body flex-grow-1">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="comment-content">
+                    {{-- Author name with @mention if reply --}}
+                    <span class="comment-author fw-semibold">
+                        {{ $authorName }}
                         @if ($komentar->admin)
-                            <span class="badge bg-primary-subtle text-primary-emphasis rounded-pill ms-1" style="font-size: 0.7rem;">Admin</span>
+                            <span class="badge bg-primary-subtle text-primary-emphasis rounded-pill ms-1" style="font-size: 0.65rem;">Admin</span>
                         @endif
                     </span>
-                    <p class="date text-muted small mb-1" id="comment-time-{{ $komentar->id }}">
+                    
+                    {{-- Instagram style: @mention inline with comment text --}}
+                    @if ($komentar->id_komentar_parent && $komentar->parent)
                         @php
-                            $now = now();
-                            $createdAt = $komentar->dibuat_pada ?? $now;
-                            $diffInMonths = $now->diffInMonths($createdAt);
-                            if ($diffInMonths >= 1) {
-                                echo $createdAt->format('d-m-Y');
-                            } else {
-                                echo $createdAt->diffForHumans();
-                            }
+                            $parentName = $komentar->parent->siswa->nama ?? ($komentar->parent->admin->nama ?? 'User');
                         @endphp
-                    </p>
+                        <span class="mention-text text-primary fw-semibold">{{ '@' . $parentName }}</span>
+                    @endif
+                    
+                    <span class="comment-text">{{ $komentar->komentar }}</span>
+                    
+                    {{-- Comment metadata --}}
+                    <div class="comment-meta mt-1">
+                        <span class="comment-time text-muted" id="comment-time-{{ $komentar->id }}">
+                            @php
+                                $now = now();
+                                $createdAt = $komentar->dibuat_pada ?? $now;
+                                $diffInMonths = $now->diffInMonths($createdAt);
+                                if ($diffInMonths >= 1) {
+                                    echo $createdAt->format('d-m-Y');
+                                } else {
+                                    echo $createdAt->diffForHumans();
+                                }
+                            @endphp
+                        </span>
+                        @auth('siswa')
+                            <button class="btn-reply-inline" data-id="{{ $komentar->id }}" data-name="{{ $authorName }}">Balas</button>
+                        @endauth
+                    </div>
                 </div>
 
+                {{-- Actions --}}
                 <div class="comment-actions">
                     @auth('siswa')
-                        <button class="btn btn-outline-secondary btn-sm btn-reply" data-id="{{ $komentar->id }}">
-                            <i class="fas fa-reply"></i> Balas
-                        </button>
                         @if ((Auth::guard('siswa')->check() && Auth::guard('siswa')->id() == $komentar->id_siswa) || Auth::guard('admin')->check())
-                            <button class="btn btn-outline-danger btn-sm delete-comment" data-id="{{ $komentar->id }}">
-                                <i class="fas fa-trash"></i> Hapus
+                            <button class="btn btn-sm delete-comment text-danger p-1" data-id="{{ $komentar->id }}" title="Hapus">
+                                <i class="fas fa-trash"></i>
                             </button>
                         @endif
                     @endauth
                 </div>
             </div>
-
-            <p class="komentar-text mt-2 mb-2">{{ $komentar->komentar }}</p>
-
-            @if ($komentar->replies->isNotEmpty())
-                <button class="btn btn-link text-decoration-none text-muted p-0 lihat-balasan-btn" data-id="{{ $komentar->id }}">
-                    Lihat {{ $komentar->replies->count() }} balasan ▼
-                </button>
-
-                <div class="balasan-list mt-3 ms-4" id="balasan-{{ $komentar->id }}" style="display: none;">
-                    @foreach ($komentar->replies as $balasan)
-                        <div class="balasan border-start ps-3 mb-3" id="komentar-{{ $balasan->id }}" data-created-at="{{ $balasan->dibuat_pada ? $balasan->dibuat_pada->toIso8601String() : now()->toIso8601String() }}">
-                            <div class="d-flex align-items-start">
-                                <div class="author-avatar-siswa me-2">
-                                    {{ strtoupper(substr($balasan->siswa->nama ?? 'U', 0, 2)) }}
-                                </div>
-                                <div class="komentar-body w-100">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <span class="name fw-semibold">{{ $balasan->siswa->nama ?? 'User' }}</span>
-                                            <p class="date text-muted small mb-1" id="comment-time-{{ $balasan->id }}">
-                                                @php
-                                                    $now = now();
-                                                    $createdAt = $balasan->dibuat_pada ?? $now;
-                                                    $diffInMonths = $now->diffInMonths($createdAt);
-                                                    if ($diffInMonths >= 1) {
-                                                        echo $createdAt->format('d-m-Y');
-                                                    } else {
-                                                        echo $createdAt->diffForHumans();
-                                                    }
-                                                @endphp
-                                            </p>
-                                        </div>
-                                        <div class="comment-actions">
-                                            @auth('siswa')
-                                                <button class="btn btn-outline-secondary btn-sm btn-reply" data-id="{{ $balasan->id }}">
-                                                    <i class="fas fa-reply"></i> Balas
-                                                </button>
-                                                @if ((Auth::guard('siswa')->check() && Auth::guard('siswa')->id() == $balasan->id_siswa) || Auth::guard('admin')->check())
-                                                    <button class="btn btn-outline-danger btn-sm delete-comment" data-id="{{ $balasan->id }}">
-                                                        <i class="fas fa-trash"></i> Hapus
-                                                    </button>
-                                                @endif
-                                            @endauth
-                                        </div>
-                                    </div>
-                                    <p class="komentar-text mb-2">{{ $balasan->komentar }}</p>
-
-                                    @if ($balasan->replies->isNotEmpty())
-                                        <button class="btn btn-link text-decoration-none text-muted p-0 lihat-balasan-btn" data-id="{{ $balasan->id }}">
-                                            Lihat {{ $balasan->replies->count() }} balasan ▼
-                                        </button>
-                                        <div class="balasan-list mt-3 ms-4" id="balasan-{{ $balasan->id }}" style="display: none;">
-                                            @foreach ($balasan->replies as $subBalasan)
-                                                @include('partials.komentar', ['komentar' => $subBalasan, 'konten' => $konten])
-                                            @endforeach
-                                        </div>
-                                    @endif
-
-                                    @auth('siswa')
-                                        <form action="{{ route('komentar.reply', ['id' => $konten->id, 'parentId' => $balasan->id]) }}"
-                                              method="POST"
-                                              class="reply-form mt-3"
-                                              data-parent-id="{{ $balasan->id }}"
-                                              style="display: none;">
-                                            @csrf
-                                            <div class="mb-2">
-                                                <textarea class="form-control" name="komentar" rows="2" placeholder="Tulis balasan Anda..." required></textarea>
-                                            </div>
-                                            <button type="submit" class="btn btn-primary btn-sm">Kirim Balasan</button>
-                                            <button type="button" class="btn btn-secondary btn-sm btn-cancel-reply">Batal</button>
-                                        </form>
-                                    @endauth
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
-
-            @auth('siswa')
-                <form action="{{ route('komentar.reply', ['id' => $konten->id, 'parentId' => $komentar->id]) }}"
-                      method="POST"
-                      class="reply-form mt-3"
-                      data-parent-id="{{ $komentar->id }}"
-                      style="display: none;">
-                    @csrf
-                    <div class="mb-2">
-                        <textarea class="form-control" name="komentar" rows="2" placeholder="Tulis balasan Anda..." required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-sm">Kirim Balasan</button>
-                    <button type="button" class="btn btn-secondary btn-sm btn-cancel-reply">Batal</button>
-                </form>
-            @endauth
         </div>
     </div>
 </div>
+
+{{-- If this is a parent comment, show "View replies" button and flat replies --}}
+@if (!$isReply)
+    @php
+        // Get ALL descendants flattened (Instagram style)
+        $allReplies = $komentar->getAllDescendants();
+    @endphp
+    
+    @if ($allReplies->count() > 0)
+        <div class="replies-toggle-section ms-5 mt-2">
+            <button class="btn-view-replies toggle-replies" 
+                    data-comment-id="{{ $komentar->id }}"
+                    data-replies-count="{{ $allReplies->count() }}">
+                <span class="toggle-line"></span>
+                Lihat balasan ({{ $allReplies->count() }})
+            </button>
+            
+            <div class="flat-replies-container" id="replies-{{ $komentar->id }}" style="display: none;">
+                @foreach ($allReplies as $reply)
+                    @include('partials.komentar', ['komentar' => $reply, 'isReply' => true])
+                @endforeach
+            </div>
+        </div>
+    @endif
+@endif

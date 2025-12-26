@@ -233,6 +233,108 @@
         </div>
     </div>
 
+    {{-- Application Settings Section --}}
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="info-card shadow-sm border-0">
+                <div class="card-header-info">
+                    <div class="card-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <div class="card-content">
+                        <h5 class="fw-semibold">Pengaturan Aplikasi</h5>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        {{-- File Upload Settings --}}
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3"><i class="fas fa-upload me-2"></i>Pengaturan Upload File</h6>
+                            
+                            <div class="mb-3">
+                                <label for="max_image_size" class="form-label">
+                                    Ukuran Maksimal Gambar (MB)
+                                </label>
+                                <input type="number" class="form-control" id="max_image_size" name="max_image_size" 
+                                       value="2" min="1" max="10">
+                                <small class="text-muted">Ukuran maksimal file gambar yang dapat diupload (1-10 MB)</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="max_video_size" class="form-label">
+                                    Ukuran Maksimal Video (MB)
+                                </label>
+                                <input type="number" class="form-control" id="max_video_size" name="max_video_size" 
+                                       value="100" min="10" max="500">
+                                <small class="text-muted">Ukuran maksimal file video yang dapat diupload (10-500 MB)</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="allowed_extensions" class="form-label">
+                                    Ekstensi File yang Diizinkan
+                                </label>
+                                <input type="text" class="form-control" id="allowed_extensions" name="allowed_extensions" 
+                                       value="jpg, jpeg, png, gif, mp4, mov, avi" readonly>
+                                <small class="text-muted">Format file yang diizinkan untuk upload</small>
+                            </div>
+                        </div>
+
+                        {{-- Security Settings --}}
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3"><i class="fas fa-shield-alt me-2"></i>Pengaturan Keamanan</h6>
+                            
+                            <div class="mb-3">
+                                <label for="max_login_attempts" class="form-label">
+                                    Maksimal Percobaan Login
+                                </label>
+                                <input type="number" class="form-control" id="max_login_attempts" name="max_login_attempts" 
+                                       value="5" min="3" max="10">
+                                <small class="text-muted">Jumlah percobaan login sebelum akun dikunci sementara</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="lockout_duration" class="form-label">
+                                    Durasi Penguncian Akun (menit)
+                                </label>
+                                <input type="number" class="form-control" id="lockout_duration" name="lockout_duration" 
+                                       value="15" min="5" max="60">
+                                <small class="text-muted">Durasi penguncian akun setelah gagal login berulang</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label d-block">Proteksi Keamanan</label>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="csrf_protection" checked disabled>
+                                    <label class="form-check-label" for="csrf_protection">
+                                        <i class="fas fa-check-circle text-success me-1"></i> CSRF Protection (Aktif)
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="xss_protection" checked disabled>
+                                    <label class="form-check-label" for="xss_protection">
+                                        <i class="fas fa-check-circle text-success me-1"></i> XSS Protection (Aktif)
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="sql_injection_protection" checked disabled>
+                                    <label class="form-check-label" for="sql_injection_protection">
+                                        <i class="fas fa-check-circle text-success me-1"></i> SQL Injection Protection (Aktif)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-end">
+                        <button type="button" class="btn btn-primary-custom" id="saveSettingsBtn">
+                            <i class="fas fa-save me-2"></i>Simpan Pengaturan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="modalEditProfile" tabindex="-1" aria-labelledby="modalEditProfileLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-lg">

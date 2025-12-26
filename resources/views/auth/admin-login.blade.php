@@ -70,14 +70,14 @@
                     </div>
                 @endif
 
-                <div class="form-container active">
-                    <form method="POST" action="{{ route('admin.login.submit') }}" novalidate>
+                <div class="form-container active" id="adminLoginFormContainer">
+                    <form method="POST" action="{{ route('admin.login.submit') }}" id="adminLoginForm" novalidate>
                         @csrf
                         <div class="form-group">
-                            <label for="email" class="form-label">Email</label>
+                            <label for="admin_email" class="form-label">Email</label>
                             <div class="input-group">
                                 <i class="fas fa-envelope input-group-icon"></i>
-                                <input type="email" name="email" id="email"
+                                <input type="email" name="email" id="admin_email"
                                     class="form-control @error('email') is-invalid @enderror"
                                     placeholder="Masukkan email admin" value="{{ old('email') }}" required>
                             </div>
@@ -86,10 +86,10 @@
                             @enderror
                         </div>
                         <div class="form-group">
-                            <label for="password" class="form-label">Password</label>
+                            <label for="admin_password" class="form-label">Password</label>
                             <div class="input-group">
                                 <i class="fas fa-lock input-group-icon"></i>
-                                <input type="password" name="password" id="password"
+                                <input type="password" name="password" id="admin_password"
                                     class="form-control @error('password') is-invalid @enderror"
                                     placeholder="Masukkan password admin" required>
                             </div>
@@ -98,11 +98,11 @@
                             @enderror
                         </div>
                         <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="remember" name="remember"
+                            <input type="checkbox" class="form-check-input" id="admin_remember" name="remember"
                                 {{ old('remember') ? 'checked' : '' }}>
-                            <label class="form-check-label" for="remember">Ingat Saya</label>
+                            <label class="form-check-label" for="admin_remember">Ingat Saya</label>
                         </div>
-                        <button type="submit" class="btn btn-primary-custom mt-2"><i
+                        <button type="submit" id="adminLoginSubmitBtn" class="btn btn-primary-custom mt-2"><i
                                 class="fas fa-sign-in-alt me-2"></i>Masuk</button>
                     </form>
                 </div>

@@ -34,7 +34,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="isi_artikel" class="form-label fw-bold fs-5">Isi Artikel</label>
-                            <textarea name="konten" id="konten_artikel" class="form-control" rows="18">{{ old('konten') }}</textarea>
+                            <textarea name="isi" id="isi_artikel" class="form-control" rows="18">{{ old('isi') }}</textarea>
                         </div>
                     </div>
                     <div class="col-lg-4">
@@ -126,6 +126,70 @@
                 toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
             });
 
+            // Validasi sebelum membuka modal konfirmasi
+            $('[data-bs-target="#confirmModal"]').on('click', function(e) {
+                // Simpan isi TinyMCE ke textarea dulu
+                tinymce.triggerSave();
+                
+                let isValid = true;
+                let errors = [];
+                
+                // Validasi judul
+                const judul = $('#judul').val().trim();
+                if (!judul) {
+                    errors.push('Judul artikel wajib diisi.');
+                    $('#judul').addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    $('#judul').removeClass('is-invalid');
+                }
+                
+                // Validasi isi artikel (minimal 100 karakter)
+                const isi = $('#isi_artikel').val().replace(/<[^>]*>/g, '').trim(); // Strip HTML tags untuk count
+                if (!isi || isi.length < 100) {
+                    errors.push('Isi artikel wajib diisi minimal 100 karakter. Saat ini: ' + isi.length + ' karakter.');
+                    isValid = false;
+                }
+                
+                // Validasi kategori (harus pilih salah satu)
+                const kategori = $('#id_kategori').val();
+                const usulanKategori = $('#usulan_kategori').val().trim();
+                if (!kategori && !usulanKategori) {
+                    errors.push('Pilih kategori atau usulkan kategori baru.');
+                    $('#id_kategori').addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    $('#id_kategori').removeClass('is-invalid');
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Tampilkan error
+                    let errorHtml = '<div class="alert alert-danger alert-dismissible fade show" id="validationErrors">' +
+                        '<strong>Harap perbaiki kesalahan berikut:</strong><ul class="mb-0 mt-2">';
+                    errors.forEach(function(err) {
+                        errorHtml += '<li>' + err + '</li>';
+                    });
+                    errorHtml += '</ul><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+                    
+                    // Remove old errors and add new
+                    $('#validationErrors').remove();
+                    $('.section-title').after(errorHtml);
+                    
+                    // Scroll to errors
+                    $('html, body').animate({
+                        scrollTop: $('.section-title').offset().top - 100
+                    }, 300);
+                    
+                    return false;
+                }
+                
+                // Clear any previous errors
+                $('#validationErrors').remove();
+            });
+
             // Simpan isi TinyMCE ke textarea sebelum form disubmit
             $('form').on('submit', function() {
                 tinymce.triggerSave();
@@ -133,3 +197,4 @@
         });
     </script>
 @endsection
+

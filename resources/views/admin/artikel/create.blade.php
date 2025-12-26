@@ -57,11 +57,11 @@
                                 <label for="isi" class="form-label">
                                     <i class="fas fa-align-left me-2"></i>Isi Artikel <span class="text-danger">*</span>
                                 </label>
-                                <textarea name="konten" id="konten" class="form-control" rows="10" required>{{ old('konten') }}</textarea>
+                                <textarea name="isi" id="isi" class="form-control" rows="10" required>{{ old('isi') }}</textarea>
                                 <div id="charCount" class="text-muted mt-1" style="font-size: 0.9em;">
                                     0/3000
                                 </div>
-                                @error('konten')
+                                @error('isi')
                                     <div class="alert alert-danger mt-2">{{ $message }}</div>
                                 @enderror
                             </div>

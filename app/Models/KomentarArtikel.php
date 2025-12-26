@@ -47,6 +47,12 @@ class KomentarArtikel extends Model
         return $this->hasMany(KomentarArtikel::class, 'id_komentar_parent', 'id');
     }
 
+    // Alias for parentKomentar for easier view access
+    public function parent()
+    {
+        return $this->belongsTo(KomentarArtikel::class, 'id_komentar_parent', 'id');
+    }
+
     public function getFormattedDateAttribute()
     {
         $now = now();
@@ -56,4 +62,21 @@ class KomentarArtikel extends Model
             ? $createdAt->format('d-m-Y')
             : $createdAt->diffForHumans();
     }
+
+    /**
+     * Get all descendants (replies of replies) flattened into a single collection
+     * Instagram-style: all replies at same level
+     */
+    public function getAllDescendants()
+    {
+        $descendants = collect();
+        
+        foreach ($this->replies as $reply) {
+            $descendants->push($reply);
+            $descendants = $descendants->merge($reply->getAllDescendants());
+        }
+        
+        return $descendants->sortBy('dibuat_pada');
+    }
 }
+

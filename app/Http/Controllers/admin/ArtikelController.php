@@ -482,4 +482,95 @@ class ArtikelController extends Controller
             }
         }
     }
+
+    /**
+     * Approve a pending article
+     */
+    public function approve($id)
+    {
+        try {
+            $artikel = Artikel::findOrFail($id);
+            
+            if ($artikel->status !== 'menunggu') {
+                return redirect()->back()->with('error', 'Artikel ini tidak dalam status menunggu.');
+            }
+            
+            $artikel->update([
+                'status' => 'disetujui',
+                'diterbitkan_pada' => now(),
+            ]);
+            
+            // Send notification to student
+            if ($artikel->id_siswa) {
+                \App\Models\Notifikasi::create([
+                    'id_siswa' => $artikel->id_siswa,
+                    'id_admin' => Auth::guard('admin')->id(),
+                    'judul' => 'Artikel Anda Disetujui!',
+                    'pesan' => 'Selamat! Artikel "' . $artikel->judul . '" telah disetujui dan dipublikasikan.',
+                    'jenis' => 'artikel_disetujui',
+                    'referensi_tipe' => 'artikel',
+                    'referensi_id' => $artikel->id,
+                ]);
+            }
+            
+            $this->logAction('approve', 'Menyetujui artikel: ' . $artikel->judul, 'artikel', $artikel->id);
+            
+            return redirect()->route('admin.artikel.show', $artikel->id)
+                ->with('success', 'Artikel berhasil disetujui dan dipublikasikan!');
+                
+        } catch (\Exception $e) {
+            Log::error('Error approving article: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menyetujui artikel. Silakan coba lagi.');
+        }
+    }
+
+    /**
+     * Reject a pending article with reason
+     */
+    public function reject(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'alasan_penolakan' => 'required|string|min:10|max:1000',
+            ], [
+                'alasan_penolakan.required' => 'Alasan penolakan wajib diisi.',
+                'alasan_penolakan.min' => 'Alasan penolakan minimal 10 karakter.',
+            ]);
+            
+            $artikel = Artikel::findOrFail($id);
+            
+            if ($artikel->status !== 'menunggu') {
+                return redirect()->back()->with('error', 'Artikel ini tidak dalam status menunggu.');
+            }
+            
+            $artikel->update([
+                'status' => 'ditolak',
+                'alasan_penolakan' => $request->alasan_penolakan,
+            ]);
+            
+            // Send notification to student
+            if ($artikel->id_siswa) {
+                \App\Models\Notifikasi::create([
+                    'id_siswa' => $artikel->id_siswa,
+                    'id_admin' => Auth::guard('admin')->id(),
+                    'judul' => 'Artikel Anda Ditolak',
+                    'pesan' => 'Artikel "' . $artikel->judul . '" ditolak. Alasan: ' . $request->alasan_penolakan,
+                    'jenis' => 'artikel_ditolak',
+                    'referensi_tipe' => 'artikel',
+                    'referensi_id' => $artikel->id,
+                ]);
+            }
+            
+            $this->logAction('reject', 'Menolak artikel: ' . $artikel->judul, 'artikel', $artikel->id, [
+                'alasan' => $request->alasan_penolakan
+            ]);
+            
+            return redirect()->route('admin.artikel.show', $artikel->id)
+                ->with('success', 'Artikel berhasil ditolak. Notifikasi telah dikirim ke siswa.');
+                
+        } catch (\Exception $e) {
+            Log::error('Error rejecting article: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menolak artikel. Silakan coba lagi.');
+        }
+    }
 }

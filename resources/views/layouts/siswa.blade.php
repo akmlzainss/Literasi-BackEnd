@@ -25,7 +25,7 @@
 
     <header class="header">
         <nav class="container navbar navbar-expand-lg">
-            <a href="{{ route('dashboard-siswa') }}" class="logo">
+            <a href="@auth('siswa'){{ route('dashboard-siswa') }}@else{{ route('artikel-siswa.index') }}@endauth" class="logo">
                 <i class="fas fa-graduation-cap"></i> SIPENA
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
@@ -35,18 +35,21 @@
             </button>
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav ms-auto align-items-lg-center">
+                    @auth('siswa')
                     <li class="nav-item">
                         <a href="{{ route('dashboard-siswa') }}"
                             class="nav-link {{ request()->routeIs('dashboard-siswa') ? 'active' : '' }}">
                             <i class="fas fa-home me-1 d-lg-none"></i>Beranda
                         </a>
                     </li>
+                    @endauth
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('artikel-siswa*') && !request()->routeIs('artikel-siswa.upload*') && !request()->routeIs('artikel-siswa.create*') ? 'active' : '' }}"
                             href="{{ route('artikel-siswa.index') }}">
                             <i class="fas fa-newspaper me-1 d-lg-none"></i>Artikel
                         </a>
                     </li>
+                    @auth('siswa')
                     <!-- Tambahkan link Video -->
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('video.index') || request()->routeIs('video.tiktok') ? 'active' : '' }}"
@@ -60,6 +63,7 @@
                             <i class="fas fa-plus-circle me-1 d-lg-none"></i>Upload
                         </a>
                     </li>
+                    @endauth
                     <li class="nav-item d-none d-lg-block">
                         <div class="vr mx-3"></div>
                     </li>
@@ -180,12 +184,19 @@
                 <div class="col-lg-2 col-md-4 col-6 mx-auto mb-4">
                     <h6 class="text-uppercase fw-bold mb-4 footer-section-title">Navigasi</h6>
                     <ul class="footer-nav-list">
+                        @auth('siswa')
                         <li><a href="{{ route('dashboard-siswa') }}" class="footer-nav-link">
                                 <i class="fas fa-home me-2"></i>Beranda</a></li>
+                        @endauth
                         <li><a href="{{ route('artikel-siswa.index') }}" class="footer-nav-link">
                                 <i class="fas fa-newspaper me-2"></i>Jelajahi Artikel</a></li>
+                        @auth('siswa')
                         <li><a href="{{ route('artikel-siswa.upload') }}" class="footer-nav-link">
                                 <i class="fas fa-plus-circle me-2"></i>Upload Karya</a></li>
+                        @else
+                        <li><a href="{{ route('siswa.login') }}" class="footer-nav-link">
+                                <i class="fas fa-sign-in-alt me-2"></i>Masuk / Daftar</a></li>
+                        @endauth
                         <li><a href="https://www.smkn11bdg.sch.id/contact" target="_blank" class="footer-nav-link">
                                 <i class="fas fa-phone me-2"></i>Hubungi Kami</a></li>
                     </ul>

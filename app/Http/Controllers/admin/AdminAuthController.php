@@ -115,7 +115,7 @@ class AdminAuthController extends Controller
     {
         // KEAMANAN: Pastikan form hanya memproses jika 'role' dari hidden input adalah 'siswa'
         if ($request->input('role') !== 'siswa') {
-            return redirect()->route('login')->with('error', 'Registrasi tidak diizinkan.');
+            return redirect()->route('siswa.login')->with('error', 'Registrasi tidak diizinkan.');
         }
 
         // Validasi field dari form registrasi siswa
@@ -145,7 +145,7 @@ class AdminAuthController extends Controller
                 'foto_profil' => null,
             ]);
 
-            return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login dengan akun Anda.');
+            return redirect()->route('siswa.login')->with('success', 'Registrasi berhasil! Silakan login dengan akun Anda.');
         } catch (Exception $e) {
             Log::error('Error registrasi siswa: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan. Gagal mendaftarkan akun.')->withInput();
@@ -171,7 +171,7 @@ class AdminAuthController extends Controller
         Auth::guard('siswa')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('login')->with('success', 'Anda berhasil logout.');
+        return redirect()->route('siswa.login')->with('success', 'Anda berhasil logout.');
     }
 }
 

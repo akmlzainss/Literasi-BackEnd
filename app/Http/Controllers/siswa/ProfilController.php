@@ -18,47 +18,59 @@ class ProfilController extends Controller
      */
     public function show()
     {
-        try {
-            $siswa = Auth::guard('siswa')->user();
+        $siswa = Auth::guard('siswa')->user();
 
-            if (!$siswa) {
-                return redirect()->route('siswa.login')->with('error', 'Anda harus login terlebih dahulu.');
-            }
-
-            // Ambil video yang disukai
-            $videoDisukai = Video::whereHas('interaksi', function ($q) use ($siswa) {
-                $q->where('id_siswa', $siswa->id)->where('jenis', 'suka');
-            })->latest()->get();
-
-            // Ambil video yang disimpan
-            $videoDisimpan = Video::whereHas('interaksi', function ($q) use ($siswa) {
-                $q->where('id_siswa', $siswa->id)->where('jenis', 'bookmark');
-            })->latest()->get();
-
-            // Ambil artikel yang disukai
-            $artikelDisukai = Artikel::whereHas('interaksi', function ($q) use ($siswa) {
-                $q->where('id_siswa', $siswa->id)->where('jenis', 'suka');
-            })->latest()->get();
-
-            // =======================================================
-            // ||  TAMBAHKAN QUERY BARU UNTUK ARTIKEL DISIMPAN      ||
-            // =======================================================
-            $artikelDisimpan = Artikel::whereHas('interaksi', function ($q) use ($siswa) {
-                $q->where('id_siswa', $siswa->id)->where('jenis', 'bookmark'); // Ubah 'suka' menjadi 'simpan'
-            })->latest()->get();
-            // =======================================================
-
-            return view('siswa.profil', compact(
-                'siswa',
-                'videoDisukai',
-                'videoDisimpan',
-                'artikelDisukai',
-                'artikelDisimpan' // <-- Jangan lupa tambahkan variabel baru di sini
-            ));
-        } catch (\Exception $e) {
-            Log::error('Error in ProfilController@show: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat memuat profil.');
+        if (!$siswa) {
+            return redirect()->route('siswa.login')->with('error', 'Anda harus login terlebih dahulu.');
         }
+
+        // ====== POSTINGAN SAYA (Video + Artikel yang diupload user) ======
+        // Video uses id_siswa, Artikel also uses id_siswa in actual database
+        $videoUpload = Video::where('id_siswa', $siswa->id)
+            ->where('status', 'disetujui')
+            ->latest()
+            ->get();
+
+        $artikelUpload = Artikel::where('id_siswa', $siswa->id)
+            ->where('status', 'published')
+            ->latest()
+            ->get();
+
+        // ====== DISUKAI (Video + Artikel yang user sukai) ======
+        $videoDisukai = Video::whereHas('interaksi', function ($q) use ($siswa) {
+            $q->where('id_siswa', $siswa->id)->where('jenis', 'suka');
+        })->latest()->get();
+
+        $artikelDisukai = Artikel::whereHas('interaksi', function ($q) use ($siswa) {
+            $q->where('id_siswa', $siswa->id)->where('jenis', 'suka');
+        })->latest()->get();
+
+        // ====== DISIMPAN (Video + Artikel yang user simpan) ======
+        $videoDisimpan = Video::whereHas('interaksi', function ($q) use ($siswa) {
+            $q->where('id_siswa', $siswa->id)->where('jenis', 'bookmark');
+        })->latest()->get();
+
+        $artikelDisimpan = Artikel::whereHas('interaksi', function ($q) use ($siswa) {
+            $q->where('id_siswa', $siswa->id)->where('jenis', 'bookmark');
+        })->latest()->get();
+
+        // ====== STATISTIK PROFIL ======
+        $totalPostingan = $videoUpload->count() + $artikelUpload->count();
+        $totalSukaVideo = Video::where('id_siswa', $siswa->id)->sum('jumlah_suka');
+        $totalSukaArtikel = Artikel::where('id_siswa', $siswa->id)->sum('jumlah_suka');
+        $totalSukaDiterima = $totalSukaVideo + $totalSukaArtikel;
+
+        return view('siswa.profil', compact(
+            'siswa',
+            'videoUpload',
+            'artikelUpload',
+            'videoDisukai',
+            'videoDisimpan',
+            'artikelDisukai',
+            'artikelDisimpan',
+            'totalPostingan',
+            'totalSukaDiterima'
+        ));
     }
 
     /**
@@ -115,12 +127,12 @@ class ProfilController extends Controller
             }
 
             $request->validate([
-                'password_lama' => 'required|string',
+                'current_password' => 'required|string',
                 'password' => 'required|string|min:8|confirmed',
             ]);
 
-            if (!Hash::check($request->password_lama, $siswa->password)) {
-                return redirect()->back()->withErrors(['password_lama' => 'Password lama tidak cocok.']);
+            if (!Hash::check($request->current_password, $siswa->password)) {
+                return redirect()->back()->withErrors(['current_password' => 'Password lama tidak cocok.']);
             }
 
             $siswa->update([

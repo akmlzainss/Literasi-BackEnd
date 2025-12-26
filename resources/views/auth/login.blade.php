@@ -80,13 +80,15 @@
                 @endif
 
                 <div id="loginForm" class="form-container active">
-                    <form method="POST" action="{{ route('siswa.login.submit') }}" novalidate>
+                    <form method="POST" action="{{ route('siswa.login.submit') }}" id="siswaLoginForm" novalidate>
                         @csrf
                         <div class="form-group">
                             <label for="email" class="form-label">Email</label>
                             <div class="input-group">
-                                <i class="fas fa-envelope input-group-icon"></i>
-                                <input type="email" name="email" id="email"
+                                <span class="input-group-text">
+                                    <i class="fas fa-envelope"></i>
+                                </span>
+                                <input type="email" name="email" id="login_email"
                                     class="form-control @error('email') is-invalid @enderror"
                                     placeholder="Masukkan email Anda" value="{{ old('email') }}" required>
                             </div>
@@ -95,8 +97,10 @@
                         <div class="form-group">
                             <label for="password" class="form-label">Password</label>
                             <div class="input-group">
-                                <i class="fas fa-lock input-group-icon"></i>
-                                <input type="password" name="password" id="password"
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                                <input type="password" name="password" id="login_password"
                                     class="form-control @error('password') is-invalid @enderror"
                                     placeholder="Masukkan password Anda" required>
                             </div>
@@ -107,7 +111,7 @@
                                 {{ old('remember') ? 'checked' : '' }}>
                             <label class="form-check-label" for="remember">Ingat Saya</label>
                         </div>
-                        <button type="submit" class="btn btn-primary-custom mt-2"><i
+                        <button type="submit" id="loginSubmitBtn" class="btn btn-primary-custom mt-2"><i
                                 class="fas fa-sign-in-alt me-2"></i>Masuk</button>
                     </form>
                 </div>
@@ -120,99 +124,104 @@
                         <div class="form-group">
                             <label for="nama" class="form-label">Nama Lengkap</label>
                             <div class="input-group">
-                                <i class="fas fa-user input-group-icon"></i>
+                                <span class="input-group-text">
+                                    <i class="fas fa-user"></i>
+                                </span>
                                 <input type="text" name="nama" id="nama"
                                     class="form-control @error('nama') is-invalid @enderror"
                                     placeholder="Masukkan nama lengkap" required value="{{ old('nama') }}">
                             </div>
-                            @error('nama')<div class="text-danger mt-1">{{ $message }}</div>
-                                @endif
+                            @error('nama')<div class="text-danger mt-1">{{ $message }}</div>@enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label for="nis" class="form-label">Nomor Induk Siswa (NIS)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-id-card"></i>
+                                </span>
+                                <input type="text" name="nis" id="nis"
+                                    class="form-control @error('nis') is-invalid @enderror"
+                                    placeholder="Masukkan NIS Anda" required value="{{ old('nis') }}">
                             </div>
+                            @error('nis')<div class="text-danger mt-1">{{ $message }}</div>@enderror
+                        </div>
 
-                            <div class="form-group">
-                                <label for="nis" class="form-label">Nomor Induk Siswa (NIS)</label>
-                                <div class="input-group">
-                                    <i class="fas fa-id-card input-group-icon"></i>
-                                    <input type="text" name="nis" id="nis"
-                                        class="form-control @error('nis') is-invalid @enderror"
-                                        placeholder="Masukkan NIS Anda" required value="{{ old('nis') }}">
-                                </div>
-                                @error('nis')<div class="text-danger mt-1">{{ $message }}</div>
-                                    @endif
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="reg_kelas" class="form-label">Kelas</label>
-                                    <div class="input-group">
-                                        <i class="fas fa-school input-group-icon"></i>
-                                        <input type="text" name="kelas" id="reg_kelas"
-                                            class="form-control @error('kelas') is-invalid @enderror"
-                                            placeholder="Masukkan kelas Anda (misal: X IPA 1)" required
-                                            value="{{ old('kelas') }}">
-                                    </div>
-                                    @error('kelas')<div class="text-danger mt-1">{{ $message }}</div>
-                                        @endif
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="reg_email" class="form-label">Email</label>
-                                        <div class="input-group">
-                                            <i class="fas fa-envelope input-group-icon"></i>
-                                            <input type="email" name="email" id="reg_email"
-                                                class="form-control @error('email') is-invalid @enderror"
-                                                placeholder="Masukkan email Anda" required value="{{ old('email') }}">
-                                        </div>
-                                        @error('email')<div class="text-danger mt-1">{{ $message }}</div>
-                                            @endif
-                                        </div>
-
-                                        <div class="row-cols-2">
-                                            <div class="form-group">
-                                                <label for="reg_password" class="form-label">Password</label>
-                                                <div class="input-group">
-                                                    <i class="fas fa-lock input-group-icon"></i>
-                                                    <input type="password" name="password" id="reg_password"
-                                                        class="form-control @error('password') is-invalid @enderror"
-                                                        placeholder="Minimal 8 karakter" required>
-                                                </div>
-                                                @error('password')<div class="text-danger mt-1">{{ $message }}</div>
-                                                    @endif
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="password_confirmation" class="form-label">Konfirmasi Password</label>
-                                                    <div class="input-group">
-                                                        <i class="fas fa-lock input-group-icon"></i>
-                                                        <input type="password" name="password_confirmation" id="password_confirmation"
-                                                            class="form-control" placeholder="Ulangi password" required>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="form-check">
-                                                <input type="checkbox" class="form-check-input @error('terms') is-invalid @enderror"
-                                                    id="terms" name="terms" required>
-                                                <label class="form-check-label" for="terms">Saya menyetujui <a href="#">Syarat &
-                                                        Ketentuan</a></label>
-                                            </div>
-                                            @error('terms')<div class="text-danger mt-1">{{ $message }}</div>
-                                                @endif
-
-                                                <button type="submit" class="btn btn-primary-custom mt-2"><i
-                                                        class="fas fa-user-plus me-2"></i>Daftar Sekarang</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="form-group">
+                            <label for="reg_kelas" class="form-label">Kelas</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-school"></i>
+                                </span>
+                                <input type="text" name="kelas" id="reg_kelas"
+                                    class="form-control @error('kelas') is-invalid @enderror"
+                                    placeholder="Masukkan kelas Anda (misal: X IPA 1)" required
+                                    value="{{ old('kelas') }}">
                             </div>
+                            @error('kelas')<div class="text-danger mt-1">{{ $message }}</div>@enderror
+                        </div>
 
-                            <script>
-                                function switchTab(tab, element) {
-                                    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-                                    document.querySelectorAll('.form-container').forEach(f => f.classList.remove('active'));
-                                    element.classList.add('active');
-                                    document.getElementById(tab + 'Form').classList.add('active');
-                                }
-                            </script>
-                        </body>
+                        <div class="form-group">
+                            <label for="reg_email" class="form-label">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-envelope"></i>
+                                </span>
+                                <input type="email" name="email" id="reg_email"
+                                    class="form-control @error('email') is-invalid @enderror"
+                                    placeholder="Masukkan email Anda" required value="{{ old('email') }}">
+                            </div>
+                            @error('email')<div class="text-danger mt-1">{{ $message }}</div>@enderror
+                        </div>
 
-                        </html>
+                        <div class="form-group">
+                            <label for="reg_password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                                <input type="password" name="password" id="reg_password"
+                                    class="form-control @error('password') is-invalid @enderror"
+                                    placeholder="Minimal 8 karakter" required>
+                            </div>
+                            @error('password')<div class="text-danger mt-1">{{ $message }}</div>@enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password_confirmation" class="form-label">Konfirmasi Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                                <input type="password" name="password_confirmation" id="password_confirmation"
+                                    class="form-control" placeholder="Ulangi password" required>
+                            </div>
+                        </div>
+
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input @error('terms') is-invalid @enderror"
+                                id="terms" name="terms" required>
+                            <label class="form-check-label" for="terms">Saya menyetujui <a href="#">Syarat &
+                                    Ketentuan</a></label>
+                        </div>
+                        @error('terms')<div class="text-danger mt-1">{{ $message }}</div>@enderror
+
+                        <button type="submit" class="btn btn-primary-custom mt-2"><i
+                                class="fas fa-user-plus me-2"></i>Daftar Sekarang</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab, element) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.form-container').forEach(f => f.classList.remove('active'));
+            element.classList.add('active');
+            document.getElementById(tab + 'Form').classList.add('active');
+        }
+    </script>
+</body>
+
+</html>
