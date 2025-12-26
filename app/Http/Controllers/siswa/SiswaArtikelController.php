@@ -55,8 +55,22 @@ class SiswaArtikelController extends Controller
             'siswa',
             'kategori',
             'ratingArtikel',
+            // Instagram style: Load only parent comments, then flatten all replies in view
             'komentarArtikel' => function ($query) {
-                $query->whereNull('id_komentar_parent')->with('siswa', 'admin', 'replies.siswa', 'replies.admin')->orderBy('dibuat_pada', 'desc');
+                $query->whereNull('id_komentar_parent') // Only parent comments
+                    ->with([
+                        'siswa', 
+                        'admin',
+                        // Eager load replies recursively with parent info for @mention
+                        'replies' => function ($q) {
+                            $q->with(['siswa', 'admin', 'parent.siswa', 'parent.admin', 'replies' => function ($q2) {
+                                $q2->with(['siswa', 'admin', 'parent.siswa', 'parent.admin', 'replies' => function ($q3) {
+                                    $q3->with(['siswa', 'admin', 'parent.siswa', 'parent.admin']);
+                                }]);
+                            }]);
+                        }
+                    ])
+                    ->orderBy('dibuat_pada', 'desc');
             }
         ])->findOrFail($id);
 
@@ -74,9 +88,16 @@ class SiswaArtikelController extends Controller
             }
         }
 
-        $userRating = RatingArtikel::where('id_artikel', $id)->where('id_siswa', $siswaId)->first();
-        $userHasLiked = InteraksiArtikel::where('id_artikel', $id)->where('id_siswa', $siswaId)->where('jenis', 'suka')->exists();
-        $userHasBookmarked = InteraksiArtikel::where('id_artikel', $id)->where('id_siswa', $siswaId)->where('jenis', 'bookmark')->exists();
+        // Only query user-specific data if authenticated
+        $userRating = null;
+        $userHasLiked = false;
+        $userHasBookmarked = false;
+        
+        if ($siswaId) {
+            $userRating = RatingArtikel::where('id_artikel', $id)->where('id_siswa', $siswaId)->first();
+            $userHasLiked = InteraksiArtikel::where('id_artikel', $id)->where('id_siswa', $siswaId)->where('jenis', 'suka')->exists();
+            $userHasBookmarked = InteraksiArtikel::where('id_artikel', $id)->where('id_siswa', $siswaId)->where('jenis', 'bookmark')->exists();
+        }
 
         return view('siswa.artikel.artikel-detail', compact('konten', 'userRating', 'userHasLiked', 'userHasBookmarked'));
     }
@@ -129,7 +150,7 @@ class SiswaArtikelController extends Controller
                 'id_kategori' => $idKategori,
                 'usulan_kategori' => $request->filled('usulan_kategori') ? $request->usulan_kategori : null,
                 'judul' => $request->judul,
-                'isi' => strip_tags($request->konten, '<p><br><strong><em><ul><ol><li><h1><h2><h3><a>'),
+                'isi' => strip_tags($request->isi, '<p><br><strong><em><ul><ol><li><h1><h2><h3><a>'),
                 'gambar' => $gambarPath,
                 'penulis_type' => 'siswa',
                 'jenis' => $request->jenis,
@@ -155,6 +176,14 @@ class SiswaArtikelController extends Controller
     public function storeKomentar(Request $request, $id, $parentId = null)
     {
         try {
+            // Check if user is authenticated first
+            if (!Auth::guard('siswa')->check()) {
+                if ($request->ajax()) {
+                    return response()->json(['success' => false, 'message' => 'Anda harus login untuk berkomentar.'], 401);
+                }
+                return redirect()->route('siswa.login')->with('error', 'Anda harus login untuk berkomentar.');
+            }
+
             $request->validate([
                 'komentar' => 'nullable|string|max:2000',
                 'rating' => 'nullable|integer|between:1,5',
@@ -197,7 +226,7 @@ class SiswaArtikelController extends Controller
                 ];
 
                 if ($newKomentar) {
-                    $data['new_comment_html'] = view('partials.komentar', ['komentar' => $newKomentar, 'isi' => $artikel])->render();
+                    $data['new_comment_html'] = view('partials.komentar', ['komentar' => $newKomentar, 'konten' => $artikel])->render();
                 }
                 return response()->json($data);
             }
@@ -238,9 +267,48 @@ class SiswaArtikelController extends Controller
         }
     }
 
+    public function storeRating(Request $request, $id)
+    {
+        try {
+            // Check if user is authenticated first
+            if (!Auth::guard('siswa')->check()) {
+                return response()->json(['success' => false, 'message' => 'Anda harus login untuk memberi rating.'], 401);
+            }
+
+            $request->validate([
+                'rating' => 'required|integer|between:1,5',
+            ]);
+
+            $siswaId = Auth::guard('siswa')->id();
+            $artikel = Artikel::findOrFail($id);
+
+            RatingArtikel::updateOrCreate(
+                ['id_artikel' => $artikel->id, 'id_siswa' => $siswaId],
+                ['rating' => $request->rating]
+            );
+
+            $artikel->nilai_rata_rata = $artikel->ratingArtikel()->avg('rating') ?: 0;
+            $artikel->save();
+
+            return response()->json([
+                'success' => true,
+                'new_avg_rating' => round($artikel->nilai_rata_rata, 1),
+                'new_rating_count' => $artikel->ratingArtikel->count(),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error storing rating: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal menyimpan rating.'], 500);
+        }
+    }
+
     public function storeInteraksi(Request $request, $id)
     {
         try {
+            // Check if user is authenticated first
+            if (!Auth::guard('siswa')->check()) {
+                return response()->json(['success' => false, 'message' => 'Anda harus login untuk menyukai atau menyimpan artikel.'], 401);
+            }
+
             $request->validate(['jenis' => 'required|in:suka,bookmark']);
 
             $siswaId = Auth::guard('siswa')->id();
@@ -256,9 +324,9 @@ class SiswaArtikelController extends Controller
             } else {
                 $interaksi = InteraksiArtikel::create(['id_artikel' => $id, 'id_siswa' => $siswaId, 'jenis' => $jenis]);
 
-                if ($jenis == 'suka' && $artikel->id_siswa && $artikel->id_siswa != $siswaId) {
+                if ($jenis == 'suka' && $artikel->siswa_id && $artikel->siswa_id != $siswaId) {
                     Notifikasi::create([
-                        'id_siswa' => $artikel->id_siswa,
+                        'id_siswa' => $artikel->siswa_id,
                         'judul' => 'Artikel Anda Disukai',
                         'pesan' => Auth::guard('siswa')->user()->nama . ' menyukai artikel Anda: "' . $artikel->judul . '".',
                         'jenis' => 'like',

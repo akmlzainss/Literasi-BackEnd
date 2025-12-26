@@ -18,7 +18,7 @@ class NotifikasiController extends Controller
 
         // Ambil notifikasi untuk siswa ini, urutkan dari yang terbaru, dan paginasi
         $notifikasis = Notifikasi::where('id_siswa', $siswaId)
-            ->latest('created_at') // Menggunakan created_at standar Laravel
+            ->latest('dibuat_pada') // Menggunakan dibuat_pada sesuai schema tabel
             ->paginate(15); // Menampilkan 15 notifikasi per halaman
 
         // Hitung notifikasi yang belum dibaca
@@ -56,13 +56,23 @@ class NotifikasiController extends Controller
      */
     public function getUnreadCount()
     {
-        $siswaId = Auth::guard('siswa')->id();
+        try {
+            // Check if user is authenticated first
+            if (!Auth::guard('siswa')->check()) {
+                return response()->json(['count' => 0, 'authenticated' => false]);
+            }
 
-        $count = Notifikasi::where('id_siswa', $siswaId)
-            ->where('sudah_dibaca', false)
-            ->count();
+            $siswaId = Auth::guard('siswa')->id();
 
-        return response()->json(['count' => $count]);
+            $count = Notifikasi::where('id_siswa', $siswaId)
+                ->where('sudah_dibaca', false)
+                ->count();
+
+            return response()->json(['count' => $count, 'authenticated' => true]);
+        } catch (\Exception $e) {
+            \Log::error('Error getting unread count: ' . $e->getMessage());
+            return response()->json(['count' => 0, 'error' => 'Failed to get unread count']);
+        }
     }
 
     /**
@@ -70,13 +80,33 @@ class NotifikasiController extends Controller
      */
     public function getRecent()
     {
-        $siswaId = Auth::guard('siswa')->id();
+        try {
+            // Check if user is authenticated first
+            if (!Auth::guard('siswa')->check()) {
+                return response()->json([
+                    'notifications' => [],
+                    'authenticated' => false,
+                    'message' => 'User not authenticated'
+                ]);
+            }
 
-        $notifications = Notifikasi::where('id_siswa', $siswaId)
-            ->latest('created_at')
-            ->take(5)
-            ->get();
+            $siswaId = Auth::guard('siswa')->id();
 
-        return response()->json(['notifications' => $notifications]);
+            $notifications = Notifikasi::where('id_siswa', $siswaId)
+                ->latest('dibuat_pada')
+                ->take(5)
+                ->get();
+
+            return response()->json([
+                'notifications' => $notifications,
+                'authenticated' => true
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error getting recent notifications: ' . $e->getMessage());
+            return response()->json([
+                'notifications' => [],
+                'error' => 'Failed to load notifications'
+            ]);
+        }
     }
 }

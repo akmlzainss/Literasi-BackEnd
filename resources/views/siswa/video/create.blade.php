@@ -85,4 +85,104 @@
             </div>
         </div>
     </div>
+
+    <!-- Validation Error Modal -->
+    <div class="modal fade" id="validationErrorModal" tabindex="-1" aria-labelledby="validationErrorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="validationErrorModalLabel">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Validasi Gagal
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul id="validationErrorList" class="text-danger mb-0"></ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadBtn = document.querySelector('[data-bs-target="#konfirmasiModal"]');
+    const videoInput = document.getElementById('video');
+    const judulInput = document.getElementById('judul');
+    
+    // Allowed video types
+    const allowedTypes = ['video/mp4', 'video/webm', 'video/ogg'];
+    const maxSize = 50 * 1024 * 1024; // 50 MB in bytes
+    
+    uploadBtn.addEventListener('click', function(e) {
+        const errors = [];
+        
+        // Validate title
+        if (!judulInput.value.trim()) {
+            errors.push('Judul video wajib diisi.');
+        }
+        
+        // Validate video file
+        if (!videoInput.files || videoInput.files.length === 0) {
+            errors.push('File video wajib dipilih.');
+        } else {
+            const file = videoInput.files[0];
+            
+            // Check file type
+            if (!allowedTypes.includes(file.type)) {
+                errors.push('Format video tidak didukung. Gunakan MP4, WebM, atau OGG.');
+            }
+            
+            // Check file size
+            if (file.size > maxSize) {
+                const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                errors.push(`Ukuran file (${sizeMB} MB) melebihi batas maksimal 50 MB.`);
+            }
+        }
+        
+        // If there are errors, show error modal instead of confirmation modal
+        if (errors.length > 0) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const errorList = document.getElementById('validationErrorList');
+            errorList.innerHTML = errors.map(err => `<li>${err}</li>`).join('');
+            
+            const errorModal = new bootstrap.Modal(document.getElementById('validationErrorModal'));
+            errorModal.show();
+            
+            return false;
+        }
+    });
+    
+    // Show file info when selected
+    videoInput.addEventListener('change', function() {
+        if (this.files && this.files.length > 0) {
+            const file = this.files[0];
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            
+            // Check if valid
+            let status = '';
+            if (!allowedTypes.includes(file.type)) {
+                status = '<span class="text-danger"><i class="fas fa-times-circle"></i> Format tidak didukung</span>';
+            } else if (file.size > maxSize) {
+                status = `<span class="text-danger"><i class="fas fa-times-circle"></i> Ukuran terlalu besar (${sizeMB} MB)</span>`;
+            } else {
+                status = `<span class="text-success"><i class="fas fa-check-circle"></i> ${file.name} (${sizeMB} MB)</span>`;
+            }
+            
+            // Update the help text
+            const helpText = this.parentElement.querySelector('.form-text');
+            if (helpText) {
+                helpText.innerHTML = `Format: MP4, WebM, OGG. Max: 50MB. <br>${status}`;
+            }
+        }
+    });
+});
+</script>
+@endsection
+

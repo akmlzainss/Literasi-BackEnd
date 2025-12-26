@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\SiswaAuthController;
+use App\Http\Controllers\Siswa\SiswaAuthController;
 use App\Http\Controllers\Api\ArtikelController;
 use App\Http\Controllers\Api\InteraksiController;
 use App\Http\Controllers\Api\KategoriController;

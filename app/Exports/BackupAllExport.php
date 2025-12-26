@@ -19,23 +19,20 @@ class BackupAllExport implements WithMultipleSheets
                 {
                     return DB::table('artikel')->select(
                         'id',
-                        'id_siswa',
-                        'id_kategori',
+                        'siswa_id',
+                        'kategori_id',
                         'judul',
                         'gambar',
                         'konten',
                         'penulis_type',
-                        'jenis',
                         'status',
                         'alasan_penolakan',
                         'diterbitkan_pada',
-                        'updated_at',
                         'jumlah_dilihat',
                         'jumlah_suka',
                         'nilai_rata_rata',
-                        'riwayat_persetujuan',
-                        'usulan_kategori',
                         'created_at',
+                        'updated_at',
                         'deleted_at'
                     )->get();
                 }
@@ -50,25 +47,22 @@ class BackupAllExport implements WithMultipleSheets
                         'Gambar',
                         'Konten',
                         'Penulis Type',
-                        'Jenis',
                         'Status',
                         'Alasan Penolakan',
                         'Diterbitkan Pada',
-                        'Updated At',
                         'Jumlah Dilihat',
                         'Jumlah Suka',
                         'Nilai Rata-rata',
-                        'Riwayat Persetujuan',
-                        'Usulan Kategori',
                         'Created At',
+                        'Updated At',
                         'Deleted At'
                     ];
                 }
 
                 public function styles(Worksheet $sheet)
                 {
-                    $sheet->getStyle('A1:S1')->getFont()->setBold(true);
-                    foreach (range('A', 'S') as $col) {
+                    $sheet->getStyle('A1:P1')->getFont()->setBold(true);
+                    foreach (range('A', 'P') as $col) {
                         $sheet->getColumnDimension($col)->setAutoSize(true);
                     }
                 }
@@ -148,11 +142,13 @@ class BackupAllExport implements WithMultipleSheets
                     return DB::table('penghargaan')->select(
                         'id',
                         'id_artikel',
+                        'id_video',
                         'id_siswa',
                         'id_admin',
                         'jenis',
                         'bulan_tahun',
                         'deskripsi_penghargaan',
+                        'arsip',
                         'dibuat_pada',
                         'deleted_at'
                     )->get();
@@ -163,11 +159,13 @@ class BackupAllExport implements WithMultipleSheets
                     return [
                         'ID',
                         'ID Artikel',
+                        'ID Video',
                         'ID Siswa',
                         'ID Admin',
                         'Jenis',
                         'Bulan/Tahun',
                         'Deskripsi Penghargaan',
+                        'Arsip',
                         'Dibuat Pada',
                         'Deleted At'
                     ];
@@ -175,8 +173,8 @@ class BackupAllExport implements WithMultipleSheets
 
                 public function styles(Worksheet $sheet)
                 {
-                    $sheet->getStyle('A1:I1')->getFont()->setBold(true);
-                    foreach (range('A', 'I') as $col) {
+                    $sheet->getStyle('A1:K1')->getFont()->setBold(true);
+                    foreach (range('A', 'K') as $col) {
                         $sheet->getColumnDimension($col)->setAutoSize(true);
                     }
                 }

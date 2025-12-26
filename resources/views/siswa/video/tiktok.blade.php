@@ -10,35 +10,126 @@
 
 @section('additional_css')
     <style>
-        /* CSS komentar yang sudah ada tetap utuh */
-        .comment-replies {
-            margin-left: 2rem;
-            margin-top: 0.5rem;
-            padding-left: 1rem;
-            border-left: 2px solid #e9ecef;
-            position: relative;
+        /* TikTok-style flat comments */
+        .comment-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
-        .comment-replies:before {
-            content: '';
-            position: absolute;
-            left: -2px;
-            top: 0;
-            width: 2px;
-            height: 100%;
-            background: linear-gradient(180deg, #3b82f6 0%, transparent 100%);
-            opacity: 0.5;
+        .comment-item:last-child {
+            border-bottom: none;
         }
 
-        .reply-form {
-            margin-left: 1rem;
-            margin-top: 0.5rem;
-            padding: 0.75rem;
-            background: #f8fafc;
+        .comment-author {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .comment-author-info {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+
+        .comment-author-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .comment-author-avatar-img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .reply-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: #6b7280;
+            font-size: 0.85rem;
+        }
+
+        .reply-to-name {
+            color: #3b82f6;
+            font-weight: 500;
+        }
+
+        .comment-text {
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
+            padding-left: 2.25rem;
+        }
+
+        .comment-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-left: 2.25rem;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .btn-reply-video,
+        .btn-delete-video-comment {
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+        .btn-reply-video:hover {
+            color: #3b82f6;
+        }
+
+        .btn-delete-video-comment:hover {
+            color: #ef4444;
+        }
+
+        .replying-to-video {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(59, 130, 246, 0.1);
+            padding: 0.5rem 0.75rem;
             border-radius: 8px;
-            border: 1px dashed #d1d5db;
-            display: none;
-            animation: slideDown 0.3s ease;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .cancel-reply-video {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+
+        .comment-form .input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .comment-form .form-control {
+            flex: 1;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+        }
+
+        .comment-form .btn-primary {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         @keyframes slideDown {
@@ -394,7 +485,7 @@
                     <i class="fas fa-play"></i>
                 </button>
 
-                <!-- Comment section (tidak diubah) -->
+                <!-- Comment section (TikTok-style flat) -->
                 <div class="comment-section" id="comment-section-{{ $video->id }}">
                     <div class="comment-header">
                         <h5><i class="fas fa-comments me-2"></i>Komentar</h5>
@@ -402,69 +493,47 @@
                                 class="fas fa-times"></i></button>
                     </div>
                     <div class="comment-list" id="comment-list-{{ $video->id }}">
-                        @forelse($video->komentar()->whereNull('id_komentar_parent')->latest()->get() as $komentar)
+                        {{-- TikTok-style: Load ALL comments flat --}}
+                        @php
+                            $allKomentar = $video->komentar()->with(['siswa', 'admin', 'parent.siswa', 'parent.admin'])->latest()->get();
+                        @endphp
+                        @forelse($allKomentar as $komentar)
+                            @php
+                                $komentarAuthorName = $komentar->siswa ? $komentar->siswa->nama : ($komentar->admin ? $komentar->admin->nama : 'U');
+                                $komentarAuthorPhoto = $komentar->siswa->foto_profil ?? null;
+                            @endphp
                             <div class="comment-item" data-comment-id="{{ $komentar->id }}">
                                 <div class="comment-author">
-                                    <span
-                                        class="comment-author-avatar">{{ Str::substr($komentar->siswa ? $komentar->siswa->nama : ($komentar->admin ? $komentar->admin->nama : 'U'), 0, 1) }}</span>
-                                    <span>{{ $komentar->siswa ? $komentar->siswa->nama : ($komentar->admin ? $komentar->admin->nama : 'Unknown') }}</span>
+                                    @if($komentarAuthorPhoto)
+                                        <img src="{{ asset('storage/' . $komentarAuthorPhoto) }}" alt="{{ $komentarAuthorName }}" class="comment-author-avatar-img">
+                                    @else
+                                        <span class="comment-author-avatar">{{ Str::substr($komentarAuthorName, 0, 1) }}</span>
+                                    @endif
+                                    <div class="comment-author-info">
+                                        <span class="comment-author-name">{{ $komentarAuthorName }}</span>
+                                        {{-- TikTok-style: Show "replying to @username" --}}
+                                        @if ($komentar->id_komentar_parent && $komentar->parent)
+                                            <span class="reply-indicator">
+                                                <i class="fas fa-caret-right"></i>
+                                                <span class="reply-to-name">@{{ $komentar->parent->siswa->nama ?? ($komentar->parent->admin->nama ?? 'User') }}</span>
+                                            </span>
+                                        @endif
+                                    </div>
                                 </div>
                                 <p class="comment-text">{{ $komentar->komentar }}</p>
                                 <div class="comment-meta">
                                     <span>{{ $komentar->created_at->diffForHumans() }}</span>
                                     @auth('siswa')
-                                        <button class="btn btn-outline-secondary btn-sm btn-reply"
-                                            data-id="{{ $komentar->id }}"><i class="fas fa-reply"></i> Balas</button>
-                                        @if (
-                                            (Auth::guard('siswa')->check() && $komentar->id_siswa == Auth::guard('siswa')->id()) ||
-                                                Auth::guard('admin')->check() ||
-                                                Auth::guard('web')->check())
-                                            <button class="btn btn-outline-secondary btn-sm delete-comment"
-                                                data-id="{{ $komentar->id }}"><i class="fas fa-trash"></i> Hapus</button>
+                                        <button class="btn-reply-video" data-id="{{ $komentar->id }}" data-name="{{ $komentar->siswa ? $komentar->siswa->nama : ($komentar->admin ? $komentar->admin->nama : 'User') }}" data-video-id="{{ $video->id }}">
+                                            <i class="fas fa-reply"></i>
+                                        </button>
+                                        @if ((Auth::guard('siswa')->check() && $komentar->id_siswa == Auth::guard('siswa')->id()) || Auth::guard('admin')->check())
+                                            <button class="btn-delete-video-comment" data-id="{{ $komentar->id }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
                                         @endif
                                     @endauth
                                 </div>
-                                @auth('siswa')
-                                    <form action="{{ route('video.komentar.store', $video->id) }}" method="POST"
-                                        class="reply-form" data-parent-id="{{ $komentar->id }}" style="display: none;">
-                                        @csrf
-                                        <input type="hidden" name="id_komentar_parent" value="{{ $komentar->id }}">
-                                        <div class="input-group mb-2">
-                                            <textarea class="form-control" name="komentar" placeholder="Tulis balasan..." rows="2" required></textarea>
-                                        </div>
-                                        <button type="submit" class="btn btn-primary btn-sm">Kirim Balasan</button>
-                                        <button type="button"
-                                            class="btn btn-secondary btn-sm btn-cancel-reply">Batal</button>
-                                    </form>
-                                @endauth
-                                @php
-                                    $replies = $komentar->replies;
-                                    $replyCount = $replies->count();
-                                @endphp
-                                @if ($replyCount > 0)
-                                    <div class="comment-replies-container">
-                                        <div class="comment-replies">
-                                            @foreach ($replies as $index => $balasan)
-                                                <div class="comment-item reply-item hidden-reply"
-                                                    data-comment-id="{{ $balasan->id }}">
-                                                    @include('partials.video_comment_item', [
-                                                        'komentar' => $balasan,
-                                                    ])
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                        <div class="view-replies-wrapper">
-                                            <button class="btn-view-replies">
-                                                <span class="line"></span>
-                                                Lihat {{ $replyCount }} balasan
-                                            </button>
-                                            <button class="btn-hide-replies hide-button">
-                                                <span class="line"></span>
-                                                Sembunyikan
-                                            </button>
-                                        </div>
-                                    </div>
-                                @endif
                             </div>
                         @empty
                             <div class="empty-comments">
@@ -474,15 +543,22 @@
                         @endforelse
                     </div>
 
+                    {{-- Floating comment form (TikTok-style) --}}
                     <div class="comment-form">
                         @auth('siswa')
+                            <div class="replying-to-video" id="replying-to-{{ $video->id }}" style="display: none;">
+                                <span><i class="fas fa-reply"></i> Membalas <strong id="replying-name-{{ $video->id }}">@user</strong></span>
+                                <button type="button" class="cancel-reply-video" data-video-id="{{ $video->id }}"><i class="fas fa-times"></i></button>
+                            </div>
                             <form class="form-comment" data-id="{{ $video->id }}">
                                 @csrf
-                                <div class="input-group mb-2">
-                                    <textarea class="form-control" name="komentar" placeholder="Tulis komentar..." rows="2" required></textarea>
+                                <input type="hidden" name="id_komentar_parent" id="parent-id-{{ $video->id }}" value="">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="komentar" id="komentar-input-{{ $video->id }}" placeholder="Tulis komentar..." required>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
                                 </div>
-                                <button type="submit" class="btn btn-submit w-100"><i
-                                        class="fas fa-paper-plane me-2"></i>Kirim Komentar</button>
                             </form>
                         @else
                             <p class="text-muted"><i class="fas fa-lock me-2"></i> Login untuk menambahkan komentar.</p>
@@ -751,12 +827,22 @@
                 form.addEventListener('submit', function(e) {
                     e.preventDefault();
                     const videoId = this.dataset.id;
-                    const textarea = this.querySelector('textarea');
-                    if (!textarea.value.trim()) return;
+                    const komentarInput = document.getElementById(`komentar-input-${videoId}`);
+                    const parentIdInput = document.getElementById(`parent-id-${videoId}`);
+                    const replyingTo = document.getElementById(`replying-to-${videoId}`);
+                    
+                    if (!komentarInput || !komentarInput.value.trim()) return;
                     const submitBtn = this.querySelector('button[type="submit"]');
                     const originalText = submitBtn.innerHTML;
                     submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Mengirim...';
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                    const bodyData = {
+                        komentar: komentarInput.value.trim()
+                    };
+                    if (parentIdInput && parentIdInput.value) {
+                        bodyData.id_komentar_parent = parentIdInput.value;
+                    }
 
                     fetch(`/video/${videoId}/komentar`, {
                             method: 'POST',
@@ -764,50 +850,52 @@
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': csrfToken
                             },
-                            body: JSON.stringify({
-                                komentar: textarea.value.trim()
-                            })
+                            body: JSON.stringify(bodyData)
                         })
                         .then(res => res.json())
                         .then(data => {
-                            if (data.success && !data.is_reply) {
-                                const commentList = document.getElementById(
-                                    `comment-list-${videoId}`);
+                            if (data.success) {
+                                const commentList = document.getElementById(`comment-list-${videoId}`);
                                 commentList.querySelector('.empty-comments')?.remove();
                                 const avatar_char = data.komentar.nama.charAt(0);
+                                
+                                // Build reply indicator if this is a reply
+                                const replyingName = document.getElementById(`replying-name-${videoId}`);
+                                const replyIndicatorHtml = parentIdInput && parentIdInput.value && replyingName
+                                    ? `<span class="reply-indicator"><i class="fas fa-caret-right"></i><span class="reply-to-name">${replyingName.textContent}</span></span>`
+                                    : '';
+
                                 const newCommentHtml = `
                                 <div class="comment-item" data-comment-id="${data.komentar.id}">
                                     <div class="comment-author">
                                         <span class="comment-author-avatar">${avatar_char}</span>
-                                        <span>${data.komentar.nama}</span>
+                                        <div class="comment-author-info">
+                                            <span class="comment-author-name">${data.komentar.nama}</span>
+                                            ${replyIndicatorHtml}
+                                        </div>
                                     </div>
                                     <p class="comment-text">${data.komentar.komentar}</p>
                                     <div class="comment-meta">
                                         <span>Baru saja</span>
-                                        <button class="btn btn-outline-secondary btn-sm btn-reply" data-id="${data.komentar.id}">
-                                            <i class="fas fa-reply"></i> Balas
+                                        <button class="btn-reply-video" data-id="${data.komentar.id}" data-name="${data.komentar.nama}" data-video-id="${videoId}">
+                                            <i class="fas fa-reply"></i>
                                         </button>
-                                        <button class="btn btn-outline-secondary btn-sm delete-comment" data-id="${data.komentar.id}">
-                                            <i class="fas fa-trash"></i> Hapus
+                                        <button class="btn-delete-video-comment" data-id="${data.komentar.id}">
+                                            <i class="fas fa-trash"></i>
                                         </button>
-                                        <form action="/video/${videoId}/komentar" method="POST" class="reply-form" style="display: none;">
-                                            <input type="hidden" name="_token" value="${csrfToken}">
-                                            <input type="hidden" name="id_komentar_parent" value="${data.komentar.id}">
-                                            <div class="input-group mb-2">
-                                                <textarea class="form-control" name="komentar" placeholder="Tulis balasan..." rows="2" required></textarea>
-                                            </div>
-                                            <button type="submit" class="btn btn-primary btn-sm">Kirim Balasan</button>
-                                            <button type="button" class="btn btn-secondary btn-sm btn-cancel-reply">Batal</button>
-                                        </form>
                                     </div>
                                 </div>`;
                                 commentList.insertAdjacentHTML('afterbegin', newCommentHtml);
-                                const countEl = document.querySelector(
-                                    `.comment-toggle[data-id="${videoId}"] .count`);
+                                const countEl = document.querySelector(`.comment-toggle[data-id="${videoId}"] .count`);
                                 if (countEl) {
                                     countEl.textContent = parseInt(countEl.textContent) + 1;
                                 }
-                                textarea.value = '';
+                                komentarInput.value = '';
+                                
+                                // Reset reply mode
+                                if (parentIdInput) parentIdInput.value = '';
+                                if (replyingTo) replyingTo.style.display = 'none';
+                                komentarInput.placeholder = 'Tulis komentar...';
                             } else {
                                 alert(data.message || 'Gagal mengirim komentar');
                             }
@@ -820,44 +908,48 @@
             });
 
             container.addEventListener('click', function(e) {
-                const replyBtn = e.target.closest('.btn-reply');
-                const cancelBtn = e.target.closest('.btn-cancel-reply');
-                const deleteBtn = e.target.closest('.delete-comment');
-                const viewRepliesBtn = e.target.closest('.btn-view-replies');
-                const hideRepliesBtn = e.target.closest('.btn-hide-replies');
+                const replyBtn = e.target.closest('.btn-reply-video');
+                const cancelBtn = e.target.closest('.cancel-reply-video');
+                const deleteBtn = e.target.closest('.btn-delete-video-comment');
 
+                // TikTok-style reply handler
                 if (replyBtn) {
                     e.preventDefault();
                     e.stopPropagation();
-                    const parentComment = replyBtn.closest('.comment-item');
-                    const form = parentComment.querySelector('.reply-form');
-                    if (!form) return;
-                    const isVisible = form.style.display === 'block';
-                    document.querySelectorAll('.reply-form').forEach(f => f.style.display = 'none');
-                    document.querySelectorAll('.btn-reply').forEach(b => {
-                        b.innerHTML = '<i class="fas fa-reply"></i> Balas';
-                        b.classList.remove('btn-secondary');
-                    });
-                    if (!isVisible) {
-                        form.style.display = 'block';
-                        form.querySelector('textarea').focus();
-                        replyBtn.innerHTML = '<i class="fas fa-times"></i> Batal';
-                        replyBtn.classList.add('btn-secondary');
+                    const commentId = replyBtn.dataset.id;
+                    const userName = replyBtn.dataset.name;
+                    const videoId = replyBtn.dataset.videoId;
+                    
+                    // Update form for reply
+                    const parentIdInput = document.getElementById(`parent-id-${videoId}`);
+                    const replyingTo = document.getElementById(`replying-to-${videoId}`);
+                    const replyingName = document.getElementById(`replying-name-${videoId}`);
+                    const komentarInput = document.getElementById(`komentar-input-${videoId}`);
+                    
+                    if (parentIdInput) parentIdInput.value = commentId;
+                    if (replyingTo) replyingTo.style.display = 'flex';
+                    if (replyingName) replyingName.textContent = '@' + userName;
+                    if (komentarInput) {
+                        komentarInput.placeholder = `Balas ke ${userName}...`;
+                        komentarInput.focus();
                     }
                 }
 
+                // Cancel reply handler
                 if (cancelBtn) {
                     e.preventDefault();
                     e.stopPropagation();
-                    const form = cancelBtn.closest('.reply-form');
-                    form.style.display = 'none';
-                    const replyBtn = form.closest('.comment-item').querySelector('.btn-reply');
-                    if (replyBtn) {
-                        replyBtn.innerHTML = '<i class="fas fa-reply"></i> Balas';
-                        replyBtn.classList.remove('btn-secondary');
-                    }
+                    const videoId = cancelBtn.dataset.videoId;
+                    const parentIdInput = document.getElementById(`parent-id-${videoId}`);
+                    const replyingTo = document.getElementById(`replying-to-${videoId}`);
+                    const komentarInput = document.getElementById(`komentar-input-${videoId}`);
+                    
+                    if (parentIdInput) parentIdInput.value = '';
+                    if (replyingTo) replyingTo.style.display = 'none';
+                    if (komentarInput) komentarInput.placeholder = 'Tulis komentar...';
                 }
 
+                // Delete button handler
                 if (deleteBtn) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -875,12 +967,10 @@
                                 if (data.success) {
                                     const commentItem = deleteBtn.closest('.comment-item');
                                     const videoSlide = commentItem.closest('.video-slide');
-                                    const videoId = videoSlide.dataset.videoId;
                                     commentItem.remove();
                                     const countEl = videoSlide.querySelector('.comment-toggle .count');
                                     if (countEl) {
-                                        countEl.textContent = Math.max(0, parseInt(countEl
-                                            .textContent) - 1);
+                                        countEl.textContent = Math.max(0, parseInt(countEl.textContent) - 1);
                                     }
                                 } else {
                                     alert(data.message || 'Gagal menghapus komentar.');
@@ -889,177 +979,8 @@
                             .catch(error => console.error('Error saat menghapus:', error));
                     }
                 }
-                if (deleteBtn) {
-                    e.preventDefault();
-
-                    // Ambil ID komentar dan simpan di modal
-                    const commentId = deleteBtn.dataset.id;
-                    document.getElementById('deleteCommentId').value = commentId;
-
-                    // Simpan referensi elemen tombol hapus agar bisa digunakan nanti
-                    const commentItem = deleteBtn.closest('.comment-item');
-                    const videoSlide = deleteBtn.closest('.video-slide');
-
-                    // Tampilkan modal
-                    const modal = new bootstrap.Modal(document.getElementById('deleteCommentModal'));
-                    modal.show();
-
-                    // Event listener tombol konfirmasi
-                    const confirmBtn = document.getElementById('confirmDeleteBtn');
-                    confirmBtn.onclick = () => {
-                        confirmBtn.disabled = true;
-                        confirmBtn.innerHTML =
-                            '<i class="fas fa-spinner fa-spin me-1"></i> Menghapus...';
-
-                        fetch(`/video/komentar/${commentId}`, {
-                                method: 'DELETE',
-                                headers: {
-                                    'X-CSRF-TOKEN': csrfToken,
-                                    'Accept': 'application/json'
-                                }
-                            })
-                            .then(res => res.json())
-                            .then(data => {
-                                if (data.success) {
-                                    commentItem.remove();
-                                    const countEl = videoSlide.querySelector(
-                                        '.comment-toggle .count');
-                                    countEl.textContent = Math.max(0, parseInt(countEl
-                                        .textContent) - 1);
-                                    modal.hide();
-                                } else {
-                                    alert(data.message || 'Gagal menghapus komentar.');
-                                }
-                            })
-                            .catch(error => console.error('Error saat menghapus:', error))
-                            .finally(() => {
-                                confirmBtn.disabled = false;
-                                confirmBtn.innerHTML = '<i class="fas fa-trash me-1"></i> Hapus';
-                            });
-                    };
-                }
-
-
-                if (viewRepliesBtn || hideRepliesBtn) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (viewRepliesBtn) {
-                        const wrapper = viewRepliesBtn.closest('.view-replies-wrapper');
-                        const container = viewRepliesBtn.closest('.comment-replies-container');
-                        const hiddenReplies = container.querySelectorAll('.reply-item.hidden-reply');
-                        const visibleThreshold = 3;
-                        let shownReplies = 0;
-
-                        for (let i = 0; i < hiddenReplies.length && shownReplies < visibleThreshold; i++) {
-                            hiddenReplies[i].classList.remove('hidden-reply');
-                            hiddenReplies[i].classList.add('reveal-reply');
-                            hiddenReplies[i].style.animationDelay = `${shownReplies * 0.05}s`;
-                            shownReplies++;
-                        }
-
-                        const remainingHiddenReplies = container.querySelectorAll(
-                            '.reply-item.hidden-reply').length;
-                        if (remainingHiddenReplies > 0) {
-                            viewRepliesBtn.querySelector('span').nextSibling.textContent =
-                                `Lihat ${remainingHiddenReplies} balasan lainnya`;
-                        } else {
-                            viewRepliesBtn.classList.add('hide-button');
-                        }
-                        wrapper.querySelector('.btn-hide-replies').classList.remove('hide-button');
-                    }
-
-                    if (hideRepliesBtn) {
-                        const wrapper = hideRepliesBtn.closest('.view-replies-wrapper');
-                        const container = hideRepliesBtn.closest('.comment-replies-container');
-                        const allReplies = container.querySelectorAll('.reply-item');
-
-                        allReplies.forEach(reply => {
-                            reply.classList.add('hidden-reply');
-                            reply.classList.remove('reveal-reply');
-                        });
-
-                        const totalReplies = allReplies.length;
-                        wrapper.querySelector('.btn-view-replies').querySelector('span').nextSibling
-                            .textContent = `Lihat ${totalReplies} balasan`;
-                        hideRepliesBtn.classList.add('hide-button');
-                        wrapper.querySelector('.btn-view-replies').classList.remove('hide-button');
-                    }
-                }
             });
 
-            container.addEventListener('submit', function(e) {
-                const form = e.target.closest('.reply-form');
-                if (!form) return;
-                e.preventDefault();
-                e.stopPropagation();
-
-                const submitBtn = form.querySelector('button[type="submit"]');
-                const originalText = submitBtn.innerHTML;
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
-                fetch(form.action, {
-                        method: 'POST',
-                        body: new FormData(form),
-                        headers: {
-                            'X-CSRF-TOKEN': csrfToken,
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success && data.is_reply) {
-                            const parentComment = form.closest('.comment-item');
-                            let repliesContainer = parentComment.querySelector('.comment-replies');
-                            if (!repliesContainer) {
-                                repliesContainer = document.createElement('div');
-                                repliesContainer.className = 'comment-replies';
-                                const wrapper = document.createElement('div');
-                                wrapper.className = 'view-replies-wrapper';
-                                wrapper.innerHTML = `
-                                <button class="btn-view-replies">
-                                    <span class="line"></span>
-                                    Lihat 1 balasan
-                                </button>
-                                <button class="btn-hide-replies hide-button">
-                                    <span class="line"></span>
-                                    Sembunyikan
-                                </button>`;
-                                parentComment.appendChild(wrapper);
-                                parentComment.appendChild(repliesContainer);
-                            }
-                            repliesContainer.insertAdjacentHTML('beforeend',
-                                `<div class="comment-item reply-item hidden-reply" data-comment-id="${data.komentar.id}">${data.new_comment_html}</div>`
-                                );
-                            const videoSlide = form.closest('.video-slide');
-                            const videoId = videoSlide.dataset.videoId;
-                            const countEl = videoSlide.querySelector('.comment-toggle .count');
-                            if (countEl) {
-                                countEl.textContent = parseInt(countEl.textContent) + 1;
-                            }
-                            form.style.display = 'none';
-                            form.querySelector('textarea').value = '';
-                            const replyBtn = parentComment.querySelector('.btn-reply');
-                            if (replyBtn) {
-                                replyBtn.innerHTML = '<i class="fas fa-reply"></i> Balas';
-                                replyBtn.classList.remove('btn-secondary');
-                            }
-                            const wrapper = parentComment.querySelector('.view-replies-wrapper');
-                            if (wrapper) {
-                                const totalHiddenReplies = parentComment.querySelectorAll(
-                                    '.reply-item.hidden-reply').length;
-                                wrapper.querySelector('.btn-view-replies').querySelector('span')
-                                    .nextSibling.textContent = `Lihat ${totalHiddenReplies} balasan`;
-                            }
-                        } else {
-                            alert(data.message || 'Gagal mengirim balasan.');
-                        }
-                    })
-                    .finally(() => {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalText;
-                    });
-            });
 
             let touchStartY = 0;
             document.addEventListener('touchstart', (e) => {

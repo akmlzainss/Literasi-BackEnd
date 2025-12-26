@@ -53,10 +53,27 @@ class VideoController extends Controller
     /**
      * Menampilkan halaman video dengan mode scroll ala TikTok.
      */
-    public function tiktokView()
+    public function tiktokView(Request $request)
     {
-        $videos = Video::where('status', 'disetujui')->with('siswa')->latest()->get();
-        return view('siswa.video.tiktok', compact('videos'));
+        $query = Video::where('status', 'disetujui')->with('siswa');
+        
+        // If starting from a specific video, put it first
+        $startVideoId = $request->get('start');
+        if ($startVideoId) {
+            // Get the target video first, then the rest
+            $startVideo = Video::where('id', $startVideoId)->where('status', 'disetujui')->first();
+            $otherVideos = $query->where('id', '!=', $startVideoId)->latest()->get();
+            
+            if ($startVideo) {
+                $videos = collect([$startVideo])->merge($otherVideos);
+            } else {
+                $videos = $query->latest()->get();
+            }
+        } else {
+            $videos = $query->latest()->get();
+        }
+        
+        return view('siswa.video.tiktok', compact('videos', 'startVideoId'));
     }
 
     /**

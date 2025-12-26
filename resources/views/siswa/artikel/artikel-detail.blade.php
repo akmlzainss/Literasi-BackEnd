@@ -202,75 +202,239 @@
     }
 
     /* ========================================
-           KOMENTAR ITEM - CARD DESIGN
+           KOMENTAR ITEM - TIKTOK FLAT STYLE
         ======================================== */
     .komentar-item {
-        margin-bottom: 1.5rem;
-        padding: 1.75rem;
-        background: var(--white);
-        border-radius: 16px;
-        border: 1px solid var(--border-light);
-        box-shadow: var(--shadow-sm);
+        margin-bottom: 0;
+        padding: 1rem 0;
+        background: transparent;
+        border-radius: 0;
+        border: none;
+        border-bottom: 1px solid var(--border-light);
+        box-shadow: none;
         transition: var(--transition-smooth);
-        position: relative;
-        overflow: hidden;
     }
 
-    .komentar-item:before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 4px;
-        height: 100%;
-        background: var(--gradient-blue-enhanced);
-        opacity: 0;
-        transition: opacity 0.3s ease;
+    .komentar-item:last-child {
+        border-bottom: none;
     }
 
     .komentar-item:hover {
-        box-shadow: var(--shadow-md);
-        transform: translateY(-2px);
-        border-color: var(--border);
-    }
-
-    .komentar-item:hover:before {
-        opacity: 1;
+        background: rgba(0, 0, 0, 0.02);
+        box-shadow: none;
+        transform: none;
     }
 
     /* Komentar Header */
     .komentar-item .author-avatar-siswa {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
         background: var(--gradient-blue-enhanced);
         color: var(--white);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 700;
-        font-size: 1.1rem;
-        box-shadow: var(--shadow-sm);
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: none;
+    }
+
+    /* Avatar image for profile photos */
+    .author-avatar-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .komentar-item .comment-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.25rem;
     }
 
     .komentar-item .name {
         font-weight: 600;
         color: var(--text-primary);
-        font-size: 1rem;
-        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+        margin-bottom: 0;
+    }
+
+    /* TikTok-style reply indicator */
+    .reply-indicator {
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .reply-indicator .text-primary {
+        color: var(--primary) !important;
+        font-weight: 500;
     }
 
     .komentar-item .date {
-        font-size: 0.875rem;
+        font-size: 0.75rem;
         color: var(--text-secondary);
         margin: 0;
+        width: 100%;
     }
 
     .komentar-item .komentar-text {
         color: var(--text-primary);
-        line-height: 1.7;
-        margin-top: 1rem;
-        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-top: 0.25rem;
+        font-size: 0.9rem;
+    }
+
+    .komentar-item .comment-actions .btn {
+        padding: 0.25rem 0.5rem;
+        border: none;
+        background: transparent;
+        color: var(--text-secondary);
+    }
+
+    .komentar-item .comment-actions .btn:hover {
+        color: var(--primary);
+        background: rgba(59, 130, 246, 0.1);
+    }
+
+    /* Reply form container */
+    .reply-form-container {
+        position: sticky;
+        bottom: 0;
+        background: var(--light) !important;
+        z-index: 10;
+    }
+
+    .replying-to-indicator {
+        background: rgba(59, 130, 246, 0.1);
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    /* ========================================
+           INSTAGRAM-STYLE COMMENTS
+        ======================================== */
+    
+    /* Comment Avatar - same size for all */
+    .comment-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .comment-avatar-placeholder {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    /* Comment author */
+    .comment-author {
+        font-size: 0.85rem;
+        color: var(--dark);
+        margin-right: 0.25rem;
+    }
+
+    /* @mention text - Instagram blue */
+    .mention-text {
+        font-size: 0.85rem;
+        margin-right: 0.25rem;
+    }
+
+    /* Comment text inline */
+    .comment-text {
+        font-size: 0.85rem;
+        color: var(--text-primary);
+        line-height: 1.4;
+    }
+
+    /* Comment metadata row */
+    .comment-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .comment-time {
+        font-size: 0.75rem;
+    }
+
+    /* Inline reply button - Instagram style */
+    .btn-reply-inline {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .btn-reply-inline:hover {
+        color: var(--dark);
+    }
+
+    /* View replies toggle - Instagram style */
+    .replies-toggle-section {
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-view-replies {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-view-replies:hover {
+        color: var(--dark);
+    }
+
+    .toggle-line {
+        width: 24px;
+        height: 1px;
+        background: var(--text-secondary);
+    }
+
+    /* Flat replies container - NO extra indent */
+    .flat-replies-container {
+        margin-top: 0.5rem;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .flat-replies-container .komentar-item {
+        padding: 0.5rem 0;
+        border-bottom: none;
+    }
+
+    /* Reply item - same level as parent visually */
+    .reply-item {
+        /* No extra margin - flat like Instagram */
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
 
     /* ========================================
@@ -664,7 +828,7 @@
                             </form>
                         @else
                             <div class="text-center p-4 border rounded">
-                                <p class="mb-1">Silakan <a href="{{ route('login') }}">masuk</a> untuk memberi rating dan
+                                <p class="mb-1">Silakan <a href="{{ route('siswa.login') }}">masuk</a> untuk memberi rating dan
                                     komentar.</p>
                             </div>
                         @endauth
@@ -672,8 +836,7 @@
                         <div class="komentar-section mt-5">
                             <h3 class="mb-4" id="comment-title">Komentar ({{ $konten->komentarArtikel->count() }})</h3>
                             <div id="comment-list">
-                                {{-- KODE YANG DIPERBAIKI ADA DI SINI --}}
-                                {{-- Tombol dan form balasan yang salah tempat sudah dihapus dari sini --}}
+                                {{-- TikTok-style flat comments --}}
                                 @forelse($konten->komentarArtikel as $komentar)
                                     @include('partials.komentar', [
                                         'komentar' => $komentar,
@@ -682,32 +845,63 @@
                                 @empty
                                     <p id="no-comment-msg">Belum ada komentar. Jadilah yang pertama!</p>
                                 @endforelse
-                                <!-- Modal Konfirmasi Hapus -->
-                                <div class="modal fade" id="confirmDeleteModal" tabindex="-1"
-                                    aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content border-0 shadow-lg">
-                                            <div class="modal-header bg-danger text-white">
-                                                <h5 class="modal-title" id="confirmDeleteModalLabel">
-                                                    <i class="fas fa-exclamation-triangle me-2"></i> Konfirmasi Hapus
-                                                </h5>
-                                                <button type="button" class="btn-close btn-close-white"
-                                                    data-bs-dismiss="modal" aria-label="Tutup"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                Apakah kamu yakin ingin menghapus komentar ini beserta semua balasannya?
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary"
-                                                    data-bs-dismiss="modal">Batal</button>
-                                                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Ya,
-                                                    Hapus</button>
-                                            </div>
+                            </div>
+                            
+                            {{-- Floating Reply Form (TikTok-style) --}}
+                            @auth('siswa')
+                            <div class="reply-form-container mt-4 p-3 bg-light rounded-3 border" id="replyFormContainer">
+                                <div class="replying-to-indicator mb-2" id="replyingToIndicator" style="display: none;">
+                                    <span class="text-muted small">
+                                        <i class="fas fa-reply me-1"></i>Membalas 
+                                        <strong id="replyingToName">@username</strong>
+                                    </span>
+                                    <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2" id="cancelReplyBtn">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <form id="replyForm" action="{{ route('komentar.store', $konten->id) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="parent_id" id="replyParentId" value="">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="komentar" id="komentarInput" 
+                                            placeholder="Tulis komentar..." required>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            @else
+                            <div class="text-center p-3 bg-light rounded-3 border mt-4">
+                                <a href="{{ route('siswa.login') }}" class="text-primary">Masuk</a> untuk berkomentar
+                            </div>
+                            @endauth
+
+                            <!-- Modal Konfirmasi Hapus -->
+                            <div class="modal fade" id="confirmDeleteModal" tabindex="-1"
+                                aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content border-0 shadow-lg">
+                                        <div class="modal-header bg-danger text-white">
+                                            <h5 class="modal-title" id="confirmDeleteModalLabel">
+                                                <i class="fas fa-exclamation-triangle me-2"></i> Konfirmasi Hapus
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white"
+                                                data-bs-dismiss="modal" aria-label="Tutup"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Apakah kamu yakin ingin menghapus komentar ini?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Batal</button>
+                                            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Ya,
+                                                Hapus</button>
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -948,59 +1142,58 @@
             }
 
             // ==============================
-            // 3️⃣ Handle Balas Komentar
+            // 3️⃣ Handle Balas Komentar (Instagram-style)
             // ==============================
             function initializeReplyButtons() {
-                document.querySelectorAll('.btn-reply').forEach(button => {
+                const replyFormContainer = document.getElementById('replyFormContainer');
+                const replyingToIndicator = document.getElementById('replyingToIndicator');
+                const replyingToName = document.getElementById('replyingToName');
+                const replyParentId = document.getElementById('replyParentId');
+                const cancelReplyBtn = document.getElementById('cancelReplyBtn');
+                const komentarInput = document.getElementById('komentarInput');
+                const replyForm = document.getElementById('replyForm');
+
+                if (!replyFormContainer) return; // User not logged in
+
+                // Handle both old .btn-reply and new .btn-reply-inline buttons
+                const replyButtons = document.querySelectorAll('.btn-reply, .btn-reply-inline');
+                replyButtons.forEach(button => {
                     button.replaceWith(button.cloneNode(true));
                 });
 
-                document.querySelectorAll('.btn-reply').forEach(button => {
+                document.querySelectorAll('.btn-reply, .btn-reply-inline').forEach(button => {
                     button.addEventListener('click', function(e) {
                         e.preventDefault();
                         const komentarId = this.dataset.id;
-                        const parentComment = this.closest('.komentar-item');
-                        if (!parentComment) return;
-
-                        const form = parentComment.querySelector(
-                            `.reply-form[data-parent-id="${komentarId}"]`);
-                        if (form) {
-                            document.querySelectorAll('.reply-form').forEach(f => {
-                                if (f !== form) f.style.display = 'none';
-                            });
-                            const isVisible = form.style.display === 'block';
-                            form.style.display = isVisible ? 'none' : 'block';
-                            form.querySelector('textarea').focus();
-                            this.innerHTML = isVisible ?
-                                '<i class="fas fa-reply"></i> Balas' :
-                                '<i class="fas fa-times"></i> Batal';
-                        }
+                        const userName = this.dataset.name;
+                        
+                        // Update form to reply mode
+                        replyParentId.value = komentarId;
+                        replyingToName.textContent = '@' + userName;
+                        replyingToIndicator.style.display = 'block';
+                        komentarInput.placeholder = `Balas ke ${userName}...`;
+                        
+                        // Update form action for reply
+                        const artikelId = {{ $konten->id }};
+                        replyForm.action = `/artikel-siswa/${artikelId}/komentar/${komentarId}`;
+                        
+                        // Scroll to form and focus
+                        replyFormContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        setTimeout(() => komentarInput.focus(), 300);
                     });
                 });
-            }
 
-            // ==============================
-            // 4️⃣ Handle Lihat Balasan
-            // ==============================
-            function initializeLihatBalasanButtons() {
-                document.querySelectorAll('.lihat-balasan-btn').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const id = this.dataset.id;
-                        const balasanDiv = document.getElementById(`balasan-${id}`);
-                        if (!balasanDiv) return;
-
-                        const isHidden = balasanDiv.style.display === 'none' || balasanDiv.style
-                            .display === '';
-                        if (isHidden) {
-                            balasanDiv.style.display = 'block';
-                            this.innerHTML = `Sembunyikan balasan ▲`;
-                        } else {
-                            balasanDiv.style.display = 'none';
-                            this.innerHTML = `Lihat ${balasanDiv.children.length} balasan ▼`;
-                        }
+                // Cancel reply button
+                if (cancelReplyBtn) {
+                    cancelReplyBtn.addEventListener('click', function() {
+                        replyParentId.value = '';
+                        replyingToIndicator.style.display = 'none';
+                        komentarInput.placeholder = 'Tulis komentar...';
+                        replyForm.action = "{{ route('komentar.store', $konten->id) }}";
                     });
-                });
+                }
             }
+
 
             // ==============================
             // 5️⃣ Handle Hapus Komentar
@@ -1092,8 +1285,8 @@
             // Jalankan semua inisialisasi
             initializeActionButtons();
             initializeReplyButtons();
-            initializeLihatBalasanButtons();
             initializeDeleteButtons();
+            initializeToggleReplies();
 
             // Jalankan update pertama kali
             updateRelativeTime();
@@ -1101,14 +1294,36 @@
             // Update waktu setiap 1 menit
             setInterval(updateRelativeTime, 10000);
 
+            // ==============================
+            // 6️⃣ Toggle Replies (Instagram/TikTok style)
+            // ==============================
+            function initializeToggleReplies() {
+                document.querySelectorAll('.toggle-replies').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const commentId = this.dataset.commentId;
+                        const repliesCount = this.dataset.repliesCount;
+                        const repliesContainer = document.getElementById(`replies-${commentId}`);
+                        
+                        if (repliesContainer.style.display === 'none') {
+                            repliesContainer.style.display = 'block';
+                            this.innerHTML = `<i class="fas fa-comment me-1"></i>Sembunyikan ${repliesCount} balasan`;
+                        } else {
+                            repliesContainer.style.display = 'none';
+                            this.innerHTML = `<i class="fas fa-comment me-1"></i>Lihat ${repliesCount} balasan`;
+                        }
+                    });
+                });
+            }
+
             // Untuk komentar yang dimuat dinamis
             document.addEventListener('DOMNodeInserted', function(event) {
                 if (event.target.classList && event.target.classList.contains('komentar-item')) {
                     initializeReplyButtons();
-                    initializeLihatBalasanButtons();
                     initializeDeleteButtons();
+                    initializeToggleReplies();
                 }
             });
         });
     </script>
 @endsection
+

@@ -18,7 +18,7 @@ class Artikel extends Model
         'id_siswa',
         'id_kategori',
         'judul',
-        'isi',
+        'konten',
         'gambar',
         'penulis_type',
         'status',

@@ -189,18 +189,21 @@
                     @empty
                         <div class="col-12">
                             <div class="empty-state animate-ready">
-                                <div class="empty-icon mb-4">
-                                    <i class="fas fa-search fa-4x text-muted"></i>
-                                </div>
-                                <h4 class="text-muted">Artikel tidak ditemukan</h4>
-                                <p class="text-muted mb-4">
+                                <i class="fas fa-search empty-icon"></i>
+                                <h4>Artikel tidak ditemukan</h4>
+                                <p>
                                     Coba gunakan kata kunci atau filter yang berbeda, atau
-                                    <a href="{{ route('artikel-siswa.index') }}" class="text-primary">lihat semua
-                                        artikel</a>
+                                    <a href="{{ route('artikel-siswa.index') }}">lihat semua artikel</a>
                                 </p>
-                                <a href="{{ route('artikel-siswa.create') }}" class="btn btn-primary">
+                                @auth('siswa')
+                                <a href="{{ route('artikel-siswa.create') }}" class="btn btn-empty-action">
                                     <i class="fas fa-plus me-2"></i>Tulis Artikel Pertama
                                 </a>
+                                @else
+                                <a href="{{ route('siswa.login') }}" class="btn btn-empty-action">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login untuk Menulis Artikel
+                                </a>
+                                @endauth
                             </div>
                         </div>
                     @endforelse
@@ -253,3 +256,80 @@
 <script>
     // Normal pagination - no AJAX
 </script>
+
+@section('additional_css')
+<style>
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 5rem 2rem;
+        color: #64748b;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        max-width: 1200px;
+        margin: 2rem auto;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        color: #94a3b8;
+        display: block;
+    }
+
+    .empty-state h4 {
+        color: #1e293b;
+        margin-bottom: 0.75rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .empty-state p {
+        color: #64748b;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state a:not(.btn) {
+        color: #3b82f6;
+        text-decoration: none;
+    }
+    
+    .empty-state a:not(.btn):hover {
+        text-decoration: underline;
+    }
+
+    .empty-state .btn-empty-action {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important; /* Force background */
+        border: none !important;
+        border-radius: 6px !important;
+        padding: 0.6rem 1.25rem !important;
+        color: white !important;
+        font-weight: 500 !important;
+        font-size: 0.9rem !important;
+        transition: transform 0.2s, box-shadow 0.2s !important;
+        display: inline-flex !important;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .empty-state .btn-empty-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59,130,246,0.4) !important;
+    }
+
+    .empty-state .btn-empty-action i {
+        font-size: 0.8em !important;
+        margin: 0 !important;
+        position: relative !important;
+        top: 1px !important;
+        color: white !important; /* Ensure icon is white */
+    }
+    
+    /* Ensure icon color is white explicitly */
+    .empty-state .btn-empty-action .fa-plus,
+    .empty-state .btn-empty-action .fa-sign-in-alt {
+         color: white !important;
+    }
+</style>
+@endsection
