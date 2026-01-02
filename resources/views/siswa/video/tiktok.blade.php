@@ -410,13 +410,83 @@
         .interaction-buttons button {
             pointer-events: auto;
         }
+
+        /* Button "Lihat balasan" untuk video comments */
+        .btn-lihat-balasan-video {
+            background: none;
+            border: none;
+            color: #8e8e8e;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0.5rem 0;
+            padding-left: 2.25rem;
+            display: block;
+        }
+        .btn-lihat-balasan-video:hover {
+            color: #262626;
+        }
+
+        /* Container balasan video */
+        .video-replies-container {
+            margin-left: 1.5rem;
+            padding-left: 0.75rem;
+            border-left: 2px solid #e5e7eb;
+            margin-top: 0.5rem;
+        }
+        .video-replies-container .comment-item {
+            padding: 0.5rem 0;
+        }
+        .video-replies-container .comment-author-avatar,
+        .video-replies-container .comment-author-avatar-img {
+            width: 26px !important;
+            height: 26px !important;
+            font-size: 0.7rem;
+        }
+        .video-replies-container .comment-text {
+            padding-left: 2rem;
+            font-size: 0.85rem;
+        }
+        .video-replies-container .comment-meta {
+            padding-left: 2rem;
+            font-size: 0.75rem;
+        }
+
+        /* Mention tag (@username) styling */
+        .mention-tag {
+            color: #3b82f6;
+            font-weight: 500;
+            margin-right: 0.25rem;
+        }
+
+        /* Toast Animation */
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+        }
     </style>
 @endsection
 
 @section('content')
-    <a href="{{ route('video.index') }}" class="back-button" aria-label="Kembali ke halaman utama">
+    {{-- Mobile back button --}}
+    <button onclick="history.back()" class="back-button d-lg-none" aria-label="Kembali ke halaman utama">
         <i class="fas fa-arrow-left"></i>
-    </a>
+    </button>
+
+    {{-- Desktop close button (X) --}}
+    <button onclick="history.back()" class="close-modal d-none d-lg-flex" aria-label="Tutup">
+        <i class="fas fa-times"></i>
+    </button>
+
+    {{-- Desktop navigation arrows --}}
+    <button class="nav-arrow prev d-none d-lg-flex" id="prevVideo" aria-label="Video sebelumnya">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <button class="nav-arrow next d-none d-lg-flex" id="nextVideo" aria-label="Video selanjutnya">
+        <i class="fas fa-chevron-right"></i>
+    </button>
 
     <div class="tiktok-container" id="tiktok-container">
         @forelse($videos as $video)
@@ -424,27 +494,31 @@
                 <div class="video-progress">
                     <div class="video-progress-bar"></div>
                 </div>
-                <video class="video-player" loop playsinline preload="metadata"
-                    aria-label="Video berjudul {{ $video->judul }}">
-                    <source src="{{ asset('storage/' . $video->video_path) }}" type="video/mp4">
-                    Browser Anda tidak mendukung tag video.
-                </video>
-
-                <!-- Progress bar waktu di tengah -->
-                <div class="video-progress-container" id="progress-container-{{ $video->id }}">
-                    <div class="video-progress-bar-custom">
-                        <div class="video-progress-fill" id="progress-fill-{{ $video->id }}"></div>
-                    </div>
-                    <div class="video-time-display">
-                        <span class="video-time-current" id="time-current-{{ $video->id }}">00:00</span>
-                        <span id="time-duration-{{ $video->id }}">00:00</span>
-                    </div>
+                
+                {{-- Video wrapper for positioning mute button --}}
+                <div class="video-wrapper">
+                    <video class="video-player" loop playsinline preload="metadata"
+                        aria-label="Video berjudul {{ $video->judul }}">
+                        <source src="{{ asset('storage/' . $video->video_path) }}" type="video/mp4">
+                        Browser Anda tidak mendukung tag video.
+                    </video>
+                    
+                    <!-- Volume/Mute button - inside video wrapper -->
+                    <button class="mute-btn" data-id="{{ $video->id }}" title="Nonaktifkan suara" style="position: absolute; bottom: 16px; right: 16px; top: auto; left: auto;">
+                        <i class="fas fa-volume-high"></i>
+                    </button>
                 </div>
+
+
 
                 <div class="video-overlay">
                     <div class="video-info">
                         <div class="video-author">
-                            <span class="author-avatar">{{ Str::substr($video->siswa->nama ?? 'A', 0, 1) }}</span>
+                            @if($video->siswa && $video->siswa->foto_profil)
+                                <img src="{{ asset('storage/' . $video->siswa->foto_profil) }}" alt="{{ $video->siswa->nama }}" class="author-avatar-img">
+                            @else
+                                <span class="author-avatar">{{ Str::substr($video->siswa->nama ?? 'A', 0, 1) }}</span>
+                            @endif
                             <span>{{ $video->siswa->nama ?? 'Admin' }}</span>
                         </div>
                         <h5 class="video-title">{{ $video->judul }}</h5>
@@ -456,51 +530,81 @@
                 </div>
 
                 <div class="interaction-buttons">
+                    {{-- Like Button --}}
                     <button
                         class="btn-action like-btn {{ Auth::guard('siswa')->check() &&$video->interaksi()->where('id_siswa', Auth::guard('siswa')->id())->where('jenis', 'suka')->exists()? 'active': '' }}"
                         data-action="suka" data-id="{{ $video->id }}" title="Suka video ini">
                         <i class="fas fa-heart"></i>
                         <span class="count">{{ $video->interaksi()->where('jenis', 'suka')->count() }}</span>
                     </button>
+                    
+                    {{-- Comment Button --}}
+                    <button class="btn-action comment-btn comment-toggle" data-id="{{ $video->id }}"
+                        title="Lihat komentar">
+                        <i class="fas fa-comment"></i>
+                        <span class="count">{{ $video->komentar()->count() }}</span>
+                    </button>
+                    
+                    {{-- Bookmark Button --}}
                     <button
                         class="btn-action bookmark-btn {{ Auth::guard('siswa')->check() &&$video->interaksi()->where('id_siswa', Auth::guard('siswa')->id())->where('jenis', 'bookmark')->exists()? 'active': '' }}"
                         data-action="bookmark" data-id="{{ $video->id }}" title="Simpan video">
                         <i class="fas fa-bookmark"></i>
                         <span class="count">{{ $video->interaksi()->where('jenis', 'bookmark')->count() }}</span>
                     </button>
-                    <button class="btn-action comment-btn comment-toggle" data-id="{{ $video->id }}"
-                        title="Lihat komentar">
-                        <i class="fas fa-comment"></i>
-                        <span class="count">{{ $video->komentar()->count() }}</span>
-                    </button>
                 </div>
 
-                <!-- Tombol unmute di kanan atas -->
-                <button class="btn-action mute-btn" data-id="{{ $video->id }}" title="Nonaktifkan/Aktifkan suara">
-                    <i class="fas fa-volume-up"></i>
-                </button>
 
-                <!-- Tombol play/pause di sebelah kiri progress bar -->
-                <button class="btn-action play-pause-btn" data-id="{{ $video->id }}" title="Putar/Jeda video">
-                    <i class="fas fa-play"></i>
-                </button>
 
-                <!-- Comment section (TikTok-style flat) -->
-                <div class="comment-section" id="comment-section-{{ $video->id }}">
-                    <div class="comment-header">
+                <!-- Comment section - Instagram Style -->
+                <div class="comment-section desktop-active" id="comment-section-{{ $video->id }}">
+                    {{-- Mobile Header --}}
+                    <div class="comment-header d-lg-none">
                         <h5><i class="fas fa-comments me-2"></i>Komentar</h5>
-                        <button class="close-comments" data-video-id="{{ $video->id }}" aria-label="Tutup komentar"><i
-                                class="fas fa-times"></i></button>
+                        <button class="close-comments" data-video-id="{{ $video->id }}" aria-label="Tutup komentar">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
+
+                    {{-- Desktop: Account Info --}}
+                    <div class="ig-account-info d-none d-lg-flex">
+                        @if($video->siswa && $video->siswa->foto_profil)
+                            <img src="{{ asset('storage/' . $video->siswa->foto_profil) }}" alt="{{ $video->siswa->nama }}" class="ig-account-avatar-img">
+                        @else
+                            <span class="ig-account-avatar">{{ Str::substr($video->siswa->nama ?? 'A', 0, 1) }}</span>
+                        @endif
+                        <div>
+                            <span class="ig-account-name">{{ $video->siswa->nama ?? 'Admin' }}</span>
+                        </div>
+                        {{-- Audio asli hidden --}}
+                    </div>
+
+                    {{-- Desktop: Caption --}}
+                    <div class="ig-caption-section d-none d-lg-block">
+                        <div class="ig-caption">
+                            <span class="username">{{ $video->siswa->nama ?? 'Admin' }}</span>
+                            {{ $video->judul }}
+                            @if($video->deskripsi)
+                                <br><span class="description">{{ Str::limit($video->deskripsi, 500) }}</span>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- Comment List --}}
                     <div class="comment-list" id="comment-list-{{ $video->id }}">
-                        {{-- TikTok-style: Load ALL comments flat --}}
                         @php
-                            $allKomentar = $video->komentar()->with(['siswa', 'admin', 'parent.siswa', 'parent.admin'])->latest()->get();
+                            // Hanya ambil komentar PARENT (bukan balasan)
+                            $parentKomentar = $video->komentar()
+                                ->whereNull('id_komentar_parent')
+                                ->with(['siswa', 'admin', 'replies.siswa', 'replies.admin'])
+                                ->latest()
+                                ->get();
                         @endphp
-                        @forelse($allKomentar as $komentar)
+                        @forelse($parentKomentar as $komentar)
                             @php
                                 $komentarAuthorName = $komentar->siswa ? $komentar->siswa->nama : ($komentar->admin ? $komentar->admin->nama : 'U');
                                 $komentarAuthorPhoto = $komentar->siswa->foto_profil ?? null;
+                                $replies = $komentar->replies ?? collect();
                             @endphp
                             <div class="comment-item" data-comment-id="{{ $komentar->id }}">
                                 <div class="comment-author">
@@ -511,57 +615,124 @@
                                     @endif
                                     <div class="comment-author-info">
                                         <span class="comment-author-name">{{ $komentarAuthorName }}</span>
-                                        {{-- TikTok-style: Show "replying to @username" --}}
-                                        @if ($komentar->id_komentar_parent && $komentar->parent)
-                                            <span class="reply-indicator">
-                                                <i class="fas fa-caret-right"></i>
-                                                <span class="reply-to-name">@{{ $komentar->parent->siswa->nama ?? ($komentar->parent->admin->nama ?? 'User') }}</span>
-                                            </span>
-                                        @endif
                                     </div>
                                 </div>
                                 <p class="comment-text">{{ $komentar->komentar }}</p>
                                 <div class="comment-meta">
                                     <span>{{ $komentar->created_at->diffForHumans() }}</span>
                                     @auth('siswa')
-                                        <button class="btn-reply-video" data-id="{{ $komentar->id }}" data-name="{{ $komentar->siswa ? $komentar->siswa->nama : ($komentar->admin ? $komentar->admin->nama : 'User') }}" data-video-id="{{ $video->id }}">
-                                            <i class="fas fa-reply"></i>
+                                        <button class="btn-reply-video" data-id="{{ $komentar->id }}" data-name="{{ $komentarAuthorName }}" data-video-id="{{ $video->id }}">
+                                            Balas
                                         </button>
                                         @if ((Auth::guard('siswa')->check() && $komentar->id_siswa == Auth::guard('siswa')->id()) || Auth::guard('admin')->check())
                                             <button class="btn-delete-video-comment" data-id="{{ $komentar->id }}">
-                                                <i class="fas fa-trash"></i>
+                                                Hapus
                                             </button>
                                         @endif
                                     @endauth
                                 </div>
+
+                                {{-- REPLIES SECTION --}}
+                                @if($replies->count() > 0)
+                                    <button class="btn-lihat-balasan-video" data-target="replies-{{ $komentar->id }}">
+                                        — Lihat {{ $replies->count() }} balasan
+                                    </button>
+                                    <div class="video-replies-container" id="replies-{{ $komentar->id }}" style="display: none;">
+                                        @foreach($replies as $reply)
+                                            @php
+                                                $replyAuthorName = $reply->siswa ? $reply->siswa->nama : ($reply->admin ? $reply->admin->nama : 'U');
+                                                $replyAuthorPhoto = $reply->siswa->foto_profil ?? null;
+                                            @endphp
+                                            <div class="comment-item reply-item" data-comment-id="{{ $reply->id }}">
+                                                <div class="comment-author">
+                                                    @if($replyAuthorPhoto)
+                                                        <img src="{{ asset('storage/' . $replyAuthorPhoto) }}" alt="{{ $replyAuthorName }}" class="comment-author-avatar-img">
+                                                    @else
+                                                        <span class="comment-author-avatar">{{ Str::substr($replyAuthorName, 0, 1) }}</span>
+                                                    @endif
+                                                    <div class="comment-author-info">
+                                                        <span class="comment-author-name">{{ $replyAuthorName }}</span>
+                                                        <span class="mention-tag">{{ '@' . $komentarAuthorName }}</span>
+                                                    </div>
+                                                </div>
+                                                <p class="comment-text">{{ $reply->komentar }}</p>
+                                                <div class="comment-meta">
+                                                    <span>{{ $reply->created_at->diffForHumans() }}</span>
+                                                    @auth('siswa')
+                                                        <button class="btn-reply-video" data-id="{{ $komentar->id }}" data-name="{{ $replyAuthorName }}" data-video-id="{{ $video->id }}">
+                                                            Balas
+                                                        </button>
+                                                        @if ((Auth::guard('siswa')->check() && $reply->id_siswa == Auth::guard('siswa')->id()) || Auth::guard('admin')->check())
+                                                            <button class="btn-delete-video-comment" data-id="{{ $reply->id }}">
+                                                                Hapus
+                                                            </button>
+                                                        @endif
+                                                    @endauth
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
                         @empty
-                            <div class="empty-comments">
-                                <i class="fas fa-comment-slash"></i>
-                                <p>Belum ada komentar. Jadilah yang pertama!</p>
+                            <div class="empty-comments text-center py-5">
+                                <img src="https://cdni.iconscout.com/illustration/premium/thumb/empty-state-2130362-1800926.png" alt="No Comments" style="width: 150px; opacity: 0.5;">
+                                <p style="color: #6b7280; font-style: italic; margin-top: 1rem;">Belum ada komentar. Jadilah yang pertama!</p>
                             </div>
                         @endforelse
                     </div>
 
-                    {{-- Floating comment form (TikTok-style) --}}
+                    {{-- Desktop: Interaction Bar --}}
+                    <div class="ig-interaction-bar d-none d-lg-block">
+                        <div class="ig-interaction-icons">
+                            <button class="like-btn {{ Auth::guard('siswa')->check() && $video->interaksi()->where('id_siswa', Auth::guard('siswa')->id())->where('jenis', 'suka')->exists() ? 'active' : '' }}" 
+                                    data-action="suka" data-id="{{ $video->id }}">
+                                <i class="far fa-heart"></i>
+                            </button>
+                            <button class="comment-focus-btn" data-id="{{ $video->id }}">
+                                <i class="far fa-comment"></i>
+                            </button>
+                            <button class="share-btn" onclick="shareVideo('{{ $video->judul }}')">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
+                            <button class="bookmark-btn {{ Auth::guard('siswa')->check() && $video->interaksi()->where('id_siswa', Auth::guard('siswa')->id())->where('jenis', 'bookmark')->exists() ? 'active' : '' }}" 
+                                    data-action="bookmark" data-id="{{ $video->id }}">
+                                <i class="far fa-bookmark"></i>
+                            </button>
+                        </div>
+                        <div class="ig-likes-count">{{ number_format($video->interaksi()->where('jenis', 'suka')->count()) }} suka</div>
+                        @php
+                            $daysDiff = $video->created_at->diffInDays(now());
+                            if ($daysDiff == 0) {
+                                $dateDisplay = 'Hari ini';
+                            } elseif ($daysDiff == 1) {
+                                $dateDisplay = '1 hari yang lalu';
+                            } elseif ($daysDiff >= 2 && $daysDiff <= 6) {
+                                $dateDisplay = $daysDiff . ' hari yang lalu';
+                            } elseif ($daysDiff == 7) {
+                                $dateDisplay = '1 minggu yang lalu';
+                            } else {
+                                $dateDisplay = $video->created_at->format('j F Y');
+                            }
+                        @endphp
+                        <div class="ig-post-date">{{ $dateDisplay }}</div>
+                    </div>
+
+                    {{-- Comment Form --}}
                     <div class="comment-form">
                         @auth('siswa')
                             <div class="replying-to-video" id="replying-to-{{ $video->id }}" style="display: none;">
                                 <span><i class="fas fa-reply"></i> Membalas <strong id="replying-name-{{ $video->id }}">@user</strong></span>
                                 <button type="button" class="cancel-reply-video" data-video-id="{{ $video->id }}"><i class="fas fa-times"></i></button>
                             </div>
-                            <form class="form-comment" data-id="{{ $video->id }}">
+                            <form class="form-comment d-flex align-items-center gap-2" data-id="{{ $video->id }}">
                                 @csrf
                                 <input type="hidden" name="id_komentar_parent" id="parent-id-{{ $video->id }}" value="">
-                                <div class="input-group">
-                                    <input type="text" class="form-control" name="komentar" id="komentar-input-{{ $video->id }}" placeholder="Tulis komentar..." required>
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-paper-plane"></i>
-                                    </button>
-                                </div>
+                                <input type="text" class="form-control" name="komentar" id="komentar-input-{{ $video->id }}" placeholder="Tambahkan komentar..." required>
+                                <button type="submit" class="post-btn" style="background: none; border: none; color: #3b82f6; font-size: 1.2rem; padding: 0.5rem; cursor: pointer;"><i class="fas fa-paper-plane"></i></button>
                             </form>
                         @else
-                            <p class="text-muted"><i class="fas fa-lock me-2"></i> Login untuk menambahkan komentar.</p>
+                            <p class="text-muted text-center py-2"><a href="{{ route('siswa.login') }}" class="text-decoration-none">Login</a> untuk menambahkan komentar</p>
                         @endauth
                     </div>
                 </div>
@@ -604,62 +775,142 @@
 
 @section('scripts')
     <script>
+        // --- SHARE VIDEO FUNCTION ---
+        function shareVideo(title) {
+            const url = window.location.href;
+            
+            // Coba Web Share API dulu (mobile)
+            if (navigator.share) {
+                navigator.share({ title, url }).catch(() => {
+                    // Jika user cancel, tidak apa-apa
+                });
+            } else {
+                // Fallback: Copy link ke clipboard
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast('Link berhasil disalin! 📋');
+                }).catch(() => {
+                    // Fallback untuk browser lama
+                    prompt('Salin link video:', url);
+                });
+            }
+        }
+        
+        // --- TOAST NOTIFICATION ---
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.innerText = message;
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 100px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #333;
+                color: white;
+                padding: 12px 24px;
+                border-radius: 25px;
+                font-size: 0.9rem;
+                z-index: 9999;
+                animation: fadeInOut 2.5s ease;
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+        
         document.addEventListener('DOMContentLoaded', () => {
             const container = document.getElementById('tiktok-container');
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-
-            if (!csrfToken) {
-                console.error(
-                    'CSRF token not found! Add <meta name="csrf-token" content="{{ csrf_token() }}"> to your layout.'
-                    );
-            }
-
-            // Fungsi format waktu
-            function formatTime(seconds) {
-                const minutes = Math.floor(seconds / 60);
-                const secs = Math.floor(seconds % 60);
-                return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            }
-
-            // Intersection Observer untuk auto-play video (tidak trigger komentar)
+            const videoSlides = document.querySelectorAll('.video-slide');
             const videos = document.querySelectorAll('.video-player');
+            let currentIndex = 0;
             let currentVideo = null;
-            let currentVideoId = null;
+            
+            // Find initial video from URL param
+            const urlParams = new URLSearchParams(window.location.search);
+            const startId = urlParams.get('start');
+            if (startId) {
+                videoSlides.forEach((slide, index) => {
+                    if (slide.dataset.videoId === startId) {
+                        currentIndex = index;
+                    }
+                });
+            }
 
+            // Desktop: Show only current video
+            function showVideo(index) {
+                if (index < 0 || index >= videoSlides.length) return;
+                
+                // Pause all videos
+                videos.forEach(v => {
+                    v.pause();
+                    v.currentTime = 0;
+                });
+                
+                // Hide all slides on desktop
+                if (window.innerWidth >= 992) {
+                    videoSlides.forEach((slide, i) => {
+                        slide.style.display = i === index ? 'flex' : 'none';
+                    });
+                }
+                
+                currentIndex = index;
+                const video = videoSlides[index].querySelector('.video-player');
+                if (video) {
+                    video.play().catch(e => console.log('Autoplay prevented:', e));
+                    currentVideo = video;
+                }
+            }
+
+            // Initial show
+            if (window.innerWidth >= 992) {
+                showVideo(currentIndex);
+            }
+
+            // Navigation arrows
+            const prevBtn = document.getElementById('prevVideo');
+            const nextBtn = document.getElementById('nextVideo');
+            
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    if (currentIndex > 0) {
+                        showVideo(currentIndex - 1);
+                    }
+                });
+            }
+            
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    if (currentIndex < videoSlides.length - 1) {
+                        showVideo(currentIndex + 1);
+                    }
+                });
+            }
+
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft' && currentIndex > 0) {
+                    showVideo(currentIndex - 1);
+                } else if (e.key === 'ArrowRight' && currentIndex < videoSlides.length - 1) {
+                    showVideo(currentIndex + 1);
+                } else if (e.key === 'Escape') {
+                    history.back();
+                }
+            });
+
+            // Mobile: Intersection Observer for scroll
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     const video = entry.target;
                     const videoSlide = video.closest('.video-slide');
-                    const videoId = videoSlide.dataset.videoId;
-                    const progressBar = videoSlide.querySelector('.video-progress-bar');
 
-                    if (entry.isIntersecting && parseFloat(entry.intersectionRatio) > 0.7) {
-                        if (currentVideoId !== videoId) {
-                            if (currentVideo && currentVideo !== video) {
-                                currentVideo.pause();
-                                currentVideo.currentTime = 0;
-                            }
-                            video.play().catch(e => console.log('Autoplay prevented:', e));
-                            currentVideo = video;
-                            currentVideoId = videoId;
+                    if (entry.isIntersecting && entry.intersectionRatio > 0.7) {
+                        if (currentVideo && currentVideo !== video) {
+                            currentVideo.pause();
+                            currentVideo.currentTime = 0;
                         }
-
-                        const timeupdateHandler = () => {
-                            const progress = (video.currentTime / video.duration) * 100;
-                            progressBar.style.width = `${progress}%`;
-                        };
-                        video.addEventListener('timeupdate', timeupdateHandler);
-
-                        const cleanup = () => {
-                            video.removeEventListener('timeupdate', timeupdateHandler);
-                            observer.unobserve(video);
-                        };
-                        video.addEventListener('pause', cleanup, {
-                            once: true
-                        });
+                        video.play().catch(e => console.log('Autoplay prevented:', e));
+                        currentVideo = video;
                     } else if (!entry.isIntersecting) {
                         video.pause();
-                        progressBar.style.width = '0%';
                     }
                 });
             }, {
@@ -667,13 +918,14 @@
             });
 
             videos.forEach(video => {
-                observer.observe(video);
+                // Only use observer on mobile
+                if (window.innerWidth < 992) {
+                    observer.observe(video);
+                }
 
+                // Click to play/pause
                 video.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    const videoSlide = this.closest('.video-slide');
-                    const videoId = videoSlide.dataset.videoId;
-
                     if (this.paused) {
                         this.play().catch(e => console.log('Play prevented:', e));
                     } else {
@@ -682,83 +934,55 @@
                 });
 
                 const videoId = video.closest('.video-slide').dataset.videoId;
-                const progressContainer = document.getElementById(`progress-container-${videoId}`);
-                const progressFill = document.getElementById(`progress-fill-${videoId}`);
-                const timeCurrent = document.getElementById(`time-current-${videoId}`);
-                const timeDuration = document.getElementById(`time-duration-${videoId}`);
-                const playPauseBtn = document.querySelector(`.play-pause-btn[data-id="${videoId}"]`);
                 const muteBtn = document.querySelector(`.mute-btn[data-id="${videoId}"]`);
 
-                video.addEventListener('loadedmetadata', () => {
-                    timeDuration.textContent = formatTime(video.duration);
-                });
+                // Set video unmuted by default
+                video.muted = false;
 
-                video.addEventListener('timeupdate', () => {
-                    const progress = (video.currentTime / video.duration) * 100;
-                    if (progressFill) {
-                        progressFill.style.width = `${progress}%`;
-                    }
-                    if (timeCurrent) {
-                        timeCurrent.textContent = formatTime(video.currentTime);
-                    }
-                });
-
-                if (playPauseBtn) {
-                    playPauseBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const icon = playPauseBtn.querySelector('i');
-                        if (video.paused) {
-                            video.play().catch(e => console.log('Play prevented:', e));
-                            icon.classList.remove('fa-play');
-                            icon.classList.add('fa-pause');
-                            playPauseBtn.classList.add('active');
-                        } else {
-                            video.pause();
-                            icon.classList.remove('fa-pause');
-                            icon.classList.add('fa-play');
-                            playPauseBtn.classList.remove('active');
-                        }
-                    });
-                }
-
+                // Mute button
                 if (muteBtn) {
                     muteBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
                         const icon = muteBtn.querySelector('i');
                         video.muted = !video.muted;
                         if (video.muted) {
-                            icon.classList.remove('fa-volume-up');
-                            icon.classList.add('fa-volume-mute');
-                            muteBtn.classList.add('active');
+                            icon.classList.remove('fa-volume-high');
+                            icon.classList.add('fa-volume-xmark');
+                            muteBtn.classList.add('muted');
                         } else {
-                            icon.classList.remove('fa-volume-mute');
-                            icon.classList.add('fa-volume-up');
-                            muteBtn.classList.remove('active');
+                            icon.classList.remove('fa-volume-xmark');
+                            icon.classList.add('fa-volume-high');
+                            muteBtn.classList.remove('muted');
                         }
                     });
                 }
-
-                video.addEventListener('play', () => {
-                    if (playPauseBtn) {
-                        const icon = playPauseBtn.querySelector('i');
-                        icon.classList.remove('fa-play');
-                        icon.classList.add('fa-pause');
-                        playPauseBtn.classList.add('active');
-                    }
-                });
-                video.addEventListener('pause', () => {
-                    if (playPauseBtn) {
-                        const icon = playPauseBtn.querySelector('i');
-                        icon.classList.remove('fa-pause');
-                        icon.classList.add('fa-play');
-                        playPauseBtn.classList.remove('active');
-                    }
-                });
             });
 
             document.querySelectorAll('.btn-action[data-action]').forEach(button => {
                 button.addEventListener('click', function(e) {
                     e.stopPropagation();
+                    
+                    // Optimistic UI: Update tampilan duluan sebelum request selesai
+                    const isLike = this.dataset.action === 'suka';
+                    const countSpan = this.querySelector('.count');
+                    let currentCount = parseInt(countSpan.textContent.replace(/,/g, '') || '0');
+                    const wasActive = this.classList.contains('active');
+                    
+                    // Toggle state visual
+                    this.classList.toggle('active');
+                    
+                    // Update count sementara
+                    if (wasActive) {
+                        countSpan.textContent = Math.max(0, currentCount - 1);
+                    } else {
+                        countSpan.textContent = currentCount + 1;
+                    }
+                    
+                    // Tambahkan animasi klik
+                    this.style.transform = 'scale(1.2)';
+                    setTimeout(() => this.style.transform = 'scale(1)', 200);
+
+                    // Kirim request ke server
                     fetch(`/video/${this.dataset.id}/interaksi`, {
                             method: 'POST',
                             headers: {
@@ -772,13 +996,27 @@
                         .then(res => res.json())
                         .then(data => {
                             if (data.success) {
-                                this.querySelector('.count').textContent = data.count;
-                                this.classList.toggle('active', data.action === 'added');
+                                // Update dengan data akurat dari server (jaga-jaga mismatch)
+                                countSpan.textContent = data.count;
+                                // Sinkronkan state akhir
+                                if (data.action === 'added') {
+                                    this.classList.add('active');
+                                } else {
+                                    this.classList.remove('active');
+                                }
                             } else {
+                                // Revert jika gagal logic server
+                                this.classList.toggle('active');
+                                countSpan.textContent = currentCount; // Balikin count
                                 alert(data.error || 'Silakan login.');
                             }
                         })
-                        .catch(err => console.error(err));
+                        .catch(err => {
+                            console.error(err);
+                            // Revert jika error jaringan
+                            this.classList.toggle('active');
+                            countSpan.textContent = currentCount;
+                        });
                 });
             });
 
@@ -1000,6 +1238,25 @@
                 }
             }, {
                 passive: true
+            });
+
+            // --- Toggle Lihat Balasan Video ---
+            document.querySelectorAll('.btn-lihat-balasan-video').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetId = this.dataset.target;
+                    const repliesContainer = document.getElementById(targetId);
+                    
+                    if (repliesContainer) {
+                        const isHidden = repliesContainer.style.display === 'none';
+                        repliesContainer.style.display = isHidden ? 'block' : 'none';
+                        
+                        // Update button text
+                        const replyCount = repliesContainer.querySelectorAll('.comment-item').length;
+                        this.textContent = isHidden 
+                            ? `— Sembunyikan balasan` 
+                            : `— Lihat ${replyCount} balasan`;
+                    }
+                });
             });
         });
     </script>

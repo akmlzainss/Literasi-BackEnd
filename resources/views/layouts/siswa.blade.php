@@ -28,6 +28,19 @@
             <a href="@auth('siswa'){{ route('dashboard-siswa') }}@else{{ route('artikel-siswa.index') }}@endauth" class="logo">
                 <i class="fas fa-graduation-cap"></i> SIPENA
             </a>
+            
+            @guest('siswa')
+            {{-- Auth buttons for mobile - shown next to hamburger --}}
+            <div class="d-flex d-lg-none align-items-center gap-2 ms-auto me-2 auth-buttons-mobile">
+                <a href="{{ route('siswa.login') }}" class="btn btn-auth-login-sm">
+                    <i class="fas fa-sign-in-alt"></i>
+                </a>
+                <a href="{{ route('siswa.login') }}" class="btn btn-auth-register-sm">
+                    <i class="fas fa-user-plus"></i>
+                </a>
+            </div>
+            @endguest
+            
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
                 <span class="navbar-toggler-icon">
                     <i class="fas fa-bars"></i>
@@ -49,14 +62,14 @@
                             <i class="fas fa-newspaper me-1 d-lg-none"></i>Artikel
                         </a>
                     </li>
-                    @auth('siswa')
-                    <!-- Tambahkan link Video -->
+                    <!-- Video - tersedia untuk publik -->
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('video.index') || request()->routeIs('video.tiktok') ? 'active' : '' }}"
+                        <a class="nav-link {{ request()->routeIs('video.index') || request()->routeIs('video.tiktok') || request()->routeIs('video.public*') ? 'active' : '' }}"
                             href="{{ route('video.index') }}">
                             <i class="fas fa-video me-1 d-lg-none"></i>Video
                         </a>
                     </li>
+                    @auth('siswa')
                     <li class="nav-item">
                         <a href="{{ route('artikel-siswa.upload') }}"
                             class="nav-link {{ request()->routeIs('artikel-siswa.upload*') || request()->routeIs('artikel-siswa.create*') ? 'active' : '' }}">
@@ -113,14 +126,15 @@
                             </form>
                         </li>
                     @else
-                        <li class="nav-item">
-                            <a href="{{ route('siswa.login') }}" class="btn btn-outline-primary btn-sm rounded-pill me-2">
-                                <i class="fas fa-sign-in-alt me-1"></i>Masuk
+                        {{-- Desktop only auth buttons --}}
+                        <li class="nav-item d-none d-lg-flex gap-2 auth-buttons">
+                            <a href="{{ route('siswa.login') }}" class="btn btn-auth-login">
+                                <i class="fas fa-sign-in-alt"></i>
+                                <span>Masuk</span>
                             </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('siswa.login') }}" class="btn btn-primary btn-sm rounded-pill">
-                                <i class="fas fa-user-plus me-1"></i>Daftar
+                            <a href="{{ route('siswa.login') }}" class="btn btn-auth-register">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Daftar</span>
                             </a>
                         </li>
                     @endauth
@@ -150,75 +164,91 @@
     <footer class="footer-sekolah pt-5 pb-4">
         <div class="container text-center text-md-start">
             <div class="row">
+                <!-- Brand & Description -->
                 <div class="col-lg-4 col-md-12 mx-auto mb-4">
                     <div class="d-flex align-items-center justify-content-center justify-content-md-start mb-3">
                         <div class="footer-logo-wrapper me-3">
                             <img src="{{ asset('images/logo_sekolah.png') }}" alt="Logo SMKN 11 Bandung"
                                 style="height: 60px;" class="footer-logo">
                         </div>
-                        <div>
-                            <h6 class="text-uppercase fw-bold mb-0 footer-school-name">SMK Negeri 11 Bandung</h6>
-                            <small class="text-muted">Dinas Pendidikan Provinsi Jawa Barat</small>
+                        <div class="footer-brand-info">
+                            <h4 class="text-uppercase fw-bold mb-0">SMK Negeri 11 Bandung</h4>
+                            <small>Dinas Pendidikan Provinsi Jawa Barat</small>
                         </div>
                     </div>
                     <p class="footer-description">
                         Platform literasi digital SIPENA hadir sebagai sarana untuk menumbuhkan minat baca dan
-                        kreativitas siswa/i SMK Negeri 11 Bandung.
+                        kreativitas siswa/i SMK Negeri 11 Bandung melalui artikel dan video edukatif.
                     </p>
                     <div class="footer-social-media mt-3">
-                        <a href="#" class="footer-social-link me-3" title="Facebook">
+                        <a href="https://www.facebook.com/smkn11bdg.official" target="_blank" class="footer-social-link" title="Facebook">
                             <i class="fab fa-facebook-f"></i>
                         </a>
-                        <a href="#" class="footer-social-link me-3" title="Instagram">
+                        <a href="https://www.instagram.com/smkn11bdg.official" target="_blank" class="footer-social-link" title="Instagram">
                             <i class="fab fa-instagram"></i>
                         </a>
-                        <a href="#" class="footer-social-link me-3" title="YouTube">
+                        <a href="https://www.youtube.com/@smkn11bandung" target="_blank" class="footer-social-link" title="YouTube">
                             <i class="fab fa-youtube"></i>
                         </a>
-                        <a href="#" class="footer-social-link" title="Website Sekolah">
+                        <a href="https://www.smkn11bdg.sch.id" target="_blank" class="footer-social-link" title="Website Sekolah">
                             <i class="fas fa-globe"></i>
                         </a>
                     </div>
                 </div>
 
+                <!-- Navigasi -->
                 <div class="col-lg-2 col-md-4 col-6 mx-auto mb-4">
                     <h6 class="text-uppercase fw-bold mb-4 footer-section-title">Navigasi</h6>
                     <ul class="footer-nav-list">
                         @auth('siswa')
                         <li><a href="{{ route('dashboard-siswa') }}" class="footer-nav-link">
-                                <i class="fas fa-home me-2"></i>Beranda</a></li>
+                                <i class="fas fa-home"></i>Beranda</a></li>
                         @endauth
                         <li><a href="{{ route('artikel-siswa.index') }}" class="footer-nav-link">
-                                <i class="fas fa-newspaper me-2"></i>Jelajahi Artikel</a></li>
+                                <i class="fas fa-newspaper"></i>Jelajahi Artikel</a></li>
+                        <li><a href="{{ route('video.index') }}" class="footer-nav-link">
+                                <i class="fas fa-video"></i>Jelajahi Video</a></li>
                         @auth('siswa')
                         <li><a href="{{ route('artikel-siswa.upload') }}" class="footer-nav-link">
-                                <i class="fas fa-plus-circle me-2"></i>Upload Karya</a></li>
+                                <i class="fas fa-plus-circle"></i>Upload Karya</a></li>
                         @else
                         <li><a href="{{ route('siswa.login') }}" class="footer-nav-link">
-                                <i class="fas fa-sign-in-alt me-2"></i>Masuk / Daftar</a></li>
+                                <i class="fas fa-sign-in-alt"></i>Masuk / Daftar</a></li>
                         @endauth
-                        <li><a href="https://www.smkn11bdg.sch.id/contact" target="_blank" class="footer-nav-link">
-                                <i class="fas fa-phone me-2"></i>Hubungi Kami</a></li>
                     </ul>
                 </div>
 
+                <!-- Bantuan -->
+                <div class="col-lg-2 col-md-4 col-6 mx-auto mb-4">
+                    <h6 class="text-uppercase fw-bold mb-4 footer-section-title">Bantuan</h6>
+                    <ul class="footer-nav-list">
+                        <li><a href="{{ route('faq') }}" class="footer-nav-link">
+                                <i class="fas fa-question-circle"></i>FAQ</a></li>
+                        <li><a href="{{ route('panduan') }}" class="footer-nav-link">
+                                <i class="fas fa-book"></i>Panduan</a></li>
+                        <li><a href="https://www.smkn11bdg.sch.id/contact" target="_blank" class="footer-nav-link">
+                                <i class="fas fa-headset"></i>Hubungi Kami</a></li>
+                    </ul>
+                </div>
+
+                <!-- Alamat & Kontak -->
                 <div class="col-lg-4 col-md-8 col-12 mx-auto mb-4">
                     <h6 class="text-uppercase fw-bold mb-4 footer-section-title">Alamat & Kontak</h6>
                     <div class="footer-contact-info">
                         <p class="footer-contact-item">
-                            <i class="fas fa-map-marker-alt me-3 text-primary"></i>
+                            <i class="fas fa-map-marker-alt"></i>
                             Jl. Budhi, Cilember, Sukaraja, Kec. Cicendo, Kota Bandung, Jawa Barat 40175
                         </p>
                         <p class="footer-contact-item">
-                            <i class="fas fa-phone me-3 text-primary"></i>
+                            <i class="fas fa-phone"></i>
                             <a href="tel:(022) 6652442" class="footer-contact-link">(022) 6652442</a>
                         </p>
                         <p class="footer-contact-item">
-                            <i class="fas fa-envelope me-3 text-primary"></i>
+                            <i class="fas fa-envelope"></i>
                             <a href="mailto:smkn11bdg@gmail.com" class="footer-contact-link">smkn11bdg@gmail.com</a>
                         </p>
                         <p class="footer-contact-item">
-                            <i class="fas fa-globe me-3 text-primary"></i>
+                            <i class="fas fa-globe"></i>
                             <a href="https://www.smkn11bdg.sch.id" target="_blank" class="footer-contact-link">
                                 www.smkn11bdg.sch.id
                             </a>
@@ -227,7 +257,7 @@
                 </div>
             </div>
 
-            <hr class="footer-divider my-4">
+            <hr class="footer-divider my-4" style="border-color: rgba(255,255,255,0.1);">
 
             <div class="row align-items-center">
                 <div class="col-md-6 text-center text-md-start">
@@ -237,8 +267,8 @@
                     </p>
                 </div>
                 <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
-                    <small class="text-muted">
-                        Dibuat dengan <i class="fas fa-heart text-danger"></i> untuk pendidikan
+                    <small style="color: rgba(255,255,255,0.6);">
+                        Dibuat dengan <i class="fas fa-heart text-danger"></i> untuk pendidikan Indonesia
                     </small>
                 </div>
             </div>

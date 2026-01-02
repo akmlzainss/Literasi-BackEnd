@@ -108,7 +108,7 @@ class VideoController extends Controller
         $request->validate([
             'judul' => 'required|string|max:255',
             'deskripsi' => 'nullable|string|max:1000',
-            'video' => 'required|file|mimetypes:video/mp4,video/webm,video/ogg|max:51200',
+            'video' => 'required|file|mimetypes:video/mp4,video/webm,video/ogg|max:512000',
             'id_kategori' => 'nullable|exists:kategori,id',
         ]);
 
@@ -121,8 +121,8 @@ class VideoController extends Controller
         ]);
         $duration = $ffprobe->format($videoFilePath)->get('duration');
 
-        if ($duration > 60) {
-            return back()->withErrors(['video' => 'Durasi video tidak boleh lebih dari 1 menit.']);
+        if ($duration > 900) {
+            return back()->withErrors(['video' => 'Durasi video tidak boleh lebih dari 15 menit.']);
         }
 
         // Pastikan folder ada

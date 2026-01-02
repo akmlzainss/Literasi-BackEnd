@@ -266,9 +266,12 @@
             cursor: pointer;
             border-radius: 8px;
             text-decoration: none;
-            background: #f0f0f0;
-            display: block;
-            border: 1px solid #e0e0e0;
+            background: #fafafa url('/images/default-article.png') center center no-repeat;
+            background-size: 60%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ebebeb;
         }
 
         .content-card:hover {
@@ -281,6 +284,13 @@
             height: 100%;
             object-fit: cover;
             display: block;
+            position: absolute;
+            inset: 0;
+        }
+
+        /* Default icon when no image - hidden, using bg image instead */
+        .content-card .default-icon {
+            display: none;
         }
 
         /* Remove overlay - transparent */
@@ -333,10 +343,10 @@
         @media (max-width: 480px) {
             .content-grid {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 6px;
+                gap: 8px;
             }
             .tab-content-profile {
-                padding: 8px;
+                padding: 12px;
             }
         }
 
@@ -494,21 +504,19 @@
                                     @foreach ($allPostingan as $post)
                                         @if ($post['type'] === 'video')
                                             <a href="{{ route('video.tiktok', ['start' => $post['item']->id]) }}" class="content-card">
-                                                <img src="{{ $post['item']->thumbnail_path ? asset('storage/' . $post['item']->thumbnail_path) : '' }}"
-                                                    alt="{{ $post['item']->judul }}">
-                                                <div class="content-card-overlay">
-                                                    <span class="content-card-badge"><i class="bi bi-play-fill"></i> Video</span>
-                                                    <h6 class="content-card-title">{{ Str::limit($post['item']->judul, 40) }}</h6>
-                                                </div>
+                                                <i class="bi bi-play-circle-fill default-icon"></i>
+                                                @if($post['item']->thumbnail_path)
+                                                    <img src="{{ asset('storage/' . $post['item']->thumbnail_path) }}" alt="{{ $post['item']->judul }}">
+                                                @endif
+                                                <span class="content-card-badge"><i class="bi bi-play-fill"></i></span>
                                             </a>
                                         @else
                                             <a href="{{ route('artikel-siswa.show', $post['item']->id) }}" class="content-card">
-                                                <img src="{{ $post['item']->gambar ? asset('storage/' . $post['item']->gambar) : '' }}"
-                                                    alt="{{ $post['item']->judul }}">
-                                                <div class="content-card-overlay">
-                                                    <span class="content-card-badge"><i class="bi bi-file-text"></i> Artikel</span>
-                                                    <h6 class="content-card-title">{{ Str::limit($post['item']->judul, 40) }}</h6>
-                                                </div>
+                                                <i class="bi bi-newspaper default-icon"></i>
+                                                @if($post['item']->gambar)
+                                                    <img src="{{ asset('storage/' . $post['item']->gambar) }}" alt="{{ $post['item']->judul }}">
+                                                @endif
+                                                <span class="content-card-badge"><i class="bi bi-file-text"></i></span>
                                             </a>
                                         @endif
                                     @endforeach
@@ -538,21 +546,19 @@
                                     @foreach ($allDisukai as $post)
                                         @if ($post['type'] === 'video')
                                             <a href="{{ route('video.tiktok', ['start' => $post['item']->id]) }}" class="content-card">
-                                                <img src="{{ $post['item']->thumbnail_path ? asset('storage/' . $post['item']->thumbnail_path) : '' }}"
-                                                    alt="{{ $post['item']->judul }}">
-                                                <div class="content-card-overlay">
-                                                    <span class="content-card-badge"><i class="bi bi-play-fill"></i> Video</span>
-                                                    <h6 class="content-card-title">{{ Str::limit($post['item']->judul, 40) }}</h6>
-                                                </div>
+                                                <i class="bi bi-play-circle-fill default-icon"></i>
+                                                @if($post['item']->thumbnail_path)
+                                                    <img src="{{ asset('storage/' . $post['item']->thumbnail_path) }}" alt="{{ $post['item']->judul }}">
+                                                @endif
+                                                <span class="content-card-badge"><i class="bi bi-play-fill"></i></span>
                                             </a>
                                         @else
                                             <a href="{{ route('artikel-siswa.show', $post['item']->id) }}" class="content-card">
-                                                <img src="{{ $post['item']->gambar ? asset('storage/' . $post['item']->gambar) : '' }}"
-                                                    alt="{{ $post['item']->judul }}">
-                                                <div class="content-card-overlay">
-                                                    <span class="content-card-badge"><i class="bi bi-file-text"></i> Artikel</span>
-                                                    <h6 class="content-card-title">{{ Str::limit($post['item']->judul, 40) }}</h6>
-                                                </div>
+                                                <i class="bi bi-newspaper default-icon"></i>
+                                                @if($post['item']->gambar)
+                                                    <img src="{{ asset('storage/' . $post['item']->gambar) }}" alt="{{ $post['item']->judul }}">
+                                                @endif
+                                                <span class="content-card-badge"><i class="bi bi-file-text"></i></span>
                                             </a>
                                         @endif
                                     @endforeach
@@ -582,21 +588,19 @@
                                     @foreach ($allDisimpan as $post)
                                         @if ($post['type'] === 'video')
                                             <a href="{{ route('video.tiktok', ['start' => $post['item']->id]) }}" class="content-card">
-                                                <img src="{{ $post['item']->thumbnail_path ? asset('storage/' . $post['item']->thumbnail_path) : '' }}"
-                                                    alt="{{ $post['item']->judul }}">
-                                                <div class="content-card-overlay">
-                                                    <span class="content-card-badge"><i class="bi bi-play-fill"></i> Video</span>
-                                                    <h6 class="content-card-title">{{ Str::limit($post['item']->judul, 40) }}</h6>
-                                                </div>
+                                                <i class="bi bi-play-circle-fill default-icon"></i>
+                                                @if($post['item']->thumbnail_path)
+                                                    <img src="{{ asset('storage/' . $post['item']->thumbnail_path) }}" alt="{{ $post['item']->judul }}">
+                                                @endif
+                                                <span class="content-card-badge"><i class="bi bi-play-fill"></i></span>
                                             </a>
                                         @else
                                             <a href="{{ route('artikel-siswa.show', $post['item']->id) }}" class="content-card">
-                                                <img src="{{ $post['item']->gambar ? asset('storage/' . $post['item']->gambar) : '' }}"
-                                                    alt="{{ $post['item']->judul }}">
-                                                <div class="content-card-overlay">
-                                                    <span class="content-card-badge"><i class="bi bi-file-text"></i> Artikel</span>
-                                                    <h6 class="content-card-title">{{ Str::limit($post['item']->judul, 40) }}</h6>
-                                                </div>
+                                                <i class="bi bi-newspaper default-icon"></i>
+                                                @if($post['item']->gambar)
+                                                    <img src="{{ asset('storage/' . $post['item']->gambar) }}" alt="{{ $post['item']->judul }}">
+                                                @endif
+                                                <span class="content-card-badge"><i class="bi bi-file-text"></i></span>
                                             </a>
                                         @endif
                                     @endforeach

@@ -9,6 +9,7 @@ use App\Models\KomentarArtikel;
 use App\Models\RatingArtikel;
 use App\Models\InteraksiArtikel;
 use App\Models\Notifikasi;
+use App\Helpers\NotificationHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
@@ -212,6 +213,33 @@ class SiswaArtikelController extends Controller
                     'komentar' => strip_tags($request->komentar, '<p><br><strong><em>'),
                 ]);
                 $newKomentar->load('siswa', 'replies');
+
+                // Kirim notifikasi jika ini adalah balasan komentar
+                if ($parentId) {
+                    $parentKomentar = KomentarArtikel::find($parentId);
+                    if ($parentKomentar && $parentKomentar->id_siswa && $parentKomentar->id_siswa != $siswaId) {
+                        // Dapatkan nama yang membalas
+                        $namaYangMembalas = Auth::guard('siswa')->user()->nama ?? 'Seseorang';
+                        
+                        // Kirim notifikasi ke pemilik komentar parent
+                        NotificationHelper::balasanKomentarArtikel(
+                            $parentKomentar->id_siswa,
+                            $namaYangMembalas,
+                            $artikel->judul,
+                            $artikel->id
+                        );
+                    }
+                } else {
+                    // Kirim notifikasi untuk komentar baru (bukan balasan) ke pemilik artikel
+                    if ($artikel->id_siswa && $artikel->id_siswa != $siswaId) {
+                        $namaKomentator = Auth::guard('siswa')->user()->nama ?? 'Seseorang';
+                        NotificationHelper::komentarBaru(
+                            $artikel->id_siswa,
+                            $artikel->judul,
+                            $namaKomentator
+                        );
+                    }
+                }
             }
 
             $artikel->nilai_rata_rata = $artikel->ratingArtikel()->avg('rating') ?: 0;
@@ -276,16 +304,21 @@ class SiswaArtikelController extends Controller
             }
 
             $request->validate([
-                'rating' => 'required|integer|between:1,5',
+                'rating' => 'required|integer|between:0,5', // Allow 0 to remove rating
             ]);
 
             $siswaId = Auth::guard('siswa')->id();
             $artikel = Artikel::findOrFail($id);
 
-            RatingArtikel::updateOrCreate(
-                ['id_artikel' => $artikel->id, 'id_siswa' => $siswaId],
-                ['rating' => $request->rating]
-            );
+            if ($request->rating == 0) {
+                // Hapus rating jika user memilih 0
+                RatingArtikel::where('id_artikel', $artikel->id)->where('id_siswa', $siswaId)->delete();
+            } else {
+                RatingArtikel::updateOrCreate(
+                    ['id_artikel' => $artikel->id, 'id_siswa' => $siswaId],
+                    ['rating' => $request->rating]
+                );
+            }
 
             $artikel->nilai_rata_rata = $artikel->ratingArtikel()->avg('rating') ?: 0;
             $artikel->save();
@@ -324,15 +357,14 @@ class SiswaArtikelController extends Controller
             } else {
                 $interaksi = InteraksiArtikel::create(['id_artikel' => $id, 'id_siswa' => $siswaId, 'jenis' => $jenis]);
 
-                if ($jenis == 'suka' && $artikel->siswa_id && $artikel->siswa_id != $siswaId) {
-                    Notifikasi::create([
-                        'id_siswa' => $artikel->siswa_id,
-                        'judul' => 'Artikel Anda Disukai',
-                        'pesan' => Auth::guard('siswa')->user()->nama . ' menyukai artikel Anda: "' . $artikel->judul . '".',
-                        'jenis' => 'like',
-                        'referensi_tipe' => 'artikel',
-                        'referensi_id' => $artikel->id,
-                    ]);
+                if ($jenis == 'suka' && $artikel->id_siswa && $artikel->id_siswa != $siswaId) {
+                    $namaYangLike = Auth::guard('siswa')->user()->nama ?? 'Seseorang';
+                    NotificationHelper::artikelDilike(
+                        $artikel->id_siswa,
+                        $namaYangLike,
+                        $artikel->judul,
+                        $artikel->id
+                    );
                 }
             }
 

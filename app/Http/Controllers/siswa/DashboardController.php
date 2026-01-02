@@ -79,7 +79,7 @@ class DashboardController extends Controller
 
         $artikels = $query->with(['siswa', 'kategori'])->paginate(12);
 
-        // Artikel populer HANYA dari bulan ini
+        // Artikel populer HANYA dari bulan ini (5 artikel)
         $currentMonth = Carbon::now()->month;
         $currentYear = Carbon::now()->year;
 
@@ -87,7 +87,18 @@ class DashboardController extends Controller
             ->whereMonth('created_at', $currentMonth)
             ->whereYear('created_at', $currentYear)
             ->orderByRaw('COALESCE(jumlah_dilihat, 0) DESC')
-            ->take(10)
+            ->take(5)
+            ->get();
+
+        // Video populer HANYA dari bulan ini (5 video)
+        $videoPopuler = \App\Models\Video::where('status', 'disetujui')
+            ->whereMonth('created_at', $currentMonth)
+            ->whereYear('created_at', $currentYear)
+            ->withCount(['interaksi as jumlah_like' => function ($q) {
+                $q->where('jenis', 'suka');
+            }])
+            ->orderByDesc('jumlah_like')
+            ->take(5)
             ->get();
 
         $kategoris = Kategori::orderBy('nama', 'asc')->get();
@@ -141,6 +152,7 @@ class DashboardController extends Controller
         return view('siswa.dashboard', compact(
             'artikels',
             'artikelPopuler',
+            'videoPopuler',
             'kategoris',
             'personalStats',
             'artikelBookmark',

@@ -51,10 +51,12 @@ class Notifikasi extends Model
         $icons = [
             'artikel_disetujui' => 'fas fa-check-circle text-success',
             'artikel_ditolak' => 'fas fa-times-circle text-danger',
+            'artikel_dilike' => 'fas fa-heart text-danger',
             'komentar_baru' => 'fas fa-comment text-primary',
             'penghargaan' => 'fas fa-trophy text-warning',
             'video_disetujui' => 'fas fa-video text-success',
             'video_ditolak' => 'fas fa-video text-danger',
+            'video_dilike' => 'fas fa-heart text-danger',
             'sistem' => 'fas fa-cog text-info',
         ];
 

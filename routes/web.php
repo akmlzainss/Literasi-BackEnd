@@ -23,6 +23,10 @@ use App\Http\Controllers\Admin\VideoPersetujuanController;
 
 Route::get('/', fn() => redirect()->route('artikel-siswa.index'));
 
+// Halaman Bantuan (Publik)
+Route::view('/faq', 'pages.faq')->name('faq');
+Route::view('/panduan', 'pages.panduan')->name('panduan');
+
 // Routes untuk Siswa (Login & Register)
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', [SiswaAuthController::class, 'showLoginForm'])->name('siswa.login');
@@ -63,6 +67,12 @@ Route::get('/profile-update', fn() => redirect()->route('profil.show'));
 Route::get('/articles', fn() => redirect()->route('artikel-siswa.index'));
 Route::get('/article/{id}', fn($id) => redirect()->route('artikel-siswa.show', $id));
 
+// ==========================
+// RUTE VIDEO PUBLIK (GUEST & SISWA)
+// ==========================
+Route::get('/video', [VideoController::class, 'index'])->name('video.index');
+Route::get('/video/tiktok', [VideoController::class, 'tiktokView'])->name('video.tiktok');
+
 
 // ===================================================================
 // RUTE KHUSUS SISWA (memerlukan login siswa)
@@ -83,9 +93,7 @@ Route::middleware(['auth:siswa'])->group(function () {
     Route::get('/upload/artikel/create', [SiswaArtikelController::class, 'createArtikel'])->name('artikel-siswa.create');
     Route::post('/upload/artikel', [SiswaArtikelController::class, 'storeArtikel'])->name('artikel-siswa.store');
 
-    // Rute Video
-    Route::get('/video', [VideoController::class, 'index'])->name('video.index');
-    Route::get('/video/tiktok', [VideoController::class, 'tiktokView'])->name('video.tiktok');
+    // Rute Video (yang memerlukan login)
     Route::get('/video/create', [VideoController::class, 'create'])->name('video.create');
     Route::post('/video', [VideoController::class, 'store'])->name('video.store');
     Route::post('/video/{id}/interaksi', [VideoInteraksiController::class, 'store'])->name('video.interaksi');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Siswa;
 use App\Http\Controllers\Controller;
 use App\Models\Video;
 use App\Models\InteraksiVideo;
+use App\Helpers\NotificationHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -45,6 +46,17 @@ class VideoInteraksiController extends Controller
                 'jenis' => $jenis,
             ]);
             $action = 'added';
+
+            // Kirim notifikasi jika like dan video milik orang lain
+            if ($jenis == 'suka' && $video->id_siswa && $video->id_siswa != $siswaId) {
+                $namaYangLike = Auth::guard('siswa')->user()->nama ?? 'Seseorang';
+                NotificationHelper::videoDilike(
+                    $video->id_siswa,
+                    $namaYangLike,
+                    $video->judul,
+                    $video->id
+                );
+            }
         }
 
         // Hitung ulang jumlah interaksi
