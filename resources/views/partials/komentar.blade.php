@@ -11,7 +11,7 @@
      data-created-at="{{ $komentar->dibuat_pada ? $komentar->dibuat_pada->toIso8601String() : now()->toIso8601String() }}">
     <div class="d-flex align-items-start">
         @if($authorPhoto)
-            <img src="{{ asset('storage/' . $authorPhoto) }}" alt="{{ $authorName }}" class="comment-avatar flex-shrink-0 me-3">
+            <img src="{{ asset('storage/' . $authorPhoto) }}" alt="{{ $authorName }}" class="comment-avatar flex-shrink-0 me-2" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
         @else
             <div class="comment-avatar-placeholder flex-shrink-0 me-3">
                 {{ strtoupper(substr($authorName, 0, 1)) }}
@@ -54,7 +54,7 @@
                             @endphp
                         </span>
                         @auth('siswa')
-                            <button class="btn-reply-inline" data-id="{{ $komentar->id }}" data-name="{{ $authorName }}">Balas</button>
+                            <button class="btn btn-link btn-sm text-muted text-decoration-none p-0 ms-3 btn-reply-inline fw-medium" style="font-size: 0.8rem;" data-id="{{ $komentar->id }}" data-name="{{ $authorName }}">Balas</button>
                         @endauth
                     </div>
                 </div>
@@ -63,7 +63,7 @@
                 <div class="comment-actions">
                     @auth('siswa')
                         @if ((Auth::guard('siswa')->check() && Auth::guard('siswa')->id() == $komentar->id_siswa) || Auth::guard('admin')->check())
-                            <button class="btn btn-sm delete-comment text-danger p-1" data-id="{{ $komentar->id }}" title="Hapus">
+                            <button class="btn btn-link text-danger p-0 ms-2 delete-comment" style="font-size: 0.8rem;" data-id="{{ $komentar->id }}" title="Hapus">
                                 <i class="fas fa-trash"></i>
                             </button>
                         @endif
@@ -82,15 +82,16 @@
     @endphp
     
     @if ($allReplies->count() > 0)
-        <div class="replies-toggle-section ms-5 mt-2">
-            <button class="btn-view-replies toggle-replies" 
+        <div class="replies-wrapper ms-5 mt-1">
+            <button class="btn btn-link text-muted text-decoration-none p-0 toggle-replies d-flex align-items-center gap-2" 
+                    style="font-size: 0.8rem;"
                     data-comment-id="{{ $komentar->id }}"
                     data-replies-count="{{ $allReplies->count() }}">
-                <span class="toggle-line"></span>
-                Lihat balasan ({{ $allReplies->count() }})
+                <span style="width: 20px; height: 1px; background-color: #ccc; display: inline-block;"></span>
+                <span class="fw-medium">Lihat {{ $allReplies->count() }} balasan lainnya</span>
             </button>
             
-            <div class="flat-replies-container" id="replies-{{ $komentar->id }}" style="display: none;">
+            <div class="flat-replies-container mt-2" id="replies-{{ $komentar->id }}" style="display: none;">
                 @foreach ($allReplies as $reply)
                     @include('partials.komentar', ['komentar' => $reply, 'isReply' => true])
                 @endforeach

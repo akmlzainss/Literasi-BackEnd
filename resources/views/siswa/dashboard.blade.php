@@ -250,55 +250,84 @@
         @endif
     @endauth
 
-    <!-- Artikel Populer Bulan Ini -->
+    <!-- Konten Populer Bulan Ini -->
     <section class="carousel-section-modern has-wave-top-modern">
         <div class="container">
-            <div class="carousel-header">
+            <div class="carousel-header text-center" style="padding-top: 2rem;">
                 <h2 class="carousel-title">
                     <i class="fas fa-fire me-2"></i>
                     Paling Populer Bulan Ini
                 </h2>
-                <p class="carousel-subtitle">Artikel dengan pembaca terbanyak di bulan {{ \Carbon\Carbon::now()->locale('id')->isoFormat('MMMM YYYY') }}</p>
+                <p class="carousel-subtitle">Konten terbaik di bulan {{ \Carbon\Carbon::now()->locale('id')->isoFormat('MMMM YYYY') }}</p>
             </div>
-            <div class="swiper artikel-swiper">
-                <div class="swiper-wrapper">
-                    @forelse ($artikelPopuler as $populer)
-                        <div class="swiper-slide">
-                            <a href="{{ route('artikel-siswa.show', $populer->id) }}" class="content-card">
-                                <div class="card-img-top-wrapper">
-                                    <img src="{{ $populer->gambar ? asset('storage/' . $populer->gambar) : asset('images/no-image.jpg') }}"
-                                        class="card-img-top" alt="{{ $populer->judul }}">
+            
+            @if ($artikelPopuler->count() > 0 || $videoPopuler->count() > 0)
+                <div class="swiper populer-swiper">
+                    <div class="swiper-wrapper">
+                        {{-- Artikel Populer --}}
+                        @foreach ($artikelPopuler as $populer)
+                            <div class="swiper-slide">
+                                <a href="{{ route('artikel-siswa.show', $populer->id) }}" class="content-card">
+                                    <div class="card-img-top-wrapper">
+                                        <img src="{{ $populer->gambar ? asset('storage/' . $populer->gambar) : asset('images/no-image.jpg') }}"
+                                            class="card-img-top" alt="{{ $populer->judul }}">
 
-                                    @if ($populer->kategori)
-                                        <div class="category-badge">
-                                            <span class="badge">{{ $populer->kategori->nama }}</span>
+                                        @if ($populer->kategori)
+                                            <div class="category-badge">
+                                                <span class="badge">{{ $populer->kategori->nama }}</span>
+                                            </div>
+                                        @endif
+
+                                        <div class="popular-badge-fire">
+                                            <span class="badge"><i class="fas fa-newspaper"></i> Artikel</span>
                                         </div>
-                                    @endif
-
-                                    <div class="popular-badge-fire">
-                                        <span class="badge"><i class="fas fa-fire"></i> Populer</span>
                                     </div>
-                                </div>
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ Str::limit($populer->judul, 50) }}</h5>
-                                    <p class="card-author">Oleh: {{ Str::limit($populer->siswa->nama ?? 'Admin', 20) }}
-                                    </p>
-                                    <div class="card-stats">
-                                        @php $avgRating = $populer->nilai_rata_rata ?? 0; @endphp
-                                        <span><i class="fas fa-eye fa-xs"></i> {{ number_format($populer->jumlah_dilihat ?? 0) }}</span>
-                                        <span><i class="fas fa-star fa-xs"></i> {{ number_format($avgRating, 1) }}</span>
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ Str::limit($populer->judul, 50) }}</h5>
+                                        <p class="card-author">Oleh: {{ Str::limit($populer->siswa->nama ?? 'Admin', 20) }}</p>
+                                        <div class="card-stats">
+                                            @php $avgRating = $populer->nilai_rata_rata ?? 0; @endphp
+                                            <span><i class="fas fa-eye fa-xs"></i> {{ number_format($populer->jumlah_dilihat ?? 0) }}</span>
+                                            <span><i class="fas fa-star fa-xs"></i> {{ number_format($avgRating, 1) }}</span>
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </div>
-                    @empty
-                        <div class="col-12 text-center text-white py-5">
-                            <i class="fas fa-inbox fa-3x mb-3 opacity-50"></i>
-                            <p class="mb-0">Belum ada artikel populer bulan ini</p>
-                        </div>
-                    @endforelse
+                                </a>
+                            </div>
+                        @endforeach
+                        
+                        {{-- Video Populer --}}
+                        @foreach ($videoPopuler as $video)
+                            <div class="swiper-slide">
+                                <a href="{{ route('video.tiktok', ['start' => $video->id]) }}" class="content-card video-card-populer">
+                                    <div class="card-img-top-wrapper video-thumbnail">
+                                        <img src="{{ $video->thumbnail_path ? asset('storage/' . $video->thumbnail_path) : asset('images/no-image.jpg') }}"
+                                            class="card-img-top" alt="{{ $video->judul }}">
+                                        <div class="play-overlay">
+                                            <i class="fas fa-play"></i>
+                                        </div>
+                                        <div class="popular-badge-fire">
+                                            <span class="badge"><i class="fas fa-video"></i> Video</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ Str::limit($video->judul, 50) }}</h5>
+                                        <p class="card-author">Oleh: {{ Str::limit($video->siswa->nama ?? 'Admin', 20) }}</p>
+                                        <div class="card-stats">
+                                            <span><i class="fas fa-heart fa-xs"></i> {{ $video->jumlah_like ?? 0 }}</span>
+                                            <span><i class="fas fa-eye fa-xs"></i> {{ number_format($video->jumlah_dilihat ?? 0) }}</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
-            </div>
+            @else
+                <div class="populer-empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>Belum ada konten populer bulan ini</p>
+                </div>
+            @endif
         </div>
     </section>
 
@@ -407,7 +436,7 @@
 @section('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            new Swiper('.artikel-swiper', {
+            new Swiper('.populer-swiper', {
                 slidesPerView: 2,
                 spaceBetween: 20,
                 autoplay: {
@@ -433,6 +462,11 @@
             new Swiper('.kategori-swiper', {
                 slidesPerView: 3,
                 spaceBetween: 10,
+                loop: true, // Agar looping terus
+                autoplay: {
+                    delay: 2500, // 2.5 detik
+                    disableOnInteraction: false, // Tetap jalan setelah user interaksi
+                },
                 pagination: {
                     el: '.swiper-pagination',
                     clickable: true,

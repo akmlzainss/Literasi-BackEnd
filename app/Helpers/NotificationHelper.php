@@ -54,6 +54,81 @@ class NotificationHelper
     }
 
     /**
+     * Buat notifikasi untuk like artikel
+     */
+    public static function artikelDilike($siswaId, $namaYangLike, $judulArtikel, $artikelId)
+    {
+        return Notifikasi::createNotification(
+            $siswaId,
+            'Artikel Disukai! ❤️',
+            "{$namaYangLike} menyukai artikel '{$judulArtikel}'",
+            'artikel_dilike',
+            'artikel',
+            $artikelId
+        );
+    }
+
+    /**
+     * Buat notifikasi untuk like video
+     */
+    public static function videoDilike($siswaId, $namaYangLike, $judulVideo, $videoId)
+    {
+        return Notifikasi::createNotification(
+            $siswaId,
+            'Video Disukai! ❤️',
+            "{$namaYangLike} menyukai video '{$judulVideo}'",
+            'video_dilike',
+            'video',
+            $videoId
+        );
+    }
+
+    /**
+     * Buat notifikasi untuk balasan komentar artikel
+     */
+    public static function balasanKomentarArtikel($siswaId, $namaYangMembalas, $judulArtikel, $artikelId)
+    {
+        return Notifikasi::createNotification(
+            $siswaId,
+            'Balasan Komentar 💬',
+            "{$namaYangMembalas} membalas komentar Anda di artikel '{$judulArtikel}'",
+            'komentar_baru',
+            'artikel',
+            $artikelId
+        );
+    }
+
+    /**
+     * Buat notifikasi untuk balasan komentar video
+     */
+    public static function balasanKomentarVideo($siswaId, $namaYangMembalas, $judulVideo, $videoId)
+    {
+        return Notifikasi::createNotification(
+            $siswaId,
+            'Balasan Komentar 💬',
+            "{$namaYangMembalas} membalas komentar Anda di video '{$judulVideo}'",
+            'komentar_baru',
+            'video',
+            $videoId
+        );
+    }
+
+    /**
+     * Buat notifikasi untuk komentar baru di video
+     */
+    public static function komentarBaruVideo($siswaId, $judulVideo, $namaKomentator, $videoId)
+    {
+        return Notifikasi::createNotification(
+            $siswaId,
+            'Komentar Baru! 💬',
+            "{$namaKomentator} memberikan komentar pada video '{$judulVideo}'",
+            'komentar_baru',
+            'video',
+            $videoId
+        );
+    }
+
+    /**
      * Buat notifikasi untuk penghargaan
      */
     public static function penghargaan($siswaId, $jenisPenghargaan, $adminId = null)
@@ -111,8 +186,8 @@ class NotificationHelper
             $judul,
             $pesan,
             'sistem',
-            null,
-            null,
+            'sistem', // Default non-null value
+            0,        // Default non-null value
             $adminId
         );
     }
@@ -130,8 +205,8 @@ class NotificationHelper
                 $judul,
                 $pesan,
                 $jenis,
-                null,
-                null,
+                'sistem', // Default non-null value
+                0,        // Default non-null value
                 $adminId
             );
         }

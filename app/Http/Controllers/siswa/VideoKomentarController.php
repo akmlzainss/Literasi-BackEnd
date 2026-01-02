@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Siswa;
 use App\Http\Controllers\Controller;
 use App\Models\Video;
 use App\Models\KomentarVideo;
+use App\Helpers\NotificationHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -38,7 +39,22 @@ class VideoKomentarController extends Controller
         $komentar->save();
         $komentar->load('siswa', 'admin');
 
+        // Kirim notifikasi jika ini adalah balasan komentar
         if ($komentar->id_komentar_parent) {
+            $parentKomentar = KomentarVideo::find($komentar->id_komentar_parent);
+            if ($parentKomentar && $parentKomentar->id_siswa && $parentKomentar->id_siswa != $komentar->id_siswa) {
+                // Dapatkan nama yang membalas
+                $namaYangMembalas = $komentar->siswa ? $komentar->siswa->nama : ($komentar->admin ? $komentar->admin->nama : 'Seseorang');
+                
+                // Kirim notifikasi ke pemilik komentar parent
+                NotificationHelper::balasanKomentarVideo(
+                    $parentKomentar->id_siswa,
+                    $namaYangMembalas,
+                    $video->judul,
+                    $video->id
+                );
+            }
+
             $html = view('partials.video_comment_item', ['komentar' => $komentar])->render();
             return response()->json([
                 'success' => true,
@@ -51,6 +67,17 @@ class VideoKomentarController extends Controller
                     'nama' => $komentar->siswa ? $komentar->siswa->nama : ($komentar->admin ? $komentar->admin->nama : 'Unknown'),
                 ]
             ]);
+        }
+
+        // Kirim notifikasi untuk komentar baru (bukan balasan) ke pemilik video
+        if ($video->id_siswa && $video->id_siswa != $komentar->id_siswa) {
+            $namaKomentator = $komentar->siswa ? $komentar->siswa->nama : ($komentar->admin ? $komentar->admin->nama : 'Seseorang');
+            NotificationHelper::komentarBaruVideo(
+                $video->id_siswa,
+                $video->judul,
+                $namaKomentator,
+                $video->id
+            );
         }
 
         return response()->json([
