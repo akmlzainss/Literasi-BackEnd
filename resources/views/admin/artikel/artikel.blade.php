@@ -152,7 +152,7 @@
                                 <span class="category-tag">{{ $artikel->kategori->nama ?? 'Tanpa Kategori' }}</span>
                             </div>
                             <h5 class="article-title-card">{{ $artikel->judul }}</h5>
-                            <p class="article-excerpt-card">{{ Str::limit(strip_tags($artikel->konten), 100) }}</p>
+                            <p class="article-excerpt-card">{{ Str::limit(strip_tags($artikel->isi), 100) }}</p>
                             <div class="article-rating">
                                 <div class="rating-display">
                                     @php

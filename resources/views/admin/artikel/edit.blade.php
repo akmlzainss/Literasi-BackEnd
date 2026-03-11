@@ -59,9 +59,9 @@
                                 <label for="edit_isi" class="form-label">
                                     <i class="fas fa-align-left me-2"></i>Isi Artikel <span class="text-danger">*</span>
                                 </label>
-                                <textarea name="konten" id="edit_konten" class="form-control" rows="10" required>{{ old('isi', $artikel->konten) }}</textarea>
+                                <textarea name="isi" id="isi" class="form-control" rows="10" required>{{ old('isi', $artikel->isi) }}</textarea>
                                 <div id="charCount" class="text-muted mt-1" style="font-size: 0.9em;">0/3000</div>
-                                @error('konten')
+                                @error('isi')
                                     <div class="alert alert-danger mt-2">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -144,16 +144,16 @@
                                                 <i class="fas fa-search me-2"></i>Cari Nama Siswa <span
                                                     class="text-danger">*</span>
                                             </label>
-                                            <select name="siswa_id" id="siswa_id" class="form-control select2"
+                                            <select name="id_siswa" id="id_siswa" class="form-control select2"
                                                 style="width: 100%;">
                                                 <option value="">Ketik nama atau NIS siswa...</option>
-                                                @if (old('siswa_id', $artikel->siswa_id))
-                                                    <option value="{{ old('siswa_id', $artikel->siswa_id) }}" selected>
+                                                @if (old('id_siswa', $artikel->id_siswa))
+                                                    <option value="{{ old('id_siswa', $artikel->id_siswa) }}" selected>
                                                         {{ $artikel->siswa ? $artikel->siswa->nama . ' (' . $artikel->siswa->nis . ')' : 'Siswa Tidak Ditemukan' }}
                                                     </option>
                                                 @endif
                                             </select>
-                                            @error('siswa_id')
+                                            @error('id_siswa')
                                                 <div class="alert alert-danger mt-2">{{ $message }}</div>
                                             @enderror
                                         </div>
@@ -276,7 +276,7 @@
             // Initialize TinyMCE
             // ===================================
             tinymce.init({
-                selector: '#edit_konten',
+                selector: '#isi',
                 height: 500,
                 plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount',
                 toolbar: 'undo redo | blocks | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
@@ -364,7 +364,7 @@
             // Pre-select Siswa for Edit
             // ===================================
             const penulisType = '{{ old('penulis_type', $artikel->penulis_type) }}';
-            const siswaId = '{{ old('siswa_id', $artikel->siswa_id) }}';
+            const siswaId = '{{ old('id_siswa', $artikel->id_siswa) }}';
             if (penulisType === 'siswa' && siswaId) {
                 $.ajax({
                     url: '{{ route('admin.search.siswa') }}',
