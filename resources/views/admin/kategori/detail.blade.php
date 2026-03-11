@@ -193,9 +193,9 @@
                                     </div>
 
                                     <!-- Excerpt -->
-                                    @if ($artikel->konten)
+                                    @if ($artikel->isi)
                                         <p class="article-excerpt">
-                                            {{ Str::limit(strip_tags($artikel->konten), 100) }}
+                                            {{ Str::limit(strip_tags($artikel->isi), 100) }}
                                         </p>
                                     @endif
                                 </div>

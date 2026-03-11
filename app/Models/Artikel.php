@@ -101,7 +101,7 @@ class Artikel extends Model
     {
         return $query->where(function ($q) use ($search) {
             $q->where('judul', 'like', "%$search%")
-                ->orWhere('konten', 'like', "%$search%");
+                ->orWhere('isi', 'like', "%$search%");
         });
     }
 

@@ -78,7 +78,7 @@
                     @endif
                 </div>
                 <div class="article-content mt-4">
-                    {!! $artikel->konten !!}
+                    {!! $artikel->isi !!}
                 </div>
                 <div class="article-stats mt-4">
                     <div class="stats-item">
