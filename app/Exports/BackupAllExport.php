@@ -19,11 +19,11 @@ class BackupAllExport implements WithMultipleSheets
                 {
                     return DB::table('artikel')->select(
                         'id',
-                        'siswa_id',
-                        'kategori_id',
+                        'id_siswa',
+                        'id_kategori',
                         'judul',
                         'gambar',
-                        'konten',
+                        'isi',
                         'penulis_type',
                         'status',
                         'alasan_penolakan',
