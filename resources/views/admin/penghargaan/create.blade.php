@@ -17,7 +17,7 @@
         </a>
     </div>
 
-    <div class="main-card">
+    <div class="main-card" style="min-height: 70vh;">
         <div class="card-body-custom">
             @if ($topItems->isEmpty())
                 <div class="alert alert-warning">

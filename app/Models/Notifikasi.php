@@ -18,13 +18,13 @@ class Notifikasi extends Model
         'jenis',
         'referensi_tipe',
         'referensi_id',
-        'sudah_dibaca'
+        'sudah_dibaca',
+        'dibuat_pada'
     ];
 
     protected $casts = [
         'sudah_dibaca' => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'dibuat_pada' => 'datetime',
     ];
 
     // Scope untuk notifikasi yang belum dibaca
@@ -36,13 +36,13 @@ class Notifikasi extends Model
     // Scope untuk notifikasi hari ini
     public function scopeToday($query)
     {
-        return $query->whereDate('created_at', today());
+        return $query->whereDate('dibuat_pada', today());
     }
 
     // Accessor untuk format waktu yang user-friendly
     public function getTimeAgoAttribute()
     {
-        return $this->created_at->diffForHumans();
+        return $this->dibuat_pada ? $this->dibuat_pada->diffForHumans() : '';
     }
 
     // Accessor untuk icon berdasarkan jenis
@@ -85,6 +85,7 @@ class Notifikasi extends Model
             'referensi_tipe' => $referensiTipe,
             'referensi_id' => $referensiId,
             'sudah_dibaca' => false,
+            'dibuat_pada' => now(),
         ]);
     }
 }

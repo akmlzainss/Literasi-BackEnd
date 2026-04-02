@@ -132,7 +132,7 @@
                                             style="display:inline;" id="deleteForm_{{ $artikel->id }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="button" class="btn-action-card btn-delete-card"
+                                            <button type="button" class="btn-action-card btn-delete-card bg-danger text-white"
                                                 data-id="{{ $artikel->id }}"
                                                 onclick="confirmDelete({{ $artikel->id }})">
                                                 <i class="fas fa-trash"></i>
@@ -222,24 +222,22 @@
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content delete-warning-modal">
-                <div class="modal-header bg-danger text-white">
+                <div class="modal-header bg-danger text-white border-bottom-0">
                     <h5 class="modal-title" id="deleteConfirmModalLabel">Peringatan</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
                         aria-label="Close"></button>
                 </div>
 
-                <div class="modal-body text-center">
-                    Data yang dihapus <strong>tidak dapat dikembalikan!</strong>
-                    <br><br>
+                <div class="modal-body pt-4 pb-4">
                     Yakin ingin menghapus data ini?
                 </div>
 
-                <div class="modal-footer justify-content-center">
+                <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <form id="deleteForm" method="POST" class="d-inline">
+                    <form id="deleteForm" method="POST" class="d-inline m-0">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-danger" id="confirmDeleteBtn">Ya</button>
+                        <button type="submit" class="btn btn-primary" id="confirmDeleteBtn">Ya</button>
                     </form>
                 </div>
             </div>

@@ -81,7 +81,7 @@
                             </div>
                             <div class="stat-content">
                                 <h3 class="stat-number">
-                                    {{ \App\Models\Artikel::where('siswa_id', $siswa->id)->count() }}
+                                    {{ \App\Models\Artikel::where('id_siswa', $siswa->id)->count() }}
                                 </h3>
                                 <p class="stat-label">Total Artikel</p>
                             </div>
@@ -95,7 +95,7 @@
                             </div>
                             <div class="stat-content">
                                 <h3 class="stat-number">
-                                    {{ \App\Models\Artikel::where('siswa_id', $siswa->id)->where('status', 'disetujui')->count() }}
+                                    {{ \App\Models\Artikel::where('id_siswa', $siswa->id)->where('status', 'disetujui')->count() }}
                                 </h3>
                                 <p class="stat-label">Artikel Disetujui</p>
                             </div>
@@ -109,7 +109,7 @@
                             </div>
                             <div class="stat-content">
                                 <h3 class="stat-number">
-                                    {{ number_format(\App\Models\Artikel::where('siswa_id', $siswa->id)->avg('nilai_rata_rata') ?? 0, 1) }}
+                                    {{ number_format(\App\Models\Artikel::where('id_siswa', $siswa->id)->avg('nilai_rata_rata') ?? 0, 1) }}
                                 </h3>
                                 <p class="stat-label">Rata-rata Rating</p>
                             </div>
@@ -891,7 +891,6 @@
         });
     </script>
 
-    <!-- Include Modals -->
-    @include('siswa.edit')
+    <!-- End Modals -->
 
 @endsection

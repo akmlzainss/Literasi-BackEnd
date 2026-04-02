@@ -11,29 +11,44 @@
 }
 /* Modal style */
 .delete-warning-modal {
-  border: 3px solid #dc3545; /* warna merah border */
-  border-radius: 10px;
-  box-shadow: 0 5px 25px rgba(220, 53, 69, 0.4); /* bayangan merah lembut */
+    border: none;
+    border-radius: 10px;
 }
 
-/* Header tetap merah */
 .delete-warning-modal .modal-header {
-  border-bottom: none;
+    background-color: #ff4444 !important;
+    color: white !important;
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
 }
 
-/* Footer bersih tanpa garis */
+.delete-warning-modal .modal-body {
+    font-size: 16px;
+    padding: 20px;
+}
+
 .delete-warning-modal .modal-footer {
-  border-top: none;
+    border-top: 1px solid #dee2e6 !important;
 }
 
-/* Tombol "Ya" bisa dibuat merah juga biar serasi */
 .delete-warning-modal .btn-primary {
-  background-color: #dc3545;
-  border: none;
+    background-color: #1e90ff !important;
+    border-color: #1e90ff !important;
 }
 
 .delete-warning-modal .btn-primary:hover {
-  background-color: #bb2d3b;
+    background-color: #104e8b !important;
+    border-color: #104e8b !important;
+}
+
+.delete-warning-modal .btn-secondary {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+}
+
+.delete-warning-modal .btn-secondary:hover {
+    background-color: #5a6268 !important;
+    border-color: #5a6268 !important;
 }
 
 
